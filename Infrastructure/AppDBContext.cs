@@ -31,5 +31,16 @@ namespace Infrastructure
 
         public DbSet<CodeVerification> VerificationCode { get; set; }
 
+        public DbSet<Company> Componies { get; set; }
+
+        public DbSet<DatabaseSettings> DatabaseSettings { get; set; }
+
+        public DbSet<FeedBack> FeedBack { get; set; }
+
+
+
+
+
+
     }
 }
