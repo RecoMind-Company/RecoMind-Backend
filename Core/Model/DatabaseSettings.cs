@@ -24,5 +24,7 @@ namespace Core.Model
         public string CompanyId { get; set; }
         public virtual Company Company { get; set; }
 
+
+
     }
 }

@@ -7,6 +7,7 @@ using Infrastructure;
 using Infrastructure.Authentication;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,12 +31,18 @@ namespace RecoMind
                     options => options.MigrationsAssembly(typeof(AppDBContext).Assembly.FullName));
             });
 
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("AdminRole", p => p.RequireRole("Admin"));
+            authorizationBuilder.AddPolicy("UserRole", p => p.RequireRole("User"));
+
 
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("jwt"));
             builder.Services.Configure<EmailConfgSettings>(builder.Configuration.GetSection("email-confg"));
             builder.Services.AddScoped<CodeDatabaseServices>();
             builder.Services.AddScoped<SendEmailServices>();
             builder.Services.AddScoped<GenerateCodeVerify>();
+
+            
 
 
             builder.Services.AddTransient(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));

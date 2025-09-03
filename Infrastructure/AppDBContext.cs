@@ -27,6 +27,10 @@ namespace Infrastructure
             builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogin", "security");
             builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaim", "security");
             builder.Entity<IdentityUserToken<string>>().ToTable("UserToken", "security");
+
+
+
+           
         }
 
         public DbSet<CodeVerification> VerificationCode { get; set; }

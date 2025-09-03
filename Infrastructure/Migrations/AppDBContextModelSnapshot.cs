@@ -110,7 +110,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VerificationCode");
+                    b.ToTable("VerificationCode", (string)null);
                 });
 
             modelBuilder.Entity("Core.Model.Company", b =>
@@ -141,7 +141,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Componies");
+                    b.ToTable("Componies", (string)null);
                 });
 
             modelBuilder.Entity("Core.Model.DatabaseSettings", b =>
@@ -173,7 +173,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("DatabaseSettings");
+                    b.ToTable("DatabaseSettings", (string)null);
                 });
 
             modelBuilder.Entity("Core.Model.FeedBack", b =>
@@ -196,7 +196,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.ToTable("FeedBack");
+                    b.ToTable("FeedBack", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -334,7 +334,7 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Model.AppUser", b =>
                 {
-                    b.OwnsMany("Core.Model.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Core.Model.AppUser.RefreshTokens#Core.Model.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("AppUserId")
                                 .HasColumnType("nvarchar(450)");

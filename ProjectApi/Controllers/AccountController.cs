@@ -26,7 +26,7 @@ namespace ProjectAPI.Controllers
 
 
         [HttpGet("GetUsers")]
-        [Authorize("AdminRole")]
+        //[Authorize("AdminRole")]
         public async Task<IActionResult> GetUsers()
         {
             var users = await userManager.Users.ToListAsync();
@@ -37,8 +37,7 @@ namespace ProjectAPI.Controllers
             {
                 Id = x.Id,
                 Email = x.Email,
-                FirstName = x.Name.Split(" ").First(),
-                LastName = x.Name.Split(" ").Last(),
+                Name = x.Name,
                 PhoneNamber = x.PhoneNumber,
                 UrlPhoto = x.Photo,
             }).ToList();
@@ -60,9 +59,7 @@ namespace ProjectAPI.Controllers
             {
                 Id = user.Id,
                 Email = user.Email,
-                FirstName = user.Name.Split(" ").First(),
-                LastName = user.Name.Split(" ").Last(),
-
+                Name = user.Name,
                 PhoneNamber = user.PhoneNumber,
                 UrlPhoto = user.Photo,
 
@@ -87,17 +84,15 @@ namespace ProjectAPI.Controllers
             //}
 
             user.Email = dto.Email ?? user.Email;
-            user.Name = dto.FirstName + " " + dto.LastName ?? user.Name ;
+            user.Name = dto.Name?? user.Name ;
             user.PhoneNumber = dto.PhoneNamber ?? user.PhoneNumber;
 
             await userManager.UpdateAsync(user);
             var mapUser = new GetUsersDTO
             {
                 Id = user.Id,
-
                 Email = user.Email,
-                FirstName = user.Name.Split(" ").First(),
-                LastName = user.Name.Split(" ").Last(),
+                Name = user.Name,
                 PhoneNamber = user.PhoneNumber,
                 UrlPhoto = user.Photo,
 

@@ -21,7 +21,9 @@ namespace Core.Model
         [ForeignKey("UserId")]
         public string? UserId { get; set; }
 
+       
         public virtual AppUser? User { get; set; }
+
 
     }
 }

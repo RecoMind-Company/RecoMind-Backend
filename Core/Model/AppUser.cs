@@ -19,5 +19,6 @@ namespace Core.Model
         public string Name { get; set; }
         public string? Photo { get; set; }
         public List<RefreshToken> RefreshTokens { get; set; }
+
     }
 }
