@@ -10,7 +10,10 @@
     <Folder Include="DTOs\" />
     <Folder Include="Exception\" />
     <Folder Include="Interfaces\" />
-    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
   </ItemGroup>
 
 </Project>
