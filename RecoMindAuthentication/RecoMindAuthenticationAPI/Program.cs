@@ -1,15 +1,19 @@
+using Authentication.Core.Extensions;
+using Authentication.Infrastructure;
 using Authentication.Infrastructure.Extensions;
+using RecoMindAuthenticationAPI.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.AddPresentationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddCoreServices(builder.Configuration);
 
 var app = builder.Build();
 
+using var Scope = app.Services.CreateScope();
+var ObjectOfDataSeeding = Scope.ServiceProvider.GetRequiredService<DataSeeding>();
+await ObjectOfDataSeeding.DataSeedAsync();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -18,6 +22,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
