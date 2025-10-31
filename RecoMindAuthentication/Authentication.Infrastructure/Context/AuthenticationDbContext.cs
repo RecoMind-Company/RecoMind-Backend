@@ -7,7 +7,7 @@ namespace Authentication.Infrastructure.Context;
 
 public class AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options) : IdentityDbContext<AppUser>(options)
 {
-    public DbSet<CodeVerification> VerificationCode { get; set; }
+    public DbSet<VerificationCode> VerificationCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

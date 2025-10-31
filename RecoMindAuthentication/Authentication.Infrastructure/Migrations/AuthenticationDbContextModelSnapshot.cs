@@ -100,7 +100,7 @@ namespace Authentication.Infrastructure.Migrations
                     b.ToTable("UsersAccount", (string)null);
                 });
 
-            modelBuilder.Entity("Authentication.Core.Models.CodeVerification", b =>
+            modelBuilder.Entity("Authentication.Core.Models.VerificationCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -121,7 +121,7 @@ namespace Authentication.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VerificationCode");
+                    b.ToTable("VerificationCodes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repository\" />
-    <Folder Include="UnitOfWork\" />
+    <Folder Include="Repository\Repository\" />
   </ItemGroup>
 
   <ItemGroup>
