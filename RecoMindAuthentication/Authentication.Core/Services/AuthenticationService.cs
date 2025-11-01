@@ -2,6 +2,7 @@
 using Authentication.Core.Models;
 using Authentication.Core.Settings;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,6 +17,7 @@ public interface IAuthenticationService
 {
     Task<AuthenticationDto> Register(RegisterDto registerDto);
     Task<AuthenticationDto> Login(LoginDto loginDto);
+    Task<AuthenticationDto> GenerateNewRefreshToken(string token);
 
 }
 
@@ -111,6 +113,51 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             user.RefreshTokens.Add(refreshToken);
             await userManager.UpdateAsync(user);
         }
+        return userToReturn;
+    }
+
+    public async Task<AuthenticationDto> GenerateNewRefreshToken(string token)
+    {
+        // get user with this refresh token
+        // check if user exist
+        // check if the token is active
+        // revoke the old token
+        // genereate an new refresh token
+        // add to table and update user
+        // generate new jwt token
+        var userToReturn = new AuthenticationDto();
+        var user = await userManager.Users.SingleOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == token));
+        if (user is null)
+        {
+            userToReturn.message = "Invalid token";
+            return userToReturn;
+        }
+
+        var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+        if (!refreshToken.IsActive)
+        {
+            userToReturn.message = "Inactive token";
+            return userToReturn;
+        }
+
+        refreshToken.RevokeOn = DateTime.UtcNow;
+
+        var newRefreshToken = GenerateRefershToken();
+        user.RefreshTokens.Add(newRefreshToken);
+        await userManager.UpdateAsync(user);
+
+        var jwtToken = await CreateToken(user);
+        var roles = await userManager.GetRolesAsync(user);
+
+        userToReturn.IsAuthenticated = true;
+        userToReturn.Token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        userToReturn.ExperiesOn = jwtToken.ValidTo;
+        userToReturn.RefreshToken = newRefreshToken.Token;
+        userToReturn.RefreshTokenExp = newRefreshToken.ExpiresOn;
+        userToReturn.Email = user.Email;
+        userToReturn.Name = user.FullName;
+        userToReturn.Roles = roles.ToList();
+        userToReturn.message = "refresh token created successfully";
         return userToReturn;
     }
     private RefreshToken GenerateRefershToken()

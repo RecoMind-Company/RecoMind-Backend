@@ -35,13 +35,23 @@ public class AuthenticationController(IAuthenticationService authenticationServi
             SetRefreshTokenInCookies(result.RefreshToken, result.RefreshTokenExp);
         return Ok(result);
     }
+    [HttpGet("refresh-token")]
+    public async Task<ActionResult<AuthenticationDto>> CreateRefreshToken()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        var result = await authenticationService.GenerateNewRefreshToken(refreshToken);
+        if (!result.IsAuthenticated)
+            return BadRequest(result.message);
+        SetRefreshTokenInCookies(result.RefreshToken, result.RefreshTokenExp);
+        return Ok(result);
+    }
 
     private void SetRefreshTokenInCookies(string refreshToken, DateTime exp)
     {
         var cookiesOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = exp,
+            Expires = exp.ToLocalTime(),
         };
         Response.Cookies.Append("refreshToken", refreshToken, cookiesOptions);
     }
