@@ -23,9 +23,7 @@ namespace RecoMindAuthenticationAPI.Extensions
                     {
                     new OpenApiSecurityScheme
                         {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
-                            Name = "Bearer",
-                            In = ParameterLocation.Header
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
                         },
                         []
                     }

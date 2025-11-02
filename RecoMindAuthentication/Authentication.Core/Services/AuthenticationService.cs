@@ -20,6 +20,7 @@ public interface IAuthenticationService
     Task<AuthenticationDto> GenerateNewRefreshToken(string token);
     Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto);
     Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto);
+    Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email);
 
 }
 
@@ -87,7 +88,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         // if not create refresh token and add it to datebase then update the user
         var userToReturn = new AuthenticationDto();
         var user = await userManager.FindByEmailAsync(loginDto.Email);
-        if (user is null || await userManager.CheckPasswordAsync(user, loginDto.Password))
+        if (user is null || !await userManager.CheckPasswordAsync(user, loginDto.Password))
         {
             userToReturn.message = "email or password is incorrect";
             return userToReturn;
@@ -174,6 +175,34 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
     }
 
+    public async Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user is null)
+            return new BaseToReturnDto { Message = "User is not found" };
+
+        var HashPassword = passwordHasher.HashPassword(user, dto.NewPassword);
+        user.PasswordHash = HashPassword;
+        await userManager.UpdateAsync(user);
+        return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
+
+    }
+
+    public async Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email)
+    {
+        //get user by email
+        // Compare the resetPasswordDto.oldPassword and the acutal password
+        // if wrong return message
+        // if correct hash the new password and update the user 
+        var user = await userManager.FindByEmailAsync(email);
+        var IsPasswordCorrect = await userManager.CheckPasswordAsync(user, resetPasswordDto.OldPassword);
+        if (!IsPasswordCorrect)
+            return new BaseToReturnDto { Message = "Password is not correct" };
+        var HashPassword = passwordHasher.HashPassword(user, resetPasswordDto.NewPassword);
+        user.PasswordHash = HashPassword;
+        await userManager.UpdateAsync(user);
+        return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
+    }
     private async Task<JwtSecurityToken> CreateToken(AppUser user)
     {
         var Claims = new List<Claim>()
@@ -213,18 +242,6 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         };
     }
 
-    public async Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto)
-    {
-        var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user is null)
-            return new BaseToReturnDto { Message = "User is not found" };
-
-        var HashPassword = passwordHasher.HashPassword(user, dto.Password);
-        user.PasswordHash = HashPassword;
-        await userManager.UpdateAsync(user);
-        return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
-
-    }
 }
 
 

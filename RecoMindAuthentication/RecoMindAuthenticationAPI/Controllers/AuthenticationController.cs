@@ -1,6 +1,8 @@
 ﻿using Authentication.Core.DTOs;
 using Authentication.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace RecoMindAuthenticationAPI.Controllers;
 
@@ -52,6 +54,19 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         if (!ModelState.IsValid)
             return BadRequest(error);
         var result = await authenticationService.ForgetPassword(forgetPasswordDto);
+        if (!result.Success)
+            return BadRequest(result.Message);
+        return Ok(result);
+    }
+    [HttpPost("reset-password")]
+    [Authorize]
+    public async Task<ActionResult<BaseToReturnDto>> ResetPassword(ResetPasswordDto resetPasswordDto)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        var result = await authenticationService.ResetPassword(resetPasswordDto, userEmail);
         if (!result.Success)
             return BadRequest(result.Message);
         return Ok(result);
