@@ -6,7 +6,7 @@ namespace RecoMindAuthenticationAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AuthenticationController(IAuthenticationService authenticationService) : ControllerBase
+public class AuthenticationController(IAuthenticationService authenticationService, IVerificationService verificationService) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<ActionResult<AuthenticationDto>> Register(RegisterDto registerDto)
@@ -45,7 +45,33 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         SetRefreshTokenInCookies(result.RefreshToken, result.RefreshTokenExp);
         return Ok(result);
     }
-
+    [HttpPost("forget-password")]
+    public async Task<ActionResult<BaseToReturnDto>> ForgetPassword(ForgetPasswordDto forgetPasswordDto)
+    {
+        var error = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(error);
+        var result = await authenticationService.ForgetPassword(forgetPasswordDto);
+        if (!result.Success)
+            return BadRequest(result.Message);
+        return Ok(result);
+    }
+    [HttpPost("verify")]
+    public async Task<ActionResult<BaseToReturnDto>> VerifyCode(VerifyCodeDto verifyDto)
+    {
+        var error = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(error);
+        // Code validation
+        var codeMessage = await verificationService.IsCodeValid(verifyDto.Code, verifyDto.Email);
+        if (!codeMessage.Success)
+            return BadRequest(codeMessage.Message);
+        // Password validation
+        var passwordUpdate = await authenticationService.UpdatePassword(verifyDto);
+        if (!passwordUpdate.Success)
+            return NotFound(passwordUpdate.Message);
+        return Ok(passwordUpdate);
+    }
     private void SetRefreshTokenInCookies(string refreshToken, DateTime exp)
     {
         var cookiesOptions = new CookieOptions

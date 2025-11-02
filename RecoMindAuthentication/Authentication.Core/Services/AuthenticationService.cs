@@ -18,11 +18,15 @@ public interface IAuthenticationService
     Task<AuthenticationDto> Register(RegisterDto registerDto);
     Task<AuthenticationDto> Login(LoginDto loginDto);
     Task<AuthenticationDto> GenerateNewRefreshToken(string token);
+    Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto);
+    Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto);
 
 }
 
 public class AuthenticationService(UserManager<AppUser> userManager,
-                                   IOptions<JwtSettings> jwtOptions) : IAuthenticationService
+                                   PasswordHasher<AppUser> passwordHasher,
+                                   IOptions<JwtSettings> jwtOptions,
+                                   ISendEmailService sendEmailService) : IAuthenticationService
 {
     private readonly JwtSettings jwtSettings = jwtOptions.Value;
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -160,18 +164,16 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         userToReturn.message = "refresh token created successfully";
         return userToReturn;
     }
-    private RefreshToken GenerateRefershToken()
+
+    public async Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto)
     {
-        var RandomNum = new byte[32];
-        using var generator = new RNGCryptoServiceProvider();
-        generator.GetBytes(RandomNum);
-        return new RefreshToken
-        {
-            Token = Convert.ToBase64String(RandomNum),
-            ExpiresOn = DateTime.UtcNow.AddDays(2),
-            CreatedOn = DateTime.UtcNow,
-        };
+        var user = await userManager.FindByEmailAsync(forgetPasswordDto.Email);
+        if (user is null)
+            return new BaseToReturnDto { Message = "Email Is NotFound" };
+        await sendEmailService.SendEmailAsync(forgetPasswordDto.Email);
+        return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
     }
+
     private async Task<JwtSecurityToken> CreateToken(AppUser user)
     {
         var Claims = new List<Claim>()
@@ -198,5 +200,32 @@ public class AuthenticationService(UserManager<AppUser> userManager,
 
         return token;
     }
+    private RefreshToken GenerateRefershToken()
+    {
+        var RandomNum = new byte[32];
+        using var generator = new RNGCryptoServiceProvider();
+        generator.GetBytes(RandomNum);
+        return new RefreshToken
+        {
+            Token = Convert.ToBase64String(RandomNum),
+            ExpiresOn = DateTime.UtcNow.AddDays(2),
+            CreatedOn = DateTime.UtcNow,
+        };
+    }
 
+    public async Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto)
+    {
+        var user = await userManager.FindByEmailAsync(dto.Email);
+        if (user is null)
+            return new BaseToReturnDto { Message = "User is not found" };
+
+        var HashPassword = passwordHasher.HashPassword(user, dto.Password);
+        user.PasswordHash = HashPassword;
+        await userManager.UpdateAsync(user);
+        return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
+
+    }
 }
+
+
+
