@@ -17,9 +17,11 @@ public static class CoreServicesExtension
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<ISendEmailService, SendEmailService>();
         services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<PasswordHasher<AppUser>>();
         services.Configure<JwtSettings>(configuration.GetSection("JwtOptions"));
         services.Configure<EmailConfgSettings>(configuration.GetSection("email-config"));
+        services.Configure<PhotoSettings>(configuration.GetSection("Urls"));
         services.AddAuthentication(config =>
         {
             config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

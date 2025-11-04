@@ -1,4 +1,5 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.OpenApi.Models;
 
 namespace RecoMindAuthenticationAPI.Extensions
 {
@@ -29,6 +30,15 @@ namespace RecoMindAuthenticationAPI.Extensions
                     }
                 });
             });
+        }
+        public static StaticFileOptions AddMyStaticFiles(this IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            StaticFileOptions staticFileOptions = new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "StaticFiles", "Images")),
+                RequestPath = "/UserProfileImage"
+            };
+            return staticFileOptions;
         }
     }
 }
