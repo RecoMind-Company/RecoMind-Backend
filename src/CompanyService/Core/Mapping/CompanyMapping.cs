@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.DTOs;
+using Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,8 @@ namespace Core.Configuration
                 .ForMember(st=>st.BillingCycle, opt=>opt.MapFrom(src=>src.Billing))
                 .ReverseMap();
 
-            CreateMap<CreateCompanyDTO, Core.Models.Company>()
+            CreateMap<CreateCompanyDTO, Company>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
 
             CreateMap<Core.Models.Company, UpdateCompanyDTO>()

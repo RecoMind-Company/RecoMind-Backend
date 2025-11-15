@@ -8,7 +8,7 @@ namespace Core.DTOs
 {
     public class DeleteCompanyDTO
     {
-        public static string Id { get; set; } 
+        public  string Id { get; set; } 
         public string Massage { get; set; } = $" Company Deleted Successfuly ";    
     }
 }

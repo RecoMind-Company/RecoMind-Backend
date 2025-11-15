@@ -22,29 +22,40 @@ namespace Core.Service
             _companyUnitOfWork = companyUnitOfWork;
             _mapper = mapper;
         }
-        public async Task<GetCompanyDTO> AssignBillingCycle(string Id, string CycleName)
+        public async Task<GetCompanyDTO> AssignBillingCycle(string companyId, string cycleName)
         {
-            var item = await _companyUnitOfWork.Entity.GetByIdAsync(Id);
-            if (item == null) throw new Exception("This Id Not Found ");
+            if (string.IsNullOrWhiteSpace(companyId))
+                throw new ArgumentException("Company ID cannot be null or empty.", nameof(companyId));
 
-            if (!CheckBillingCycleName(CycleName)) throw new Exception("This Cycle Not Found ");
-            item.Billing = CycleName;
+            if (string.IsNullOrWhiteSpace(cycleName))
+                throw new ArgumentException("Billing cycle name cannot be null or empty.", nameof(cycleName));
 
-            await _companyUnitOfWork.Entity.UpdateAsync(item);
+            var company = await _companyUnitOfWork.Entity.GetByIdAsync(companyId);
+            if (company == null)
+                throw new KeyNotFoundException($"Company with ID '{companyId}' not found.");
 
-            return _mapper.Map<GetCompanyDTO>(item);
+            if (!CheckBillingCycleName(cycleName))
+                throw new ArgumentException($"Invalid billing cycle name: {cycleName}", nameof(cycleName));
+
+            company.Billing = cycleName;
+            await _companyUnitOfWork.Entity.UpdateAsync(company);
+
+            return _mapper.Map<GetCompanyDTO>(company);
         }
 
-        public bool CheckBillingCycleName(string CycleName)
+        public bool CheckBillingCycleName(string cycleName)
         {
-            var Cycles = Enum.GetNames(typeof(BillingCycle)).Select(p => p.ToLower()).ToList();
-            return CycleName.Contains(CycleName.ToLower());
+            if (string.IsNullOrWhiteSpace(cycleName))
+                return false;
+
+            return Enum.GetNames(typeof(BillingCycle))
+                       .Any(name => string.Equals(name, cycleName, StringComparison.OrdinalIgnoreCase));
         }
+
 
         public IEnumerable<string> GetAllBillingCycles()
         {
-            foreach (var item in Enum.GetValues(typeof(BillingCycle)))           
-                yield return item.ToString();            
-        }       
+           return Enum.GetNames(typeof(BillingCycle));
+        }
     }
 }

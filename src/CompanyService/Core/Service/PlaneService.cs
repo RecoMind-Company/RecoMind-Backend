@@ -24,31 +24,37 @@ namespace Core.Service
         }
         public IEnumerable<string> GetAllPlans()
         {
-            foreach (var item in Enum.GetValues(typeof(CompanyPlanType)))
-            {
-                yield return item.ToString();
-            }
+            return Enum.GetNames(typeof(CompanyPlanType));
         }
 
-        public async Task<GetCompanyDTO> AssignPlane(string Id, string PlaneName)
+        public async Task<GetCompanyDTO> AssignPlane(string companyId, string planeName)
         {
-            var item = await _companyUnitOfWork.Entity.GetByIdAsync(Id);
-            if (item == null) throw new Exception("This Id Not Found ");
+            if(string.IsNullOrWhiteSpace(companyId))
+                throw new ArgumentNullException(" Comapny Id cant Be Nuul Or Empty " ,nameof(companyId));
 
-            if (!CheckPlanName(PlaneName)) throw new Exception("This Plan Not Found ");
-            item.PlanType = PlaneName;
+            if(string.IsNullOrWhiteSpace(planeName))
+                throw new ArgumentNullException("Company Plane Name Cant Ba Null Or Empty ",nameof(planeName));
 
+            if (!CheckPlanName(planeName))
+                throw new KeyNotFoundException($" Invalid Plane Name {planeName} ");
 
-            await _companyUnitOfWork.Entity.UpdateAsync(item);
+            var company = await _companyUnitOfWork.Entity.GetByIdAsync(companyId);
+            if (company == null)
+                throw new KeyNotFoundException($"This company Id  {companyId} Not Found ");
 
-            return _mapper.Map<GetCompanyDTO>(item);
+            company.PlanType = planeName;
+            await _companyUnitOfWork.Entity.UpdateAsync(company);
+
+            return _mapper.Map<GetCompanyDTO>(company);
         }
 
         public bool CheckPlanName(string planName)
         {
-            var plans = Enum.GetNames(typeof(CompanyPlanType)).Select(p => p.ToLower()).ToList();
-            return plans.Contains(planName.ToLower());
-        }
-    
+            if (string.IsNullOrWhiteSpace(planName))
+                return false;
+
+            return Enum.GetNames(typeof(CompanyPlanType))
+                       .Any(name => string.Equals(name, planName, StringComparison.OrdinalIgnoreCase));
+        }    
     }
 }

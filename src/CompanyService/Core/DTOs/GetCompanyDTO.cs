@@ -9,6 +9,7 @@ namespace Core.DTOs
     public class GetCompanyDTO : CreateCompanyDTO
     {
         public string Id { get; set; }
+        public string Name { get; set; }
         public DateTime CreatedAt { get; set; } 
         public string? PlanType { get; set; }
         public string? BillingCycle { get; set; } 

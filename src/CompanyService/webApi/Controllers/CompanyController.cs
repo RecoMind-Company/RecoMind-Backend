@@ -5,125 +5,145 @@ using Infrastructure.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Campany.API.Controllers
+namespace Company.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CompaniesController(ICompanyService _companyService
-        , IBillingCycleServiice _billingCycleServiice
-        , IPlaneService _planeService) : ControllerBase
-    {                
+    public class CompaniesController : ControllerBase
+    {
+        private readonly ICompanyService _companyService;
+        private readonly IBillingCycleServiice _billingCycleServiice;
+        private readonly IPlaneService _planeService;
+
+        public CompaniesController(ICompanyService companyService,
+                                   IBillingCycleServiice billingCycleServiice,
+                                   IPlaneService planeService)
+        {
+            _companyService = companyService;
+            _billingCycleServiice = billingCycleServiice;
+            _planeService = planeService;
+        }
+
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<GetCompanyDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                var items = await _companyService.GetAllCompaniesAsync();
-                return Ok(items);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var items = await _companyService.GetAllCompaniesAsync();
+            return Ok(items);
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(string id)
         {
-            try 
-            { 
+            try
+            {
                 var item = await _companyService.GetCompanyByIdAsync(id);
                 return Ok(item);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateCompanyDTO dto)
+        [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Create([FromBody] CreateCompanyDTO dto)
         {
-            try 
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-                var result = await _companyService.CreateCompanyAsync(dto);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            var result = await _companyService.CreateCompanyAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id ,[FromBody]CreateCompanyDTO dto)
+        [ProducesResponseType(typeof(UpdateCompanyDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(string id, [FromBody] CreateCompanyDTO dto)
         {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
-                var result = await _companyService.UpdateCompanyAsync( id , dto);
+                var result = await _companyService.UpdateCompanyAsync(id, dto);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
             }
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(DeleteCompanyDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(string id)
         {
-            try 
-            { 
+            try
+            {
                 var result = await _companyService.DeleteCompanyAsync(id);
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
             }
         }
+
         [HttpGet("billing-cycles")]
-        public IActionResult GetBillingCycles() 
+        public IActionResult GetBillingCycles()
         {
             return Ok(_billingCycleServiice.GetAllBillingCycles());
         }
-
+    
         [HttpGet("plans")]
         public IActionResult GetPlans()
         {
             return Ok(_planeService.GetAllPlans());
         }
-
+     
         [HttpPost("{id}/assign-billing-cycle")]
-        public async Task<IActionResult> AssignBillingCycle(string id, string cycleName)
+        public async Task<IActionResult> AssignBillingCycle(string id, [FromQuery] string cycleName)
         {
-            try 
-            { 
+            try
+            {
                 var result = await _billingCycleServiice.AssignBillingCycle(id, cycleName);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { Message = ex.Message });
             }
         }
-
+        
         [HttpPost("{id}/assign-plan")]
-        public async Task<IActionResult> AssignPlan(string id, string planName)
+        public async Task<IActionResult> AssignPlan(string id, [FromQuery] string planName)
         {
-            try 
-            { 
+            try
+            {
                 var result = await _planeService.AssignPlane(id, planName);
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { Message = ex.Message });
             }
         }
     }

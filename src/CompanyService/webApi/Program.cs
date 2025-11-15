@@ -21,10 +21,20 @@ namespace Campany.API
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<CompanyDbContext>(options =>
-            {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-                    options => options.MigrationsAssembly(typeof(CompanyDbContext).Assembly.FullName));
-            });
+                    options.UseSqlServer(
+                        builder.Configuration.GetConnectionString("ProdcutionConnection"),
+                        sqlOptions =>
+                        //{
+                        sqlOptions.MigrationsAssembly(typeof(CompanyDbContext).Assembly.FullName)
+
+                                //sqlOptions.EnableRetryOnFailure(
+                                //    maxRetryCount: 5,
+                                //    maxRetryDelay: TimeSpan.FromSeconds(10),
+                                //    errorNumbersToAdd: null
+                                //);}                                
+                        ));
+
+
 
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             builder.Services.AddScoped(typeof(ICompanyService), typeof(CompanyService));
