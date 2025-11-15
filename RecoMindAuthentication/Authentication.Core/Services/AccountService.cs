@@ -12,11 +12,14 @@ public interface IAccountService
 {
     Task<BaseToReturnDto> EditProfile(ProfileDto profile, string email);
     Task<ProfileToReturnDto> GetProfile(string email);
+    Task<BaseToReturnDto> DeleteUser(string id);
 }
 
 public class AccountService(UserManager<AppUser> userManager, IWebHostEnvironment env, IOptions<PhotoSettings> options) : IAccountService
 {
     private readonly PhotoSettings photoSettings = options.Value;
+
+
     public async Task<BaseToReturnDto> EditProfile(ProfileDto profile, string email)
     {
         // Get user by email
@@ -90,5 +93,15 @@ public class AccountService(UserManager<AppUser> userManager, IWebHostEnvironmen
         // Create and return the dynamic path to save it in database
         var dynamicPath = Path.Combine(photoSettings.VirtualPathUrl, fileName);
         return new BaseToReturnDto { Success = true, Message = dynamicPath };
+    }
+    public async Task<BaseToReturnDto> DeleteUser(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user is null)
+            return new BaseToReturnDto { Message = "this user is not exsist!" };
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+            return new BaseToReturnDto { Message = string.Join(',', result.Errors) };
+        return new BaseToReturnDto { Success = true, Message = "User deleted successfully" };
     }
 }

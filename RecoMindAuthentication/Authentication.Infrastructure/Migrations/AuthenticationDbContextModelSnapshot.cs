@@ -121,7 +121,7 @@ namespace Authentication.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VerificationCodes");
+                    b.ToTable("VerificationCodes", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -259,7 +259,7 @@ namespace Authentication.Infrastructure.Migrations
 
             modelBuilder.Entity("Authentication.Core.Models.AppUser", b =>
                 {
-                    b.OwnsMany("Authentication.Core.Models.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Authentication.Core.Models.AppUser.RefreshTokens#Authentication.Core.Models.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("AppUserId")
                                 .HasColumnType("nvarchar(450)");
@@ -285,7 +285,7 @@ namespace Authentication.Infrastructure.Migrations
 
                             b1.HasKey("AppUserId", "Id");
 
-                            b1.ToTable("RefreshToken");
+                            b1.ToTable("RefreshToken", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("AppUserId");

@@ -36,5 +36,17 @@ namespace RecoMindAuthenticationAPI.Controllers
                 return NotFound("this user is not found");
             return Ok(result);
         }
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<ActionResult<BaseToReturnDto>> DeleteUser(string id)
+        {
+            var errors = ModelState.Values.SelectMany(e => e.Errors);
+            if (!ModelState.IsValid)
+                return BadRequest(errors);
+            var result = await accountService.DeleteUser(id);
+            if (!result.Success)
+                return BadRequest(result);
+            return Ok(result);
+        }
     }
 }

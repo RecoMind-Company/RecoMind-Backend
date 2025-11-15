@@ -1,4 +1,5 @@
-﻿using Authentication.Core.Models;
+﻿using Authentication.Core.Constants;
+using Authentication.Core.Models;
 using Authentication.Infrastructure.Context;
 using Microsoft.AspNetCore.Identity;
 
@@ -13,9 +14,9 @@ public class DataSeeding(AuthenticationDbContext dbContext,
     {
         if (!roleManager.Roles.Any())
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
-            await roleManager.CreateAsync(new IdentityRole("Manager"));
-            await roleManager.CreateAsync(new IdentityRole("TeamLeader"));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Admin));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Manager));
+            await roleManager.CreateAsync(new IdentityRole(Roles.TeamLeader));
         }
 
     }
