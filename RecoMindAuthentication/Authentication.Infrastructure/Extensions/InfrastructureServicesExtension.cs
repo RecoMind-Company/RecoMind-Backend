@@ -15,7 +15,7 @@ public static class InfrastructureServicesExtension
     {
         services.AddDbContext<AuthenticationDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionString"));
+            options.UseSqlServer(configuration.GetConnectionString("ProdcutionConnectionString"));
         });
         services.AddIdentityCore<AppUser>()
                     .AddRoles<IdentityRole>()
