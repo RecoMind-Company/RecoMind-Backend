@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Authentication.Core.DTOs
+namespace Core.Const
 {
-    internal class RestPasswordDto
+    public enum BillingCycle
     {
+        Monthly=0,
+        Yearly
     }
 }

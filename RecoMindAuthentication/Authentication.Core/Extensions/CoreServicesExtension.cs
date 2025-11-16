@@ -1,6 +1,8 @@
-﻿using Authentication.Core.Services;
+﻿using Authentication.Core.Models;
+using Authentication.Core.Services;
 using Authentication.Core.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +15,13 @@ public static class CoreServicesExtension
     public static void AddCoreServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<ISendEmailService, SendEmailService>();
+        services.AddScoped<IVerificationService, VerificationService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<PasswordHasher<AppUser>>();
         services.Configure<JwtSettings>(configuration.GetSection("JwtOptions"));
+        services.Configure<EmailConfgSettings>(configuration.GetSection("email-config"));
+        services.Configure<PhotoSettings>(configuration.GetSection("Urls"));
         services.AddAuthentication(config =>
         {
             config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
