@@ -1,0 +1,6 @@
+@RecoMindAuthenticationAPI_HostAddress = http://localhost:5294
+
+GET {{RecoMindAuthenticationAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
