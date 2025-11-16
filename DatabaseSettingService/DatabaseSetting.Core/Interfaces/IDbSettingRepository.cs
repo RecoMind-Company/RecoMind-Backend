@@ -11,7 +11,6 @@ namespace DatabaseSetting.Core.Interfaces
     {
         Task<IEnumerable<DbSettingModel>> GetAllByCompanyIdAsync(string companyId);
         Task<DbSettingModel> GetByIdAsync(string Id, string companyId);
-
         Task<DbSettingModel> CreateAsync(DbSettingModel model);
         Task<DbSettingModel> UpdateAsync(DbSettingModel model);
         Task<bool> DeleteAsync(string id, string companyId);

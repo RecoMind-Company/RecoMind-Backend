@@ -38,8 +38,9 @@ namespace DatabaseSetting.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DbType")
-                        .HasColumnType("int");
+                    b.Property<string>("DbType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()

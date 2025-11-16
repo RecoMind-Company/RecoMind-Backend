@@ -18,7 +18,7 @@ namespace DatabaseSetting.Infrastructure.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CompanyId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DbType = table.Column<int>(type: "int", nullable: false),
+                    DbType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConnectionString = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

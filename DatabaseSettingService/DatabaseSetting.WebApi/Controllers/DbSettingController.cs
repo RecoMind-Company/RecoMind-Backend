@@ -25,9 +25,6 @@ namespace DatabaseSetting.WebApi.Controllers
         {
             var result = await _service.GetAllByCompanyIdAsync(companyId);
 
-            if (result == null)
-                return NotFound();
-
             return Ok(result);
         }
 
@@ -41,6 +38,19 @@ namespace DatabaseSetting.WebApi.Controllers
 
             return Ok(result);
         }
+
+
+        [HttpGet("connection/{id}/company/{companyId}")]
+        public async Task<IActionResult> GetConnectionById(string id, string companyId)
+        {
+            var result = await _service.GetConnectionByIdAsync(id, companyId);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
 
 
         [HttpPost]
@@ -59,7 +69,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
 
-        [HttpPut("{id}/{companyId}")]
+        [HttpPut("{id}/company/{companyId}")]
         public async Task<IActionResult> Update(string id, string companyId, [FromBody] UpdateDbSettingModel request)
         {
             if (!ModelState.IsValid)
