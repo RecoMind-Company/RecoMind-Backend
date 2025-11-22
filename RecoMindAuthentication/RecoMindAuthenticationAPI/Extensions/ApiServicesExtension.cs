@@ -30,6 +30,8 @@ namespace RecoMindAuthenticationAPI.Extensions
                     }
                 });
             });
+            builder.Services.AddGrpc();
+            builder.Services.AddGrpcReflection();
         }
         public static StaticFileOptions AddMyStaticFiles(this IApplicationBuilder app, IWebHostEnvironment env)
         {

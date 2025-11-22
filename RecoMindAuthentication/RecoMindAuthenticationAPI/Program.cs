@@ -2,6 +2,7 @@ using Authentication.Core.Extensions;
 using Authentication.Infrastructure;
 using Authentication.Infrastructure.Extensions;
 using RecoMindAuthenticationAPI.Extensions;
+using RecoMindAuthenticationAPI.Grpc.Authentication.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -31,4 +32,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapGrpcService<GrpcAuthenticationService>();
+app.MapGrpcReflectionService();
 app.Run();
