@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Core.DTOs;
 using Core.Service.Interface;
-using Infrastructure.Service.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,16 +11,10 @@ namespace Company.API.Controllers
     public class CompaniesController : ControllerBase
     {
         private readonly ICompanyService _companyService;
-        private readonly IBillingCycleServiice _billingCycleServiice;
-        private readonly IPlaneService _planeService;
 
-        public CompaniesController(ICompanyService companyService,
-                                   IBillingCycleServiice billingCycleServiice,
-                                   IPlaneService planeService)
+        public CompaniesController(ICompanyService companyService)
         {
             _companyService = companyService;
-            _billingCycleServiice = billingCycleServiice;
-            _planeService = planeService;
         }
 
         [HttpGet]
@@ -107,44 +100,6 @@ namespace Company.API.Controllers
             }
         }
 
-        [HttpGet("billing-cycles")]
-        public IActionResult GetBillingCycles()
-        {
-            return Ok(_billingCycleServiice.GetAllBillingCycles());
-        }
-    
-        [HttpGet("plans")]
-        public IActionResult GetPlans()
-        {
-            return Ok(_planeService.GetAllPlans());
-        }
-     
-        [HttpPost("{id}/assign-billing-cycle")]
-        public async Task<IActionResult> AssignBillingCycle(string id, [FromQuery] string cycleName)
-        {
-            try
-            {
-                var result = await _billingCycleServiice.AssignBillingCycle(id, cycleName);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
         
-        [HttpPost("{id}/assign-plan")]
-        public async Task<IActionResult> AssignPlan(string id, [FromQuery] string planName)
-        {
-            try
-            {
-                var result = await _planeService.AssignPlane(id, planName);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Core.Const;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,15 +11,15 @@ namespace Core.Models
     public class Company
     {
         [Key]
-        public string Id { get; set; }= Guid.NewGuid().ToString();
+        public string Id { get; set; }
         public string Name { get; set; }
         public string Industry { get; set; }
         public string Country { get; set; } 
         public string? Size { get; set; }
         public string Code { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public string PlanType { get; set; } = CompanyPlanType.Free.ToString();
-        public string Billing { get; set; } = BillingCycle.Monthly.ToString();
+        public string PlanType { get; set; } = "Free";
+        public string Billing { get; set; } = "Monthly";
 
         //[ForeignKey("Subscription")]
         //public string SubscriptionId {  get; set; }

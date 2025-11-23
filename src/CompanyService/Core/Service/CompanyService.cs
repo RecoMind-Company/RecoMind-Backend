@@ -1,18 +1,18 @@
 ﻿using AutoMapper;
-using Core.Const;
 using Core.DTOs;
 using Core.Interfaces;
-using Infrastructure.Service.Interface;
+using Core.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Service
+namespace Core.Service
 {
     public class CompanyService : ICompanyService
     {
+
         readonly IUnitOfWork<Core.Models.Company> _CompanyUnitOfWork;
         readonly private IMapper _mapper;
         public CompanyService(IUnitOfWork<Core.Models.Company> CopmanyUnitOfWork, IMapper mapper)
@@ -23,8 +23,9 @@ namespace Infrastructure.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
-            
+
             var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
+            entity.Id = Guid.NewGuid().ToString();                      // Ensure a new ID is generated
 
             var result = await _CompanyUnitOfWork.Entity.AddAsync(entity);
             _CompanyUnitOfWork.Save();
@@ -82,3 +83,6 @@ namespace Infrastructure.Service
         }
     }
 }
+
+
+
