@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Grpc\Account\AccountMessages.proto" />
+    <None Remove="Grpc\Account\AccountService.proto" />
     <None Remove="Grpc\Authentication\AuthenticationMessages.proto" />
     <None Remove="Grpc\Authentication\AuthenticationService.proto" />
   </ItemGroup>
@@ -32,11 +34,18 @@
   </ItemGroup>
 
 	<ItemGroup>
+		
 		<Protobuf Include="Grpc\Authentication\AuthenticationMessages.proto" GrpcServices="None">
 			<ProtoRoot>Grpc\Authentication</ProtoRoot>
 		</Protobuf>
 		<Protobuf Include="Grpc\Authentication\AuthenticationService.proto" GrpcServices="Server">
 			<ProtoRoot>Grpc\Authentication</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="Grpc\Account\AccountService.proto" GrpcServices="Server">
+			<ProtoRoot>Grpc\Account</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="Grpc\Account\AccountMessages.proto" GrpcServices="None">
+			<ProtoRoot>Grpc\Account</ProtoRoot>
 		</Protobuf>
 	</ItemGroup>
 </Project>
