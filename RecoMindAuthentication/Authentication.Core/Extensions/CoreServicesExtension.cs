@@ -15,7 +15,7 @@ public static class CoreServicesExtension
     public static void AddCoreServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<ISendEmailService, SendEmailService>();
+        services.AddScoped<IVerificationEmailService, VerificationEmailService>();
         services.AddScoped<IVerificationService, VerificationService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<PasswordHasher<AppUser>>();

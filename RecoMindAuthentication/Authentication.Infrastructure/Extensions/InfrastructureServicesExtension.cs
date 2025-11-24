@@ -22,5 +22,6 @@ public static class InfrastructureServicesExtension
                     .AddEntityFrameworkStores<AuthenticationDbContext>();
         services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
         services.AddScoped<DataSeeding>();
+        services.AddScoped<IEmailSender, EmailSender>();
     }
 }

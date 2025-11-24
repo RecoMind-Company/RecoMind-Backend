@@ -9,7 +9,7 @@ public interface IVerificationService
 {
     string GenerateCode(int length);
     Task SaveCode(string code, string email);
-    VerificationCode GetCodeByEmail(string email);
+    Task<VerificationCode?> GetCodeByEmail(string email);
     Task<BaseToReturnDto> IsCodeValid(string code, string email);
     //Task<verificationCodeToReturnDto> VerifiyCode(string code, string email);
 }
@@ -19,15 +19,11 @@ public class VerificationService(IUnitOfWork<VerificationCode> unitOfWork) : IVe
     private readonly IGenericRepository<VerificationCode> CodeRepo = unitOfWork.Entity;
     public string GenerateCode(int length)
     {
-        byte[] data = new byte[length];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(data);
-        }
         var code = new char[length];
         for (int i = 0; i < length; i++)
         {
-            code[i] = (char)('0' + (data[i] % 10));
+            int randomNumber = RandomNumberGenerator.GetInt32(0, 10);
+            code[i] = (char)('0' + randomNumber);
         }
         return new string(code);
     }
@@ -39,15 +35,15 @@ public class VerificationService(IUnitOfWork<VerificationCode> unitOfWork) : IVe
 
     }
 
-    public VerificationCode? GetCodeByEmail(string email)
+    public async Task<VerificationCode?> GetCodeByEmail(string email)
     {
-        var code = CodeRepo.Find(e => e.Email == email);
+        var code = await CodeRepo.Find(e => e.Email == email);
         return code;
     }
 
     public async Task<BaseToReturnDto> IsCodeValid(string code, string email)
     {
-        var validCode = GetCodeByEmail(email);
+        var validCode = await GetCodeByEmail(email);
         if (validCode is not null && validCode.IsActive && validCode.Code == code)
         {
             // Can remove the code after validation
