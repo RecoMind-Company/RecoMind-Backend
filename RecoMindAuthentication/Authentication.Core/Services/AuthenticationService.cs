@@ -1,4 +1,7 @@
-﻿using Authentication.Core.DTOs;
+﻿using Authentication.Core.Constants;
+using Authentication.Core.DTOs;
+using Authentication.Core.Helpers;
+using Authentication.Core.Interfaces;
 using Authentication.Core.Models;
 using Authentication.Core.Settings;
 using Microsoft.AspNetCore.Identity;
@@ -27,7 +30,8 @@ public interface IAuthenticationService
 public class AuthenticationService(UserManager<AppUser> userManager,
                                    PasswordHasher<AppUser> passwordHasher,
                                    IOptions<JwtSettings> jwtOptions,
-                                   ISendEmailService sendEmailService) : IAuthenticationService
+                                   IVerificationEmailService sendEmailService,
+                                   IEmailSender emailSender) : IAuthenticationService
 {
     private readonly JwtSettings jwtSettings = jwtOptions.Value;
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -36,13 +40,36 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         var IsUserExsited = await userManager.FindByEmailAsync(registerDto.Email);
         if (IsUserExsited is not null)
             return new AuthenticationDto { message = "This user is already registered!" };
-        // Create New user
-        var user = new AppUser()
+        // Create New user 
+        var user = new AppUser();
+        string role;
+        // BAISED ON ROLE
+        switch (registerDto.Role)
         {
-            Email = registerDto.Email,
-            FullName = registerDto.FullName,
-            UserName = new MailAddress(registerDto.Email).User
-        };
+            case Roles.Admin:
+                user.Email = registerDto.Email;
+                user.FullName = registerDto.FullName;
+                user.UserName = new MailAddress(registerDto.Email).User;
+                role = Roles.Admin;
+                break;
+
+            /// HANDLE THE OTHER TWO ROLES ///
+            case Roles.TeamLeader:
+                // Only I have [1] Role [2] Email
+                // I will Create the FullName, UserName, Password
+                // Then send them to the Invited user email.
+                user.Email = registerDto.Email;
+                user.FullName = new MailAddress(registerDto.Email).User;
+                user.UserName = new MailAddress(registerDto.Email).User;
+                role = Roles.TeamLeader;
+                registerDto.Password = SecurePasswordGenerator.GenPassword();
+                break;
+            default:
+                // To Handle
+                role = Roles.Admin;
+                break;
+        }
+        ;
         var result = await userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
@@ -53,10 +80,31 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             }
             return new AuthenticationDto { message = errors };
         }
+        // Prepare the email
+        if (role == Roles.TeamLeader)
+        {
+            var subject = "recomind.com || Account Information";
+            var body = $@"
+                Hello,
+
+                Here are your account details:
+
+                Email: {user.Email}
+                Password: {registerDto.Password}
+                Role: {role}
+
+                Please keep this information confidential.
+
+                Best regards,  
+                recomind.com Team";
+            await emailSender.SendEmailAsync(user.Email!, subject, body);
+        }
+
+
         // Add Claim To User
         //var Claim = new Claim("User", "User");
         //await userManager.AddClaimAsync(user, Claim);
-        await userManager.AddToRoleAsync(user, registerDto.Role);
+        await userManager.AddToRoleAsync(user, role);
         // Create token and refresh token
         var token = await CreateToken(user);
         var refreshToken = GenerateRefershToken();
@@ -171,7 +219,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         var user = await userManager.FindByEmailAsync(forgetPasswordDto.Email);
         if (user is null)
             return new BaseToReturnDto { Message = "Email Is NotFound" };
-        await sendEmailService.SendEmailAsync(forgetPasswordDto.Email);
+        await sendEmailService.SendVerificationCodeEmail(forgetPasswordDto.Email);
         return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
     }
 
