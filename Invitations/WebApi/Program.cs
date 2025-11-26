@@ -1,12 +1,13 @@
+using Core.Extensions;
 using Infrastructure.Extentions;
 using WebApi.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddPresentationServices();
+builder.AddPresentationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
-
+builder.Services.AddCoreServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

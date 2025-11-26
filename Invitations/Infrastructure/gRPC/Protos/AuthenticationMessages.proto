@@ -1,0 +1,54 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+option csharp_namespace = "Infrastructure.gRPC.Protos";
+message RegisterMessage{
+	string fullName = 1;
+	string email = 2;
+	string password = 3;
+	string role = 4;
+}
+
+message AuthenticatedMessage{
+	string name = 1;
+	string email = 2;
+	google.protobuf.Timestamp ExperiesOn = 3;
+	string token = 4;
+	bool isAuthenticated = 5;
+	repeated string roles = 6;
+	string photoUrl = 7;
+	string message = 8;
+}
+
+message LoginMessage{
+	string email = 1;
+	string password = 2;
+}
+
+message ForgetPasswordMessage{
+	string email = 1;
+}
+
+message NewPassword{
+	string newPassword = 1;
+	string confirmNewPassword = 2;
+}
+
+message ResetPasswordMessage{
+	string oldPassword = 1;
+	NewPassword newPassword = 2;
+}
+
+message VerifyCodeMessage{
+	string email = 1;
+	string code = 2;
+	NewPassword newPassword = 3;
+}
+
+message BaseMessage{
+	bool success = 1;
+	string message = 2;
+}
+
+message TokenMessage{
+	string refreshToken = 1;
+}

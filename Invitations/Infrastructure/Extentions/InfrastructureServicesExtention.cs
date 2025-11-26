@@ -1,5 +1,6 @@
 ﻿using Core.Interfaces;
 using Infrastructure.Context;
+using Infrastructure.gRPC;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,5 +17,8 @@ public static class InfrastructureServicesExtention
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnectionString"));
         });
         services.AddScoped<IInvitationRepository, InvitationRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IGrpcAuthenticationService, GrpcAuthenticationService>();
+
     }
 }
