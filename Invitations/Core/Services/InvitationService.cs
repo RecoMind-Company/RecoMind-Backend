@@ -8,7 +8,8 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
                                IInvitationRepository repository,
                                IUnitOfWork unitOfWork) : IInvitationService
 {
-    public async Task<BaseToReturnDto> SendInvitationAsync(InvitationDto invitationDto)
+
+    public async Task<BaseToReturnDto> SendInvitationAsync(SendInvitationDto invitationDto)
     {
         var grpcResponse = await grpcAuthenticationService.Register(invitationDto.Email, invitationDto.ReciverRole);
         if (!grpcResponse.IsAuthenticated)
@@ -22,7 +23,7 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
         var invitation = new Invitation
         {
             SenderId = invitationDto.SenderId,
-            email = invitationDto.Email,
+            Email = invitationDto.Email,
             ReceiverRole = invitationDto.ReciverRole,
             Status = Status.Pending,
             CreatedAt = DateTime.UtcNow
@@ -34,5 +35,28 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
             IsSuccess = true,
             Message = "Invitation sent successfully."
         };
+    }
+    public async Task<InvitationDto> GetInvitation(string email)
+    {
+        var invitation = await repository.Find(i => i.Email == email);
+        if (invitation is null)
+            return null;
+        return new InvitationDto
+        {
+            Id = invitation.Id,
+            Email = invitation.Email,
+            Status = invitation.Status.ToString(),
+            IsActive = invitation.IsActive
+        };
+    }
+
+    public async Task UpdateInvitationStatus(UpdateInvitationDto updateInvitationDto)
+    {
+        var invitation = await repository.GetByIdAsync(updateInvitationDto.Id);
+
+        // The status will be a enum in gRPC for better type safety
+        invitation.Status = Enum.Parse<Status>(updateInvitationDto.Status, ignoreCase: true);
+        repository.Update(invitation);
+        await unitOfWork.Save();
     }
 }

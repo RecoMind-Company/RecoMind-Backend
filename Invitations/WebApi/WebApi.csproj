@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.71.0" />
     <PackageReference Include="Grpc.Net.ClientFactory" Version="2.71.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22">
       <PrivateAssets>all</PrivateAssets>
@@ -20,5 +22,16 @@
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <Folder Include="gRPC\Protos\" />
+  </ItemGroup>
+    <ItemGroup>
+	    <Protobuf Include="gRPC\Protos\InvitationMessages.proto" GrpcServices="None">
+		    <ProtoRoot>gRPC\Protos</ProtoRoot>
+	    </Protobuf>
+	    <Protobuf Include="gRPC\Protos\InvitationService.proto" GrpcServices="Server">
+		    <ProtoRoot>gRPC\Protos</ProtoRoot>
+	    </Protobuf>
+    </ItemGroup>
 </Project>
