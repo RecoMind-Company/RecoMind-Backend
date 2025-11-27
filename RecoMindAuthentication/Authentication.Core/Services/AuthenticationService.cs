@@ -31,7 +31,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                                    PasswordHasher<AppUser> passwordHasher,
                                    IOptions<JwtSettings> jwtOptions,
                                    IVerificationEmailService sendEmailService,
-                                   IEmailSender emailSender) : IAuthenticationService
+                                   IEmailSender emailSender,
+                                   IGrpcInvitationService invitationService) : IAuthenticationService
 {
     private readonly JwtSettings jwtSettings = jwtOptions.Value;
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -64,10 +65,16 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 role = Roles.TeamLeader;
                 registerDto.Password = SecurePasswordGenerator.GenPassword();
                 break;
-            default:
-                // To Handle
-                role = Roles.Admin;
+            case Roles.Employee:
+                user.Email = registerDto.Email;
+                user.FullName = new MailAddress(registerDto.Email).User;
+                user.UserName = new MailAddress(registerDto.Email).User;
+                role = Roles.Employee;
+                registerDto.Password = SecurePasswordGenerator.GenPassword();
+
                 break;
+            default:
+                return new AuthenticationDto { message = "Role is not valid!" };
         }
         ;
         var result = await userManager.CreateAsync(user, registerDto.Password);
@@ -81,7 +88,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             return new AuthenticationDto { message = errors };
         }
         // Prepare the email
-        if (role == Roles.TeamLeader)
+        if (role == Roles.TeamLeader || role == Roles.Employee)
         {
             var subject = "recomind.com || Account Information";
             var body = $@"
@@ -141,7 +148,25 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             userToReturn.message = "email or password is incorrect";
             return userToReturn;
         }
-
+        // Check if the user has Invitation or not.
+        var invitation = await invitationService.GetInvitation(user.Email!);
+        if (invitation.Id == 0)
+        {
+            // No Invitation found 
+            //user can login directly
+        }
+        else if (!invitation.IsActive && invitation.Status != InvitationStatus.ACCEPTED)
+        {
+            invitation.Status = InvitationStatus.EXPIRED;
+            userToReturn.message = "Your invitation has been expired! Please contact your manager.";
+            await invitationService.UpdateInvitation(invitation);
+            return userToReturn;
+        }
+        else if (invitation.Status == InvitationStatus.PENDING)
+        {
+            invitation.Status = InvitationStatus.ACCEPTED;
+            await invitationService.UpdateInvitation(invitation);
+        }
         var token = await CreateToken(user);
         var userRoles = await userManager.GetRolesAsync(user);
         userToReturn.Name = user.FullName;

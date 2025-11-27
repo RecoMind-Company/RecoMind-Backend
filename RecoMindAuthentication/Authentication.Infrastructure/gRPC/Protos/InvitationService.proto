@@ -1,0 +1,9 @@
+syntax = "proto3";
+import "InvitationMessages.proto";
+import "google/protobuf/empty.proto";
+option csharp_namespace = "Authentication.Infrastructure.gRPC.Protos";
+
+service InvitationService {
+  rpc GetInvitation (GetInvitationMessage) returns (InvitationMessage);
+  rpc UpdateInvitation (InvitationMessage) returns (google.protobuf.Empty);
+}
