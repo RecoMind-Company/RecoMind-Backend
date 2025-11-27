@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AuthenticationDtos;
 
 namespace Core.Interfaces;
 

@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AuthenticationDtos;
 using Core.Interfaces;
 using Grpc.Core;
 using Infrastructure.gRPC.Protos;

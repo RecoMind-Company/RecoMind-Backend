@@ -1,14 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Core.DTOs;
 
-namespace Core.DTOs;
-
-public class InvitationDto
+public class InvitationDto : UpdateInvitationDto
 {
-    public string SenderId { get; set; } = default!;
-    [EmailAddress]
-    [Required]
     public string Email { get; set; } = default!;
-    [Required]
-    public string ReciverRole { get; set; } = default!;
-
+    public bool IsActive { get; set; }
 }

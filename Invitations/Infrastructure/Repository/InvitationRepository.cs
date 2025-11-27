@@ -33,6 +33,10 @@ public class InvitationRepository(ApplicationDbContext context) : IInvitationRep
     {
         _invitations.Remove(invitation);
     }
+    public void Update(Invitation invitation)
+    {
+        _invitations.Update(invitation);
+    }
 
     public async Task<Invitation?> Find(Expression<Func<Invitation, bool>> predicate)
     {
@@ -43,8 +47,4 @@ public class InvitationRepository(ApplicationDbContext context) : IInvitationRep
     {
         return await _invitations.Where(predicate).ToListAsync();
     }
-
-
-
-
 }

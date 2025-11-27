@@ -9,6 +9,7 @@ public interface IInvitationRepository
     Task<Invitation?> GetByIdAsync(int id);
     Task CreateAsync(Invitation invitation);
     void Delete(Invitation invitation);
+    void Update(Invitation invitation);
     Task<Invitation?> Find(Expression<Func<Invitation, bool>> predicate);
     Task<IEnumerable<Invitation?>> FindAll(Expression<Func<Invitation, bool>> predicate);
 }

@@ -9,7 +9,7 @@ namespace WebApi.Controllers;
 public class InvitationController(IInvitationService invitationService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<BaseToReturnDto>> SendInvitation(InvitationDto invitation)
+    public async Task<ActionResult<BaseToReturnDto>> SendInvitation(SendInvitationDto invitation)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
