@@ -3,6 +3,7 @@ using Core.Configuration;
 using Core.Interfaces;
 using Core.Service;
 using Core.Service.Interface;
+using Core.Service.Protos;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,12 @@ namespace Campany.API
 
             // Add gRPC services to the container. 
             builder.Services.AddGrpc();
+
+            builder.Services.AddGrpcClient < subscriptionService.subscriptionServiceClient> (o =>
+            {
+                o.Address = new Uri("https://localhost:7142");      // Subscription service address
+            });
+
 
             // Configure Kestrel to listen on a specific port for gRPC
             builder.WebHost.ConfigureKestrel(options =>

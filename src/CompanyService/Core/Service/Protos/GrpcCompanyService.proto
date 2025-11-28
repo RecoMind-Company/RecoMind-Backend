@@ -20,6 +20,9 @@ service CompanyService {
 
     rpc Delete (DeleteCompanyRequest)
         returns (DeleteCompanyResponse);
+
+    rpc AssignSubscripion (AssignSubscriptionRequest)
+        returns (CompanyResponse);
 }
 
 message GitByIdRequest {
@@ -32,6 +35,7 @@ message CreateCompanyRequest {
     string country = 3;
     string size = 4;
     string code = 5;
+    string SubscriptionId = 6;
 }
 
 // UPDATE
@@ -43,6 +47,7 @@ message UpdateCompanyRequest {
     string size = 5;
     string code = 6;
     string Discription = 7;
+    string SubscriptionId = 8;
 }
 
 // DELETE
@@ -62,14 +67,18 @@ message CompanyResponse {
     string industry = 3;
     string country = 4;
     string size = 5;
-    string code = 6;
-    string billingCycle= 7;
-    string planType= 8;
-    google.protobuf.Timestamp createdAt = 9;
+    string code = 6;    
+    google.protobuf.Timestamp createdAt = 7;
+    string SubscriptionId = 8;
 }
 
 message GetAllCompaniesResponse {
     repeated CompanyResponse items = 1;
+}
+
+message AssignSubscriptionRequest {
+    string companyId = 1;
+    string subscriptionId = 2;
 }
 
 // EMPTY

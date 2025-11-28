@@ -23,10 +23,10 @@ namespace Core.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
-
+                       
             var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
-            entity.Id = Guid.NewGuid().ToString();                      // Ensure a new ID is generated
-
+            entity.Id = Guid.NewGuid().ToString();
+            entity.CreatedAt = DateTime.UtcNow;
             var result = await _CompanyUnitOfWork.Entity.AddAsync(entity);
             _CompanyUnitOfWork.Save();
 
@@ -81,6 +81,31 @@ namespace Core.Service
 
             return entity;
         }
+
+        //public async Task<GetCompanyDTO> CreateCompanyWithSubscriptionAsync(CreateCompanyDTO createCompanyDTO, string subscriptionId)
+        //{
+        //    var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
+        //    entity.Id = Guid.NewGuid().ToString();                    
+        //    entity.SubscriptionId = subscriptionId;
+
+        //    var result = await _CompanyUnitOfWork.Entity.AddAsync(entity);
+        //    _CompanyUnitOfWork.Save();
+
+        //    return _mapper.Map<GetCompanyDTO>(result);
+        //}
+
+        //public async Task<string> GetSubscriptionId(string companyId)
+        //{
+        //    if (string.IsNullOrWhiteSpace(companyId))
+        //        throw new ArgumentException("Company ID cannot be null or empty.", nameof(companyId));
+
+        //    var item =await _CompanyUnitOfWork.Entity.GetByIdNoTrackingAsync(companyId);
+
+        //    if (item == null)
+        //        throw new KeyNotFoundException($"Company with ID '{companyId}' was not found.");
+
+        //    return item.SubscriptionId??"";
+        //}
     }
 }
 

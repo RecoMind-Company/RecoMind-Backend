@@ -13,10 +13,9 @@ namespace Core.Configuration
         public CopmanyMapping() 
         {
             CreateMap<Core.Models.Company, GetCompanyDTO>()
-                .ForMember(st=>st.BillingCycle, opt=>opt.MapFrom(src=>src.Billing))
                 .ReverseMap();
 
-            CreateMap<CreateCompanyDTO, Company>()
+            CreateMap<CreateCompanyDTO, Company>()                
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
 

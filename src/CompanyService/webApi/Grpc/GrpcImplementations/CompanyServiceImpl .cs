@@ -2,8 +2,9 @@
 using Core.DTOs;
 using Core.Service.Interface;
 using Core.Service.Protos;
-
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using static Core.Service.Protos.subscriptionService;
 
 namespace webApi.Grpc.GrpcImplementations
 {
@@ -11,11 +12,14 @@ namespace webApi.Grpc.GrpcImplementations
     {
         private readonly IMapper _mapper;
         private readonly ICompanyService _companyService;
+        private readonly subscriptionService.subscriptionServiceClient _subscriptionServiceClient;
 
-        public CompanyServiceImpl(IMapper mapper, ICompanyService coreService)
+
+        public CompanyServiceImpl(IMapper mapper, ICompanyService coreService , subscriptionService.subscriptionServiceClient subscriptionServiceClient)
         {
             _mapper = mapper;
             _companyService = coreService;
+            _subscriptionServiceClient = subscriptionServiceClient;
         }
 
         public override async Task<CompanyResponse> Create(CreateCompanyRequest request, ServerCallContext context)
@@ -24,9 +28,19 @@ namespace webApi.Grpc.GrpcImplementations
             {
                 var createDto = _mapper.Map<CreateCompanyDTO>(request);
 
-                var createdCompanyDto = await _companyService.CreateCompanyAsync(createDto);
+                if (!string.IsNullOrEmpty(createDto.SubscriptionId))
+                {
+                    var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = createDto.SubscriptionId });
 
-                return _mapper.Map<CompanyResponse>(createdCompanyDto);
+                    if (subscription == null)
+                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"Subscription with ID {createDto.SubscriptionId} not found."));
+                    
+                    var result1 = await _companyService.CreateCompanyAsync(createDto);
+                    return _mapper.Map<CompanyResponse>(result1);
+                }
+
+                var result2 = await _companyService.CreateCompanyAsync(createDto);
+                return _mapper.Map<CompanyResponse>(result2);
             }
             catch (ArgumentNullException ex)
             {
@@ -34,7 +48,7 @@ namespace webApi.Grpc.GrpcImplementations
             }
             catch (Exception ex)
             {
-                throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while creating the company: {ex.Message}"));
+                throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while creating the company: \n \t\t {ex.Message}"));
             }
         }
 
@@ -107,7 +121,7 @@ namespace webApi.Grpc.GrpcImplementations
             }
         }
 
-        public override async Task<GetAllCompaniesResponse> GetAll(Empty request, ServerCallContext context)
+        public override async Task<GetAllCompaniesResponse> GetAll(Core.Service.Protos.Empty  request, ServerCallContext context)
         {
             try
             {
@@ -123,6 +137,66 @@ namespace webApi.Grpc.GrpcImplementations
             {
                 throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while Deleting the company: {ex.Message}"));
             }
+        }
+        public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request,ServerCallContext context)
+        {
+            var company = await _companyService.GetCompanyByIdAsync(request.CompanyId);
+
+            if (company == null)
+            {
+                throw new RpcException(new Status(
+                    StatusCode.NotFound,
+                    $"Company {request.CompanyId} Not Found"
+                ));
+            }
+           
+            try
+            {
+               var subscription = _subscriptionServiceClient.getById(
+                   new getByIdRequest { Id = request.SubscriptionId });
+
+                if (subscription == null)
+                {
+                     throw new RpcException(new Status(
+                       StatusCode.NotFound,
+                       $"Subscription Id {request.SubscriptionId} Not Found"
+                    ));
+                }
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+            {
+                throw ex;
+            }
+            catch (System.Exception)
+            {
+                throw new RpcException(new Status(
+                    StatusCode.Internal,
+                    "Error communicating with Subscription Service."
+                ));
+            }
+
+            var model = new CreateCompanyDTO
+            {
+                Name = company.Name,
+                Code = company.Code,
+                Country = company.Country,
+                Industry = company.Industry,
+                Size = company.Size,
+                SubscriptionId = company.SubscriptionId
+            };
+
+            var updatedCompanyDTO = await _companyService.UpdateCompanyAsync(company.Id, model);
+
+            return new CompanyResponse
+            {
+                Id = updatedCompanyDTO.Id,
+                Name = updatedCompanyDTO.Name,
+                Code = updatedCompanyDTO.Code,
+                Country = updatedCompanyDTO.Country,
+                Industry = updatedCompanyDTO.Industry,
+                Size = updatedCompanyDTO.Size,
+                SubscriptionId = updatedCompanyDTO.SubscriptionId
+            };
         }
     }
 }

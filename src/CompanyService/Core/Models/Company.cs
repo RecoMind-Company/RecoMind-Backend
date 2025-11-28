@@ -17,15 +17,11 @@ namespace Core.Models
         public string Country { get; set; } 
         public string? Size { get; set; }
         public string Code { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public string PlanType { get; set; } = "Free";
-        public string Billing { get; set; } = "Monthly";
-
-        //[ForeignKey("Subscription")]
-        //public string SubscriptionId {  get; set; }
-
+        public DateTime CreatedAt { get; set; } 
+      
         // Relationships
-        //public CompanySubscription? Subscription { get; set; }               
-        //public IEnumerable<CompanySetting> CompanySetting { get; set; }
+        public string? SubscriptionId { get; set; }               
+        //public IEnumerable<string> CompanySettingsId { get; set; }
+        //public IEnumerable<String> TeamsId { get; set; }
     }
 }

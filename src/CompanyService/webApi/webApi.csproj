@@ -32,4 +32,10 @@
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+	  <Protobuf Include="..\..\SubscriptionService\Core\Service\Protos\SubscriptionService.proto" GrpcServices="Client">
+	    <Link>Protos\SubscriptionService.proto</Link>
+	  </Protobuf>
+	</ItemGroup>
 </Project>

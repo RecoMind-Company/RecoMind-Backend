@@ -10,6 +10,7 @@
 	<ItemGroup>
 		<Protobuf Include="Service\Protos\**\*.proto" GrpcServices="Server" />
 	</ItemGroup>
+	
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
