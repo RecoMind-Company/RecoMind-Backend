@@ -82,14 +82,15 @@ namespace Core.Service
 
         public double SetPrice ( string PlaneName) 
         {
+            PlaneName = PlaneName.ToLower();
             switch (PlaneName) {
-                case "Free":
+                case "free":
                     return 0;
 
-                case "Pro":
+                case "pro":
                     return 2000;
 
-                case "Enerprice":
+                case "enerprice":
                     return 5000;
 
                 default:
@@ -99,15 +100,16 @@ namespace Core.Service
 
         public DateTime SetEndDate(string BillingCycle)
         {
+            BillingCycle = BillingCycle.ToLower();
             switch (BillingCycle)
             {
-                case "Monthly":
+                case "monthly":
                     return DateTime.Now.AddMonths(1);
 
-                case "SemiAnnual":
+                case "semiAnnual":
                     return DateTime.Now.AddMonths(6);
 
-                case "Annual":
+                case "annual":
                     return DateTime.Now.AddYears(1);
 
                 default:
