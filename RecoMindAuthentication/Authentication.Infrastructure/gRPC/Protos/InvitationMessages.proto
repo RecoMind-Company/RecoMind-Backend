@@ -1,18 +1,10 @@
 syntax = "proto3";
 
 option csharp_namespace = "Authentication.Infrastructure.gRPC.Protos";
-enum InvitationStatus {
-	UNKNOWN = 0;
-	PENDING = 1;
-	ACCEPTED = 2;
-	EXPIRED = 3;
-}
 message GetInvitationMessage {
   string email = 1;
 }
-message InvitationMessage {
-  int32 id = 1;
-  string email = 2;
-  bool isActive = 3;
-  InvitationStatus status = 4;
+message BaseToReturnMessage {
+	bool isSuccess = 1;
+	string message = 2;
 }

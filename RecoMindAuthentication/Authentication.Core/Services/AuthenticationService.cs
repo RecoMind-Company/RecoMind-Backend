@@ -41,42 +41,26 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         var IsUserExsited = await userManager.FindByEmailAsync(registerDto.Email);
         if (IsUserExsited is not null)
             return new AuthenticationDto { message = "This user is already registered!" };
+        if (!Roles.AllRoles.Contains(registerDto.Role))
+            return new AuthenticationDto { message = "Role is not valid!" };
         // Create New user 
         var user = new AppUser();
-        string role;
-        // BAISED ON ROLE
-        switch (registerDto.Role)
+
+        // FOR ALL ROLES
+        user.Email = registerDto.Email;
+        user.UserName = new MailAddress(registerDto.Email).User;
+
+        // FOR NON ADMIN ROLES
+        if (registerDto.Role != Roles.Admin)
         {
-            case Roles.Admin:
-                user.Email = registerDto.Email;
-                user.FullName = registerDto.FullName;
-                user.UserName = new MailAddress(registerDto.Email).User;
-                role = Roles.Admin;
-                break;
-
-            /// HANDLE THE OTHER TWO ROLES ///
-            case Roles.TeamLeader:
-                // Only I have [1] Role [2] Email
-                // I will Create the FullName, UserName, Password
-                // Then send them to the Invited user email.
-                user.Email = registerDto.Email;
-                user.FullName = new MailAddress(registerDto.Email).User;
-                user.UserName = new MailAddress(registerDto.Email).User;
-                role = Roles.TeamLeader;
-                registerDto.Password = SecurePasswordGenerator.GenPassword();
-                break;
-            case Roles.Employee:
-                user.Email = registerDto.Email;
-                user.FullName = new MailAddress(registerDto.Email).User;
-                user.UserName = new MailAddress(registerDto.Email).User;
-                role = Roles.Employee;
-                registerDto.Password = SecurePasswordGenerator.GenPassword();
-
-                break;
-            default:
-                return new AuthenticationDto { message = "Role is not valid!" };
+            registerDto.Password = SecurePasswordGenerator.GenPassword();
+            user.FullName = new MailAddress(registerDto.Email).User;
         }
-        ;
+
+        // FOR ADMIN ROLE
+        else
+            user.FullName = registerDto.FullName;
+
         var result = await userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
@@ -87,8 +71,9 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             }
             return new AuthenticationDto { message = errors };
         }
+        await userManager.AddToRoleAsync(user, registerDto.Role);
         // Prepare the email
-        if (role == Roles.TeamLeader || role == Roles.Employee)
+        if (registerDto.Role == Roles.TeamLeader || registerDto.Role == Roles.Employee)
         {
             var subject = "recomind.com || Account Information";
             var body = $@"
@@ -98,7 +83,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
 
                 Email: {user.Email}
                 Password: {registerDto.Password}
-                Role: {role}
+                Role: {registerDto.Role}
 
                 Please keep this information confidential.
 
@@ -106,12 +91,6 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 recomind.com Team";
             await emailSender.SendEmailAsync(user.Email!, subject, body);
         }
-
-
-        // Add Claim To User
-        //var Claim = new Claim("User", "User");
-        //await userManager.AddClaimAsync(user, Claim);
-        await userManager.AddToRoleAsync(user, role);
         // Create token and refresh token
         var token = await CreateToken(user);
         var refreshToken = GenerateRefershToken();
@@ -148,27 +127,22 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             userToReturn.message = "email or password is incorrect";
             return userToReturn;
         }
-        // Check if the user has Invitation or not.
-        var invitation = await invitationService.GetInvitation(user.Email!);
-        if (invitation.Id == 0)
+        // CHECK IF THE USER ROLE IS ADMIN //
+        var userRoles = await userManager.GetRolesAsync(user);
+        if (userRoles.Contains(Roles.Admin))
         {
-            // No Invitation found 
-            //user can login directly
+            // Continue the normal login proccess
         }
-        else if (!invitation.IsActive && invitation.Status != InvitationStatus.ACCEPTED)
+        else
         {
-            invitation.Status = InvitationStatus.EXPIRED;
-            userToReturn.message = "Your invitation has been expired! Please contact your manager.";
-            await invitationService.UpdateInvitation(invitation);
-            return userToReturn;
-        }
-        else if (invitation.Status == InvitationStatus.PENDING)
-        {
-            invitation.Status = InvitationStatus.ACCEPTED;
-            await invitationService.UpdateInvitation(invitation);
+            var validInvitation = await invitationService.LoginAttempt(user.Email!);
+            if (!validInvitation.Success)
+            {
+                userToReturn.message = validInvitation.Message;
+                return userToReturn;
+            }
         }
         var token = await CreateToken(user);
-        var userRoles = await userManager.GetRolesAsync(user);
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
