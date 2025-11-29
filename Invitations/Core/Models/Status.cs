@@ -2,7 +2,7 @@
 
 public enum Status
 {
-    Pending = 1,
+    Pending = 0,
     Accepted,
     Expired
 }

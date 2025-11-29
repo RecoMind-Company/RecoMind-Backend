@@ -5,7 +5,6 @@ namespace Core.Interfaces;
 public interface IInvitationService
 {
     Task<BaseToReturnDto> SendInvitationAsync(SendInvitationDto invitationDto);
-    Task<InvitationDto> GetInvitation(string email);
-    Task UpdateInvitationStatus(UpdateInvitationDto updateInvitationDto);
+    Task<BaseToReturnDto> LoginAttemptWithInvitation(string email);
 
 }

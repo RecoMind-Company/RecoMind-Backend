@@ -11,6 +11,17 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
 
     public async Task<BaseToReturnDto> SendInvitationAsync(SendInvitationDto invitationDto)
     {
+        var invitation = new Invitation
+        {
+            SenderId = invitationDto.SenderId,
+            Email = invitationDto.Email,
+            ReceiverRole = invitationDto.ReciverRole,
+            CreatedAt = DateTime.UtcNow,
+            CompanyId = string.Empty // *** THIS IS FOR FUTURE USE, SETTING IT TO EMPTY STRING FOR NOW ***
+        };
+        await repository.CreateAsync(invitation);
+        await unitOfWork.Save();
+
         var grpcResponse = await grpcAuthenticationService.Register(invitationDto.Email, invitationDto.ReciverRole);
         if (!grpcResponse.IsAuthenticated)
         {
@@ -20,43 +31,31 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
             };
         }
         // Check if the gRPC authentication was successful
-        var invitation = new Invitation
-        {
-            SenderId = invitationDto.SenderId,
-            Email = invitationDto.Email,
-            ReceiverRole = invitationDto.ReciverRole,
-            Status = Status.Pending,
-            CreatedAt = DateTime.UtcNow
-        };
-        await repository.CreateAsync(invitation);
-        await unitOfWork.Save();
+
         return new BaseToReturnDto
         {
             IsSuccess = true,
             Message = "Invitation sent successfully."
         };
     }
-    public async Task<InvitationDto> GetInvitation(string email)
+    public async Task<BaseToReturnDto> LoginAttemptWithInvitation(string email)
     {
         var invitation = await repository.Find(i => i.Email == email);
         if (invitation is null)
-            return null;
-        return new InvitationDto
+            return new BaseToReturnDto { IsSuccess = false, Message = "There is no invitation for this email" };
+        var status = invitation.TryToAcceptInvitation();
+        if (status == Status.Expired)
         {
-            Id = invitation.Id,
-            Email = invitation.Email,
-            Status = invitation.Status.ToString(),
-            IsActive = invitation.IsActive
-        };
-    }
-
-    public async Task UpdateInvitationStatus(UpdateInvitationDto updateInvitationDto)
-    {
-        var invitation = await repository.GetByIdAsync(updateInvitationDto.Id);
-
-        // The status will be a enum in gRPC for better type safety
-        invitation.Status = Enum.Parse<Status>(updateInvitationDto.Status, ignoreCase: true);
-        repository.Update(invitation);
-        await unitOfWork.Save();
+            repository.Update(invitation);
+            await unitOfWork.Save();
+            return new BaseToReturnDto { IsSuccess = false, Message = "The invitation has expired." };
+        }
+        else if (status == Status.Accepted)
+        {
+            repository.Update(invitation);
+            await unitOfWork.Save();
+            return new BaseToReturnDto { IsSuccess = true, Message = "Invitation accepted successfully." };
+        }
+        return new BaseToReturnDto { IsSuccess = true, Message = "Invitation is allready accepted." };
     }
 }
