@@ -1,4 +1,6 @@
 using Core.Extensions;
+using Hangfire;
+using Infrastructure;
 using Infrastructure.Extentions;
 using WebApi.Extensions;
 using WebApi.gRPC;
@@ -20,9 +22,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapGrpcService<GrpcInvitationService>();
 app.MapGrpcReflectionService();
+app.UseHangfireDashboard("/dashboard");
+SetupHangfireJobs.AddHangfireJobs();
 app.Run();

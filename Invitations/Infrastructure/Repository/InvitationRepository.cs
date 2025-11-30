@@ -37,7 +37,10 @@ public class InvitationRepository(ApplicationDbContext context) : IInvitationRep
     {
         _invitations.Update(invitation);
     }
-
+    public void UpdateRange(IEnumerable<Invitation> invitations)
+    {
+        _invitations.UpdateRange(invitations);
+    }
     public async Task<Invitation?> Find(Expression<Func<Invitation, bool>> predicate)
     {
         return await _invitations.FirstOrDefaultAsync(predicate);
@@ -47,4 +50,5 @@ public class InvitationRepository(ApplicationDbContext context) : IInvitationRep
     {
         return await _invitations.Where(predicate).ToListAsync();
     }
+
 }

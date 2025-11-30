@@ -8,7 +8,7 @@ public class Invitation
     public string CompanyId { get; set; } = default!;
     public string Email { get; set; } = default!;
     public string ReceiverRole { get; set; } = default!;
-    public Status Status { get; private set; }
+    public Status Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsActive => DateTime.Now <= CreatedAt.AddDays(7);
 

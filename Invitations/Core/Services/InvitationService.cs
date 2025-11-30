@@ -1,12 +1,16 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Services;
 
 public class InvitationService(IGrpcAuthenticationService grpcAuthenticationService,
                                IInvitationRepository repository,
-                               IUnitOfWork unitOfWork) : IInvitationService
+                               IUnitOfWork unitOfWork,
+                               IMapper mapper,
+                               ILogger<InvitationService> logger) : IInvitationService
 {
 
     public async Task<BaseToReturnDto> SendInvitationAsync(SendInvitationDto invitationDto)
@@ -57,5 +61,37 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
             return new BaseToReturnDto { IsSuccess = true, Message = "Invitation accepted successfully." };
         }
         return new BaseToReturnDto { IsSuccess = true, Message = "Invitation is allready accepted." };
+    }
+
+    public async Task<InvitationsToReturnDto> GetInvitationByIdAsync(int id)
+    {
+        var invitation = await repository.GetByIdAsync(id);
+        if (invitation is null)
+            return null;
+        return mapper.Map<InvitationsToReturnDto>(invitation);
+    }
+
+    public async Task<IEnumerable<InvitationsToReturnDto>> GetInvitationsByStatus(GetInvitationDto getInvitationDto)
+    {
+        var invitations = await repository.FindAll(i => i.CompanyId == getInvitationDto.CompanyId
+                                            && i.Status == Enum.Parse<Status>(getInvitationDto.Status));
+        if (!invitations.Any())
+            return Enumerable.Empty<InvitationsToReturnDto>();
+        return mapper.Map<IEnumerable<InvitationsToReturnDto>>(invitations);
+    }
+
+    public async Task CheckAndExpireInvitations()
+    {
+        var expirationDate = DateTime.UtcNow.AddDays(-7);
+        var pendingInvitations = await repository.FindAll(i => i.Status == Status.Pending && i.CreatedAt <= expirationDate);
+        if (!pendingInvitations.Any())
+            return;
+        foreach (var invitation in pendingInvitations)
+        {
+            invitation!.Status = Status.Expired;
+        }
+        repository.UpdateRange(pendingInvitations!);
+        await unitOfWork.Save();
+        logger.LogInformation($"[HANGFIRE] Updated {pendingInvitations.Count()} invitations to Expired.");
     }
 }
