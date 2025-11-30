@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{D9739489-53B0-44BF-BF7F-C167A3A78DF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{AF0523B8-83B2-470D-8E99-BE7CF46DFD3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{67B830D1-D106-4FC8-862E-AB58E7299461}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9739489-53B0-44BF-BF7F-C167A3A78DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9739489-53B0-44BF-BF7F-C167A3A78DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9739489-53B0-44BF-BF7F-C167A3A78DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9739489-53B0-44BF-BF7F-C167A3A78DF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF0523B8-83B2-470D-8E99-BE7CF46DFD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF0523B8-83B2-470D-8E99-BE7CF46DFD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF0523B8-83B2-470D-8E99-BE7CF46DFD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF0523B8-83B2-470D-8E99-BE7CF46DFD3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67B830D1-D106-4FC8-862E-AB58E7299461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67B830D1-D106-4FC8-862E-AB58E7299461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67B830D1-D106-4FC8-862E-AB58E7299461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67B830D1-D106-4FC8-862E-AB58E7299461}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {483C91E7-0332-41A8-BD2A-12E2C3846214}
+	EndGlobalSection
+EndGlobal

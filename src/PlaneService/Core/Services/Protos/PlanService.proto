@@ -1,0 +1,77 @@
+﻿syntax = "proto3";
+
+package Plan.Service;
+
+option csharp_namespace = "Core.Service.Protos";
+
+import "google/protobuf/timestamp.proto";
+
+service PlanService {
+
+	rpc CreatePlan (CreatePlanRequest)
+		returns (PlanResponse);
+
+	rpc GetPlan (GetPlanRequest)
+		returns (PlanResponse);
+
+	rpc UpdatePlan (UpdatePlanRequest)
+		returns (PlanResponse); 
+
+	rpc DeletePlan (DeletePlanRequest)
+		returns (DeletePlanResponse);
+
+	rpc GetPlanByTeamId (GetPlanByTeamIdRequest)
+		returns (ListPlansResponse);
+
+	rpc ListPlans (Empty)
+	returns (ListPlansResponse);
+}
+
+
+message CreatePlanRequest {
+	string name = 1;
+	string description = 2;
+	string title = 3;
+	string team_id = 4;
+}
+
+message GetPlanRequest {
+	string id = 1;
+}
+
+message UpdatePlanRequest {
+	string id = 1;
+	string name = 2;
+	string description = 3;
+	string title = 5;
+	string team_id = 6;
+}
+
+message DeletePlanRequest {
+	string id = 1;
+}
+
+message GetPlanByTeamIdRequest {
+	string team_id = 1;
+}
+
+message PlanResponse {
+	string id = 1;
+	string name = 2;
+	string description = 3;
+	google.protobuf.Timestamp created_at = 4; 
+	string title = 5;
+	string status = 6;
+	string team_id = 7;
+}
+
+message DeletePlanResponse {
+	string id = 1;
+	string message = 2;
+}
+
+message ListPlansResponse {
+	repeated PlanResponse plans = 1;
+}
+
+message Empty {}

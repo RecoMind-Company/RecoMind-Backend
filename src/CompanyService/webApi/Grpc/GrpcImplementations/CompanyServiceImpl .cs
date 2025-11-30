@@ -15,7 +15,7 @@ namespace webApi.Grpc.GrpcImplementations
         private readonly subscriptionService.subscriptionServiceClient _subscriptionServiceClient;
 
 
-        public CompanyServiceImpl(IMapper mapper, ICompanyService coreService , subscriptionService.subscriptionServiceClient subscriptionServiceClient)
+        public CompanyServiceImpl(IMapper mapper, ICompanyService coreService, subscriptionService.subscriptionServiceClient subscriptionServiceClient)
         {
             _mapper = mapper;
             _companyService = coreService;
@@ -34,7 +34,7 @@ namespace webApi.Grpc.GrpcImplementations
 
                     if (subscription == null)
                         throw new RpcException(new Status(StatusCode.InvalidArgument, $"Subscription with ID {createDto.SubscriptionId} not found."));
-                    
+
                     var result1 = await _companyService.CreateCompanyAsync(createDto);
                     return _mapper.Map<CompanyResponse>(result1);
                 }
@@ -121,7 +121,7 @@ namespace webApi.Grpc.GrpcImplementations
             }
         }
 
-        public override async Task<GetAllCompaniesResponse> GetAll(Core.Service.Protos.Empty  request, ServerCallContext context)
+        public override async Task<GetAllCompaniesResponse> GetAll(Core.Service.Protos.Empty request, ServerCallContext context)
         {
             try
             {
@@ -138,7 +138,7 @@ namespace webApi.Grpc.GrpcImplementations
                 throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while Deleting the company: {ex.Message}"));
             }
         }
-        public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request,ServerCallContext context)
+        public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request, ServerCallContext context)
         {
             var company = await _companyService.GetCompanyByIdAsync(request.CompanyId);
 
@@ -149,18 +149,18 @@ namespace webApi.Grpc.GrpcImplementations
                     $"Company {request.CompanyId} Not Found"
                 ));
             }
-           
+
             try
             {
-               var subscription = _subscriptionServiceClient.getById(
-                   new getByIdRequest { Id = request.SubscriptionId });
+                var subscription = _subscriptionServiceClient.getById(
+                    new getByIdRequest { Id = request.SubscriptionId });
 
                 if (subscription == null)
                 {
-                     throw new RpcException(new Status(
-                       StatusCode.NotFound,
-                       $"Subscription Id {request.SubscriptionId} Not Found"
-                    ));
+                    throw new RpcException(new Status(
+                      StatusCode.NotFound,
+                      $"Subscription Id {request.SubscriptionId} Not Found"
+                   ));
                 }
             }
             catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)

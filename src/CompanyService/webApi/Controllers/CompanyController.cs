@@ -15,7 +15,7 @@ namespace Company.API.Controllers
         private readonly ICompanyService _companyService;
         private readonly subscriptionService.subscriptionServiceClient _subscriptionServiceClient;
 
-        public CompaniesController(ICompanyService companyService , subscriptionService.subscriptionServiceClient subscriptionServiceClient)
+        public CompaniesController(ICompanyService companyService, subscriptionService.subscriptionServiceClient subscriptionServiceClient)
         {
             _companyService = companyService;
             _subscriptionServiceClient = subscriptionServiceClient;
@@ -47,7 +47,7 @@ namespace Company.API.Controllers
             {
                 return BadRequest(new { Message = ex.Message });
             }
-        }        
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status201Created)]
@@ -117,26 +117,26 @@ namespace Company.API.Controllers
         [HttpPut("AssignSubscription")]
         [ProducesResponseType(typeof(UpdateCompanyDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AssignSubscription( AssignSubscriptionDto Dto ) 
+        public async Task<IActionResult> AssignSubscription(AssignSubscriptionDto Dto)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
             var company = await _companyService.GetCompanyByIdAsync(Dto.companyId);
-            var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id =Dto.subscriptionId });
+            var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = Dto.subscriptionId });
 
             if (company == null)
                 return NotFound($"Company {Dto.companyId} Not Found ");
 
             if (subscription == null)
                 return NotFound($"Subscription Id {Dto.subscriptionId} Not Found ");
-          
+
             company.SubscriptionId = Dto.subscriptionId;
 
             var model = new CreateCompanyDTO
             {
                 Name = company.Name,
-                Code = company.Code,               
+                Code = company.Code,
                 Country = company.Country,
                 Industry = company.Industry,
                 Size = company.Size,

@@ -45,7 +45,7 @@ namespace Campany.API
             // Add gRPC services to the container. 
             builder.Services.AddGrpc();
 
-            builder.Services.AddGrpcClient < subscriptionService.subscriptionServiceClient> (o =>
+            builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
                 o.Address = new Uri("https://localhost:7142");      // Subscription service address
             });
