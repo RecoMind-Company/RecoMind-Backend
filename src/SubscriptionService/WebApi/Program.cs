@@ -18,7 +18,11 @@ namespace WebApi
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<SubscriptionDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                     options.UseSqlServer(
+                         builder.Configuration.GetConnectionString("ProdcutionConnection"),
+                         sqlOptions =>
+                         sqlOptions.MigrationsAssembly(typeof(SubscriptionDbContext).Assembly.FullName)
+                         ));
 
             builder.WebHost.ConfigureKestrel(options =>
             {

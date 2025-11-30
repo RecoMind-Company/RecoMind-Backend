@@ -19,11 +19,15 @@ namespace WebApi
 
             // Add services to the container.
 
-                                                // DbContext
+            // DbContext
             builder.Services.AddDbContext<PlanServiceDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                    options.UseSqlServer(
+                        builder.Configuration.GetConnectionString("ProdcutionConnection"),
+                        sqlOptions =>
+                        sqlOptions.MigrationsAssembly(typeof(PlanServiceDbContext).Assembly.FullName)
+                        ));
 
-                                        //  Configurations for gRPC
+            //  Configurations for gRPC
 
             builder.WebHost.ConfigureKestrel(options =>
             {

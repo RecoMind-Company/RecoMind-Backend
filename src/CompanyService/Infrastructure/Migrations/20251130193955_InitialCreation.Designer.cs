@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CompanyDbContext))]
-    [Migration("20251104132800_InitialCreation")]
+    [Migration("20251130193955_InitialCreation")]
     partial class InitialCreation
     {
         /// <inheritdoc />
@@ -29,10 +29,6 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Billing")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -53,11 +49,10 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PlanType")
-                        .IsRequired()
+                    b.Property<string>("Size")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Size")
+                    b.Property<string>("SubscriptionId")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");

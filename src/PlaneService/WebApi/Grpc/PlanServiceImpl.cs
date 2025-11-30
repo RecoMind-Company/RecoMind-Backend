@@ -64,7 +64,7 @@ namespace WebApi.Grpc
             return _mapper.Map<PlanResponse>(plan);
         }
 
-        public override async Task<ListPlansResponse> ListPlans(Empty request, ServerCallContext context)
+        public override async Task<ListPlansResponse> ListPlans( Empty request, ServerCallContext context)
         {
             var plans = await _planService.GetAllPlans();
             var response = new ListPlansResponse();
