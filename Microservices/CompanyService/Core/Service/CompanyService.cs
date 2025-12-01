@@ -23,7 +23,7 @@ namespace Core.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
-                       
+        
             var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
             entity.Id = Guid.NewGuid().ToString();
             entity.CreatedAt = DateTime.UtcNow;
