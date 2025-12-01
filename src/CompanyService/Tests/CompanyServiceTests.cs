@@ -2,7 +2,7 @@ using AutoMapper;
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
-using Infrastructure.Service;
+using Core.Service;
 using Moq;
 
 namespace Tests
@@ -11,12 +11,12 @@ namespace Tests
     {        
         readonly Mock<IUnitOfWork<Company>> _mockCompanyUnitOfWork;
         readonly Mock<IMapper> _mockMapper;
-        readonly CompanyService _companyService;
+        readonly Core.Service.CompanyService _companyService;
         public CompanyServiceTests()
         {
             _mockCompanyUnitOfWork = new Moq.Mock<IUnitOfWork<Company>>();
             _mockMapper = new Moq.Mock<IMapper>();
-            _companyService=new CompanyService( _mockCompanyUnitOfWork.Object , _mockMapper.Object);
+            _companyService=new Core.Service.CompanyService( _mockCompanyUnitOfWork.Object , _mockMapper.Object);
         }
 
         [Fact]

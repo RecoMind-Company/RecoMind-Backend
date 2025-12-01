@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace Core.Configuration
 {
     public class CopmanyMapping : Profile
@@ -14,22 +13,17 @@ namespace Core.Configuration
         public CopmanyMapping() 
         {
             CreateMap<Core.Models.Company, GetCompanyDTO>()
-                .ForMember(st=>st.BillingCycle, opt=>opt.MapFrom(src=>src.Billing))
                 .ReverseMap();
 
-            CreateMap<CreateCompanyDTO, Company>()
+            CreateMap<CreateCompanyDTO, Company>()                
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
 
             CreateMap<Core.Models.Company, UpdateCompanyDTO>()
                 .ReverseMap();
 
-            CreateMap<DeleteCompanyDTO, Core.Models.Company>()
-                .ReverseMap();
-
-            CreateMap<UpdateCompanyDTO, GetCompanyDTO>()
-                .ReverseMap();
-        }
-        
+            CreateMap<DeleteCompanyDTO, Company>()
+                .ReverseMap();            
+        }        
     }
 }

@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package company.service;
+
+option csharp_namespace = "Core.Service.Protos";
+
+import "google/protobuf/timestamp.proto";
+
+service CompanyService {
+
+    rpc GetById (GitByIdRequest) returns (CompanyResponse);
+
+    rpc GetAll (Empty) returns (GetAllCompaniesResponse);
+
+    rpc Create (CreateCompanyRequest)
+        returns (CompanyResponse);
+
+    rpc Update (UpdateCompanyRequest)
+        returns (CompanyResponse);
+
+    rpc Delete (DeleteCompanyRequest)
+        returns (DeleteCompanyResponse);
+
+    rpc AssignSubscripion (AssignSubscriptionRequest)
+        returns (CompanyResponse);
+}
+
+message GitByIdRequest {
+    string id = 1;
+}
+
+message CreateCompanyRequest {
+    string name = 1;
+    string industry = 2;
+    string country = 3;
+    string size = 4;
+    string code = 5;
+    string SubscriptionId = 6;
+}
+
+// UPDATE
+message UpdateCompanyRequest {
+    string id = 1;
+    string name = 2;
+    string industry = 3;
+    string country = 4;
+    string size = 5;
+    string code = 6;
+    string Discription = 7;
+    string SubscriptionId = 8;
+}
+
+// DELETE
+message DeleteCompanyRequest {
+    string id = 1;
+}
+
+message DeleteCompanyResponse {
+    string id = 1;
+    string Description = 2;
+}
+
+// RESPONSE FOR ALL OPERATIONS
+message CompanyResponse {
+    string id = 1;
+    string name = 2;
+    string industry = 3;
+    string country = 4;
+    string size = 5;
+    string code = 6;    
+    google.protobuf.Timestamp createdAt = 7;
+    string SubscriptionId = 8;
+}
+
+message GetAllCompaniesResponse {
+    repeated CompanyResponse items = 1;
+}
+
+message AssignSubscriptionRequest {
+    string companyId = 1;
+    string subscriptionId = 2;
+}
+
+// EMPTY
+message Empty {}
