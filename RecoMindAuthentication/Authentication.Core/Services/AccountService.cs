@@ -66,7 +66,7 @@ public class AccountService(UserManager<AppUser> userManager, IWebHostEnvironmen
         profileToReturn.Name = user.FullName;
 
         if (user.PhotoUrl is not null)
-            profileToReturn.Photo = photoSettings.BaseUrl + "/" + user.PhotoUrl;
+            profileToReturn.Photo = photoSettings.BaseUrl + user.PhotoUrl;
 
         if (user.PhoneNumber is not null)
             profileToReturn.Phone = user.PhoneNumber;

@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.FileProviders;
+﻿using Authentication.Infrastructure.gRPC.Protos;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 
 namespace RecoMindAuthenticationAPI.Extensions
 {
     public static class ApiServicesExtension
     {
-        public static void AddPresentationServices(this WebApplicationBuilder builder)
+        public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
         {
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -29,6 +30,22 @@ namespace RecoMindAuthenticationAPI.Extensions
                         []
                     }
                 });
+            });
+            builder.Services.AddGrpc();
+            builder.Services.AddGrpcReflection();
+            builder.Services.AddGrpcClient<InvitationService.InvitationServiceClient>(c =>
+            {
+                c.Address = new Uri(configuration["Urls:InvitationServiceUrl"]);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    return new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
+                }
+                return new HttpClientHandler();
             });
         }
         public static StaticFileOptions AddMyStaticFiles(this IApplicationBuilder app, IWebHostEnvironment env)

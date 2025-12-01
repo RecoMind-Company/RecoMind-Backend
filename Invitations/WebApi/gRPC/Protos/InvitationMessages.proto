@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option csharp_namespace = "WebApi.gRPC.Protos";
+
+message GetInvitationMessage {
+  string email = 1;
+}
+message BaseToReturnMessage {
+	bool isSuccess = 1;
+	string message = 2;
+}

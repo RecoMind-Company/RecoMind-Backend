@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option csharp_namespace = "RecoMindAuthenticationAPI.Grpc.Account";
+
+message ProfileMessage {
+	string name = 1;
+	string email = 2;
+	string phone = 3;
+	bytes photo_content = 4;
+	string photoFileName = 5;
+}
+message ProfileToReturnMessage {
+	string name = 1;
+	string email = 2;
+	string phone = 3;
+	string photo = 4;
+}
+
+message BaseMessage{
+	bool isSuccess = 1;
+	string message = 2;
+}
+
+message DeleteMessage{
+	string id = 1;
+}

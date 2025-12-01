@@ -1,4 +1,7 @@
-﻿using Authentication.Core.DTOs;
+﻿using Authentication.Core.Constants;
+using Authentication.Core.DTOs;
+using Authentication.Core.Helpers;
+using Authentication.Core.Interfaces;
 using Authentication.Core.Models;
 using Authentication.Core.Settings;
 using Microsoft.AspNetCore.Identity;
@@ -27,7 +30,9 @@ public interface IAuthenticationService
 public class AuthenticationService(UserManager<AppUser> userManager,
                                    PasswordHasher<AppUser> passwordHasher,
                                    IOptions<JwtSettings> jwtOptions,
-                                   ISendEmailService sendEmailService) : IAuthenticationService
+                                   IVerificationEmailService sendEmailService,
+                                   IEmailSender emailSender,
+                                   IGrpcInvitationService invitationService) : IAuthenticationService
 {
     private readonly JwtSettings jwtSettings = jwtOptions.Value;
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -36,13 +41,26 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         var IsUserExsited = await userManager.FindByEmailAsync(registerDto.Email);
         if (IsUserExsited is not null)
             return new AuthenticationDto { message = "This user is already registered!" };
-        // Create New user
-        var user = new AppUser()
+        if (!Roles.AllRoles.Contains(registerDto.Role))
+            return new AuthenticationDto { message = "Role is not valid!" };
+        // Create New user 
+        var user = new AppUser();
+
+        // FOR ALL ROLES
+        user.Email = registerDto.Email;
+        user.UserName = new MailAddress(registerDto.Email).User;
+
+        // FOR NON ADMIN ROLES
+        if (registerDto.Role != Roles.Admin)
         {
-            Email = registerDto.Email,
-            FullName = registerDto.FullName,
-            UserName = new MailAddress(registerDto.Email).User
-        };
+            registerDto.Password = SecurePasswordGenerator.GenPassword();
+            user.FullName = new MailAddress(registerDto.Email).User;
+        }
+
+        // FOR ADMIN ROLE
+        else
+            user.FullName = registerDto.FullName;
+
         var result = await userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
@@ -53,10 +71,26 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             }
             return new AuthenticationDto { message = errors };
         }
-        // Add Claim To User
-        //var Claim = new Claim("User", "User");
-        //await userManager.AddClaimAsync(user, Claim);
         await userManager.AddToRoleAsync(user, registerDto.Role);
+        // Prepare the email
+        if (registerDto.Role == Roles.TeamLeader || registerDto.Role == Roles.Employee)
+        {
+            var subject = "recomind.com || Account Information";
+            var body = $@"
+                Hello,
+
+                Here are your account details:
+
+                Email: {user.Email}
+                Password: {registerDto.Password}
+                Role: {registerDto.Role}
+
+                Please keep this information confidential.
+
+                Best regards,  
+                recomind.com Team";
+            await emailSender.SendEmailAsync(user.Email!, subject, body);
+        }
         // Create token and refresh token
         var token = await CreateToken(user);
         var refreshToken = GenerateRefershToken();
@@ -93,9 +127,22 @@ public class AuthenticationService(UserManager<AppUser> userManager,
             userToReturn.message = "email or password is incorrect";
             return userToReturn;
         }
-
-        var token = await CreateToken(user);
+        // CHECK IF THE USER ROLE IS ADMIN //
         var userRoles = await userManager.GetRolesAsync(user);
+        if (userRoles.Contains(Roles.Admin))
+        {
+            // Continue the normal login proccess
+        }
+        else
+        {
+            var validInvitation = await invitationService.LoginAttempt(user.Email!);
+            if (!validInvitation.Success)
+            {
+                userToReturn.message = validInvitation.Message;
+                return userToReturn;
+            }
+        }
+        var token = await CreateToken(user);
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
@@ -171,7 +218,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         var user = await userManager.FindByEmailAsync(forgetPasswordDto.Email);
         if (user is null)
             return new BaseToReturnDto { Message = "Email Is NotFound" };
-        await sendEmailService.SendEmailAsync(forgetPasswordDto.Email);
+        await sendEmailService.SendVerificationCodeEmail(forgetPasswordDto.Email);
         return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
     }
 

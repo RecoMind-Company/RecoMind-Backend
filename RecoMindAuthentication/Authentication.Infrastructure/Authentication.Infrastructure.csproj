@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\Protos\InvitationMessages.proto" />
+    <None Remove="gRPC\Protos\InvitationService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Authentication.Core\Authentication.Core.csproj" />
   </ItemGroup>
 
@@ -15,12 +20,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.33.1" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.21" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Protobuf Include="gRPC\Protos\InvitationMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\Protos</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\Protos\InvitationService.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\Protos</ProtoRoot>
+	  </Protobuf>
   </ItemGroup>
 
 </Project>

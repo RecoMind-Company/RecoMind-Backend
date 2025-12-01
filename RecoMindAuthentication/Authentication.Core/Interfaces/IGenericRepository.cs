@@ -10,6 +10,6 @@ public interface IGenericRepository<T> where T : class
     T UpdateAsync(T entity);
     Task<bool> Any(Expression<Func<T, bool>> predicate);
     Task<List<T>> FindAll(Expression<Func<T, bool>> predicate);
-    T Find(Expression<Func<T, bool>> predicate);
+    Task<T> Find(Expression<Func<T, bool>> predicate);
     void Delete(T entity);
 }

@@ -15,7 +15,7 @@ public class DataSeeding(AuthenticationDbContext dbContext,
         if (!roleManager.Roles.Any())
         {
             await roleManager.CreateAsync(new IdentityRole(Roles.Admin));
-            await roleManager.CreateAsync(new IdentityRole(Roles.Manager));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Employee));
             await roleManager.CreateAsync(new IdentityRole(Roles.TeamLeader));
         }
 
