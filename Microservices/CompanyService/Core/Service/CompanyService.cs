@@ -48,6 +48,16 @@ namespace Core.Service
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
+        public async Task<GetCompanyDTO> GetCompanyByAdminId(string adminId)
+        {
+
+            var item = await _CompanyUnitOfWork.Entity.FindAsync(c => c.AdminId == adminId);
+
+            if (item == null)
+                throw new KeyNotFoundException($"Company with Admin ID '{adminId}' was not found.");
+
+            return _mapper.Map<GetCompanyDTO>(item);
+        }
         public async Task<UpdateCompanyDTO> UpdateCompanyAsync(string companyId, CreateCompanyDTO companyDTO)
         {
             if (string.IsNullOrWhiteSpace(companyId))

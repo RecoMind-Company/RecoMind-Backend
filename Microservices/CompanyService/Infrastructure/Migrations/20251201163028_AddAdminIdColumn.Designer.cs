@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(CompanyDbContext))]
-    partial class CompanyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251201163028_AddAdminIdColumn")]
+    partial class AddAdminIdColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,6 +29,13 @@ namespace Infrastructure.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BusinessDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Code")
                         .IsRequired()

@@ -49,6 +49,27 @@ namespace Company.API.Controllers
             }
         }
 
+        [HttpGet("Admin/{AdminId}")]
+        [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByAdminId(string adminId)
+        {
+            try
+            {
+                var item = await _companyService.GetCompanyByAdminId(adminId);
+                return Ok(item);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+
         [HttpPost]
         [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

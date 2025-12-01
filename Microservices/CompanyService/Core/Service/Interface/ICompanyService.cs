@@ -11,6 +11,7 @@ namespace Core.Service.Interface
     {
         public Task<IEnumerable<GetCompanyDTO>> GetAllCompaniesAsync();
         public Task<GetCompanyDTO> GetCompanyByIdAsync(string companyId);
+        public Task<GetCompanyDTO> GetCompanyByAdminId(string adminId);
         public Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO);
         public Task<UpdateCompanyDTO> UpdateCompanyAsync(string companyId, CreateCompanyDTO companyDTO);
         public Task<DeleteCompanyDTO> DeleteCompanyAsync(string companyId);
