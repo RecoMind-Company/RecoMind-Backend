@@ -32,7 +32,6 @@ namespace DatabaseSetting.Infrastructure.Repositories
                    .FirstOrDefaultAsync(x => x.Id == id && x.CompanyId == companyId);
         }
 
-
         public async Task<DbSettingModel> CreateAsync(DbSettingModel model)
         {
             await _context.DbSettings.AddAsync(model);
@@ -61,5 +60,6 @@ namespace DatabaseSetting.Infrastructure.Repositories
 
             return model;
         }
+
     }
 }

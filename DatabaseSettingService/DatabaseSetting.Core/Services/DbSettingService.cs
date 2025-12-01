@@ -26,14 +26,14 @@ namespace DatabaseSetting.Core.Services
             var entities = await _repository.GetAllByCompanyIdAsync(companyId);
 
             if (entities == null || !entities.Any())
-                return null;
+                return new List<DbSettingResponse>();
 
             return entities.Select(entity => new DbSettingResponse
             {
                 Id = entity.Id,
                 CompanyId = entity.CompanyId,
                 Name = entity.Name,
-                DbType = entity.DbType.ToString(),
+                DbType = entity.DbType,
                 CreatedAt = entity.CreatedAt
             });
         }
@@ -46,6 +46,18 @@ namespace DatabaseSetting.Core.Services
                 return null;
 
             return MapToResponse(entity);
+        }
+
+        public async Task<DbSettingModel> GetConnectionByIdAsync(string id, string companyId)
+        {
+            var entity = await _repository.GetByIdAsync(id, companyId);
+
+            if (entity == null)
+                return null;
+
+            entity.ConnectionString = _encryptionService.Decrypt(entity.ConnectionString);
+
+            return entity;
         }
 
 
@@ -68,12 +80,12 @@ namespace DatabaseSetting.Core.Services
                 Id = saved.Id,
                 CompanyId = saved.CompanyId,
                 Name = saved.Name,
-                DbType = saved.DbType.ToString(),
+                DbType = saved.DbType,
                 CreatedAt = saved.CreatedAt
             };
         }
 
-        public async Task<DbSettingResponse> UpdateAsync(string id, string companyId, UpdateDbSettingModel request)
+        public async Task<DbSettingResponse?> UpdateAsync(string id, string companyId, UpdateDbSettingModel request)
         {
             var entity = await _repository.GetByIdAsync(id, companyId);
 
@@ -81,13 +93,19 @@ namespace DatabaseSetting.Core.Services
                 return null;
 
             entity.Name = request.Name;
-            entity.ConnectionString = _encryptionService.Encrypt(request.ConnectionString);
             entity.DbType = request.DbType;
+
+            if (!string.IsNullOrWhiteSpace(request.ConnectionString) &&
+                request.ConnectionString != _encryptionService.Decrypt(entity.ConnectionString))
+            {
+                entity.ConnectionString = _encryptionService.Encrypt(request.ConnectionString);
+            }
 
             var updated = await _repository.UpdateAsync(entity);
 
             return MapToResponse(updated);
         }
+
 
         public async Task<bool> DeleteAsync(string id, string companyId)
         {
@@ -101,7 +119,7 @@ namespace DatabaseSetting.Core.Services
             Id = entity.Id,
             CompanyId = entity.CompanyId,
             Name = entity.Name,
-            DbType = entity.DbType.ToString(),
+            DbType = entity.DbType,
             CreatedAt = entity.CreatedAt
         };
     }
