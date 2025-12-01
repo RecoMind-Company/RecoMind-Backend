@@ -21,10 +21,8 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
             Email = invitationDto.Email,
             ReceiverRole = invitationDto.ReciverRole,
             CreatedAt = DateTime.UtcNow,
-            CompanyId = string.Empty // *** THIS IS FOR FUTURE USE, SETTING IT TO EMPTY STRING FOR NOW ***
+            CompanyId = invitationDto.CompanyId
         };
-        await repository.CreateAsync(invitation);
-        await unitOfWork.Save();
 
         var grpcResponse = await grpcAuthenticationService.Register(invitationDto.Email, invitationDto.ReciverRole);
         if (!grpcResponse.IsAuthenticated)
@@ -34,6 +32,8 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
                 Message = $"Failed to send invitation: {grpcResponse.Message}"
             };
         }
+        await repository.CreateAsync(invitation);
+        await unitOfWork.Save();
         // Check if the gRPC authentication was successful
 
         return new BaseToReturnDto
@@ -47,6 +47,8 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
         var invitation = await repository.Find(i => i.Email == email);
         if (invitation is null)
             return new BaseToReturnDto { IsSuccess = false, Message = "There is no invitation for this email" };
+        if (invitation.Status == Status.Accepted)
+            return new BaseToReturnDto { IsSuccess = true, Message = "Invitation is allready accepted." };
         var status = invitation.TryToAcceptInvitation();
         if (status == Status.Expired)
         {
@@ -54,13 +56,10 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
             await unitOfWork.Save();
             return new BaseToReturnDto { IsSuccess = false, Message = "The invitation has expired." };
         }
-        else if (status == Status.Accepted)
-        {
-            repository.Update(invitation);
-            await unitOfWork.Save();
-            return new BaseToReturnDto { IsSuccess = true, Message = "Invitation accepted successfully." };
-        }
-        return new BaseToReturnDto { IsSuccess = true, Message = "Invitation is allready accepted." };
+        // the other case is status == Status.Accepted only so I removed the else if statement
+        repository.Update(invitation);
+        await unitOfWork.Save();
+        return new BaseToReturnDto { IsSuccess = true, Message = "Invitation accepted successfully." };
     }
 
     public async Task<InvitationsToReturnDto> GetInvitationByIdAsync(int id)
