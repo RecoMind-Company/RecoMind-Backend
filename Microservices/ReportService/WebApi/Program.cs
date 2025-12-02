@@ -1,11 +1,13 @@
+using Core.Extentions;
+using Hangfire;
+using Infrastructure.Extentions;
+using WebApi.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.AddPresentationServices(builder.Configuration);
+builder.Services.AddCoreServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 var app = builder.Build();
 
@@ -22,4 +24,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseHangfireDashboard("/dashboard");
 app.Run();
