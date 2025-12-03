@@ -19,7 +19,7 @@ namespace WebApi
 
             builder.Services.AddDbContext<SubscriptionDbContext>(options =>
                      options.UseSqlServer(
-                         builder.Configuration.GetConnectionString("ProdcutionConnection"),
+                         builder.Configuration.GetConnectionString("ProdcutionConnection_Subscription"),
                          sqlOptions =>
                          sqlOptions.MigrationsAssembly(typeof(SubscriptionDbContext).Assembly.FullName)
                          ));
