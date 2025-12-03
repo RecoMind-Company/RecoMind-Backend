@@ -16,22 +16,19 @@ using var Scope = app.Services.CreateScope();
 var ObjectOfDataSeeding = Scope.ServiceProvider.GetRequiredService<DataSeeding>();
 await ObjectOfDataSeeding.DataSeedAsync();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
 app.UseStaticFiles(ApiServicesExtension.AddMyStaticFiles(app, builder.Environment));
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapGrpcService<GrpcAuthenticationService>();
 app.MapGrpcReflectionService();
 app.Run();
