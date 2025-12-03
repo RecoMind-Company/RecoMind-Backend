@@ -16,7 +16,6 @@ namespace WebApi.Controllers
             _chatBotService = chatBotService;
         }
 
-
         [HttpPost]
         public async Task<IActionResult> CreateQuery(CreateChatRequestDto createChatRequestDto)
         {
