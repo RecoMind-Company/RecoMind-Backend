@@ -47,7 +47,7 @@ namespace Campany.API
 
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
-                o.Address = new Uri("https://localhost:7142");      // Subscription service address
+                o.Address = new Uri("https://localhost:7142");            // Subscription service address
             });
 
 
