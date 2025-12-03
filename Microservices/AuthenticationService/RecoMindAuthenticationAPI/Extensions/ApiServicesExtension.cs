@@ -50,6 +50,9 @@ namespace RecoMindAuthenticationAPI.Extensions
         }
         public static StaticFileOptions AddMyStaticFiles(this IApplicationBuilder app, IWebHostEnvironment env)
         {
+            string physicalPathToSave = Path.Combine(env.ContentRootPath, "StaticFiles", "Images");
+            if (!Directory.Exists(physicalPathToSave))
+                Directory.CreateDirectory(physicalPathToSave);
             StaticFileOptions staticFileOptions = new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "StaticFiles", "Images")),
