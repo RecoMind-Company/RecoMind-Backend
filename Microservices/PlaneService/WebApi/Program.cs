@@ -74,7 +74,6 @@ namespace WebApi
 
             app.UseAuthorization();
 
-
             app.MapControllers();
             app.MapGrpcService<PlanServiceImpl>();
 
