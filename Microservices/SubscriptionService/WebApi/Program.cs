@@ -27,9 +27,9 @@ namespace WebApi
             builder.WebHost.ConfigureKestrel(options =>
             {
 
-                options.ListenAnyIP(7142, listenOptions =>
+                options.ListenAnyIP(8000, listenOptions =>
                 {
-                    listenOptions.UseHttps();
+                    // listenOptions.UseHttps();
                     listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
                 });
             });
