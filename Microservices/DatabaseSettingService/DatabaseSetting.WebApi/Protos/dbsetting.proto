@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option csharp_namespace = "DbSetting.Grpc";
+
+service DbSettingGrpcService {
+    rpc GetById (GetByIdRequest) returns (DbSettingResponse);
+    rpc GetAllByCompanyId (GetAllByCompanyIdRequest) returns (DbSettingListResponse);
+    rpc GetConnectionById (GetByIdRequest) returns (DbSettingConnectionResponse);
+}
+
+message GetByIdRequest {
+    string id = 1;
+    string companyId = 2;
+}
+
+message GetAllByCompanyIdRequest {
+    string companyId = 1;
+}
+
+message DbSettingResponse {
+    string id = 1;
+    string companyId = 2;
+    string name = 3;
+    string dbType = 4;
+    string createdAt = 5;
+}
+
+message DbSettingListResponse {
+    repeated DbSettingResponse items = 1;
+}
+
+message DbSettingConnectionResponse {
+    string id = 1;
+    string connectionString = 2;
+}

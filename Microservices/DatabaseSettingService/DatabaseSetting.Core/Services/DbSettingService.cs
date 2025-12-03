@@ -61,12 +61,12 @@ namespace DatabaseSetting.Core.Services
         }
 
 
-        public async Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request)
+        public async Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request, string companyId)
         {
             var model = new DbSettingModel
             {
                 Id = Guid.NewGuid().ToString(),
-                CompanyId = request.CompanyId,
+                CompanyId = companyId,
                 Name = request.Name,
                 DbType = request.DbType,
                 ConnectionString = _encryptionService.Encrypt(request.ConnectionString),

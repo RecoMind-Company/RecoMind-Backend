@@ -1,8 +1,10 @@
 ﻿using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace DatabaseSetting.WebApi.Controllers
 {
@@ -12,6 +14,7 @@ namespace DatabaseSetting.WebApi.Controllers
     {
         private readonly IDbSettingService _service;
         private readonly ILogger<DbSettingController> _logger;
+        private string companyId => GetCompanyIdFromClaims();
 
         public DbSettingController(IDbSettingService service, ILogger<DbSettingController> logger)
         {
@@ -19,17 +22,24 @@ namespace DatabaseSetting.WebApi.Controllers
             _logger = logger;
         }
 
+        // endpoint to test authorized request
+        [Authorize]
+        [HttpGet("test")]
+        public IActionResult Test()
+        {
+            return Ok(new { message = "Authorized access successful." });
+        }
 
-        [HttpGet("company/{companyId}")]
-        public async Task<IActionResult> GetAllByCompanyId(string companyId)
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
             var result = await _service.GetAllByCompanyIdAsync(companyId);
-
             return Ok(result);
         }
 
-        [HttpGet("{id}/company/{companyId}")]
-        public async Task<IActionResult> GetById(string id, string companyId)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
             var result = await _service.GetByIdAsync(id, companyId);
 
@@ -39,9 +49,8 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-
-        [HttpGet("connection/{id}/company/{companyId}")]
-        public async Task<IActionResult> GetConnectionById(string id, string companyId)
+        [HttpGet("connection/{id}")]
+        public async Task<IActionResult> GetConnectionById(string id)
         {
             var result = await _service.GetConnectionByIdAsync(id, companyId);
 
@@ -51,15 +60,13 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDbSettingModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _service.CreateAsync(request);
+            var result = await _service.CreateAsync(request, companyId);
 
             return CreatedAtAction(
                 nameof(GetById),
@@ -68,9 +75,8 @@ namespace DatabaseSetting.WebApi.Controllers
             );
         }
 
-
-        [HttpPut("{id}/company/{companyId}")]
-        public async Task<IActionResult> Update(string id, string companyId, [FromBody] UpdateDbSettingModel request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -83,17 +89,23 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-
-        [HttpDelete("{id}/company/{companyId}")]
-        public async Task<IActionResult> Delete(string id, string companyId)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
             var success = await _service.DeleteAsync(id, companyId);
-            if (!success)
-                return NotFound();
-
+            if (!success) return NotFound();
             return NoContent();
         }
 
+        // Helper to get company id from claims (single source of truth)
+        private string GetCompanyIdFromClaims()
+        {
+            var claim = User.FindFirst("companyId") ?? User.FindFirst("tenant") ?? User.FindFirst(ClaimTypes.GroupSid);
 
+            if (claim == null)
+                throw new Exception("Company claim not found");
+
+            return claim.Value;
+        }
     }
 }
