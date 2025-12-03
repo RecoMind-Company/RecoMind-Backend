@@ -38,13 +38,13 @@ namespace RecoMindAuthenticationAPI.Extensions
                 c.Address = new Uri(configuration["Urls:InvitationServiceUrl"]);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
-                if (builder.Environment.IsDevelopment())
-                {
+                
+                
                     return new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                     };
-                }
+                
                 return new HttpClientHandler();
             });
         }

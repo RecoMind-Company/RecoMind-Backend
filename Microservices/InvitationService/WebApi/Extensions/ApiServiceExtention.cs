@@ -60,13 +60,13 @@ public static class ApiServiceExtention
             o.Address = new Uri(configuration["Urls:AuthenticationServiceUrl"]);
         }).ConfigurePrimaryHttpMessageHandler(() =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
+            
+            
                 return new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
-            }
+            
             return new HttpClientHandler();
         });
     }
