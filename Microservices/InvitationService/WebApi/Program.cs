@@ -12,23 +12,12 @@ builder.AddPresentationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddCoreServices();
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(8000, listenOptions =>
-    {
-        // Use Http2 only for pure gRPC service
-        listenOptions.Protocols = HttpProtocols.Http2;
-    });
-});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.UseHttpsRedirection();
 
