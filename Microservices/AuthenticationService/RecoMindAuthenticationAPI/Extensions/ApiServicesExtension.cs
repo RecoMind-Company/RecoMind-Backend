@@ -31,6 +31,12 @@ namespace RecoMindAuthenticationAPI.Extensions
                     }
                 });
             });
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(8000, o => o.Protocols = HttpProtocols.Http1AndHttp2);
+            });
+
             builder.Services.AddGrpc();
             builder.Services.AddGrpcReflection();
             builder.Services.AddGrpcClient<InvitationService.InvitationServiceClient>(c =>
