@@ -52,3 +52,17 @@ message BaseMessage{
 message TokenMessage{
 	string refreshToken = 1;
 }
+message GetUserByIdMessage{
+	string userId = 1;
+}
+message UserToReturnMessage{
+	string Id = 1;
+	string Role =2;
+	string email = 3;
+}
+message GetUsersMessage{
+	repeated string Ids = 1;
+}
+message UsersToReturnMessage{
+	repeated string userNames = 1;
+}
