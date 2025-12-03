@@ -1,6 +1,7 @@
 ﻿using Authentication.Infrastructure.gRPC.Protos;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace RecoMindAuthenticationAPI.Extensions
 {

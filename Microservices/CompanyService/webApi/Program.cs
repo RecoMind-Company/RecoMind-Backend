@@ -13,6 +13,7 @@ using webApi.Grpc.GrpcImplementations;
 using webApi.Mapping;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
+
 namespace Campany.API
 {
     public class Program
@@ -47,7 +48,7 @@ namespace Campany.API
 
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
-                o.Address = new Uri("https://localhost:7142");            // Subscription service address
+                o.Address = new Uri("http://subscriptionservice:8000");            // Subscription service address
             });
 
 
@@ -55,9 +56,8 @@ namespace Campany.API
             builder.WebHost.ConfigureKestrel(options =>
             {
 
-                options.ListenAnyIP(5001, listenOptions =>
+                options.ListenAnyIP(8000, listenOptions =>
                 {
-                    listenOptions.UseHttps(); 
                     listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
                 });
             });     
@@ -70,13 +70,11 @@ namespace Campany.API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
             
-            app.UseHttpsRedirection();
+            
+            // app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
