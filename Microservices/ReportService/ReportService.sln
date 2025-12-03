@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "webapi\WebApi.csproj", "{9585EDB5-98E7-4432-BF2A-7E598B6F48E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{D8568C2E-B869-4ABE-9BD7-4D93CE55A474}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{3D6F5D74-9BB2-4982-A0A7-77F65D87CEFD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9585EDB5-98E7-4432-BF2A-7E598B6F48E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9585EDB5-98E7-4432-BF2A-7E598B6F48E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9585EDB5-98E7-4432-BF2A-7E598B6F48E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9585EDB5-98E7-4432-BF2A-7E598B6F48E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8568C2E-B869-4ABE-9BD7-4D93CE55A474}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8568C2E-B869-4ABE-9BD7-4D93CE55A474}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8568C2E-B869-4ABE-9BD7-4D93CE55A474}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8568C2E-B869-4ABE-9BD7-4D93CE55A474}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D6F5D74-9BB2-4982-A0A7-77F65D87CEFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D6F5D74-9BB2-4982-A0A7-77F65D87CEFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D6F5D74-9BB2-4982-A0A7-77F65D87CEFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D6F5D74-9BB2-4982-A0A7-77F65D87CEFD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {94F0C0BF-0C81-4A83-A818-7DC31BA5A76C}
+	EndGlobalSection
+EndGlobal

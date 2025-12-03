@@ -138,26 +138,6 @@ namespace webApi.Grpc.GrpcImplementations
                 throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while Deleting the company: {ex.Message}"));
             }
         }
-        public async override Task<CompanyResponse> GetAllByAdminId(GitByIdRequest request, ServerCallContext context)
-        {
-            try
-            {
-                var result = await _companyService.GetCompanyByAdminId(request.Id);
-                if (result == null)
-                {
-                    throw new RpcException(new Status(StatusCode.NotFound, $"Company with Admin Id {request.Id} not found."));
-                }
-                return _mapper.Map<CompanyResponse>(result);
-            }
-            catch (ArgumentException ex)
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, $"Invalid argument: {ex.ParamName}"));
-            }
-            catch (Exception ex)
-            {
-                throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while retrieving the company: {ex.Message}"));
-            }
-        }
         public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request, ServerCallContext context)
         {
             var company = await _companyService.GetCompanyByIdAsync(request.CompanyId);

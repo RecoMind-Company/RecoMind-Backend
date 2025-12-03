@@ -23,7 +23,7 @@ namespace Infrastructure.Repository
             _context = context;
             _dbSet = _context.Set<T>();
         }
-        public async Task<IEnumerable<T?>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
@@ -56,12 +56,7 @@ namespace Infrastructure.Repository
         {
             _dbSet.Remove(entity);
             return entity;
-        }
-
-        public Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
-        {
-            return _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
-        }
+        }               
     }
 
 }

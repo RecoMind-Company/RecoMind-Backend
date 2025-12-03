@@ -12,9 +12,7 @@ namespace Core.DTOs
         public string Industry { get; set; } 
         public string Country { get; set; } 
         public string Size { get; set; }
-        public string Code {  get; set; }
-        public string BusinessDescription { get; set; }
-        public string? AdminId { get; set; }
+        public string Code {  get; set; }         
         public string? SubscriptionId { get; set; }
     }
 }
