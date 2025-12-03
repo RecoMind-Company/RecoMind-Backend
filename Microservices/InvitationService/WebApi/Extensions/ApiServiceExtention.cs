@@ -4,12 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Builder;
 
 namespace WebApi.Extensions;
 
 public static class ApiServiceExtention
 {
-    public static void AddPresentationServices(this IHostApplicationBuilder builder, IConfiguration configuration)
+    public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
