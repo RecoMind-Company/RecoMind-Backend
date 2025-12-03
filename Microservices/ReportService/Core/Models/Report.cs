@@ -8,5 +8,4 @@ public class Report
     public DateTime GeneratedDate { get; set; }
     public string FileType { get; set; } = default!;
     public string FilePath { get; set; } = default!;
-    public DateTime CreatedAt { get; set; }
 }
