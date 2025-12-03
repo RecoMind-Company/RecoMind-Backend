@@ -14,9 +14,7 @@ namespace Infrastructure.Migrations
                 name: "AdminId",
                 table: "Companies",
                 type: "nvarchar(max)",
-                nullable: true);
-
-            
+                nullable: true);            
         }
 
         /// <inheritdoc />
@@ -24,9 +22,7 @@ namespace Infrastructure.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "AdminId",
-                table: "Companies");
-
-           
+                table: "Companies");           
         }
     }
 }
