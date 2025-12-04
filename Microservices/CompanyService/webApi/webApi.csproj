@@ -37,8 +37,8 @@
   </ItemGroup>
 
 	<ItemGroup>
-    <Protobuf Include="Protos/AuthenticationMessages.proto" GrpcServices="client" />
-    <Protobuf Include="Protos/AuthenticationService.proto" GrpcServices="client" />
-    <Protobuf Include="Protos/SubscriptionService.proto" GrpcServices="client" />
+    <Protobuf Include="Protos/AuthenticationMessages.proto" />
+    <Protobuf Include="Protos/AuthenticationService.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos/SubscriptionService.proto" GrpcServices="Client" />
 	</ItemGroup>
 </Project>
