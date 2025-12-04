@@ -5,12 +5,16 @@ using Core.Services;
 using Core.Services.Interface;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;  // ✅ أضف هذا السطر
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Server.Kestrel.Core;  // ✅ أضف هذا السطر
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
+using System.Text;
 
 namespace WebApi
 {
@@ -41,25 +45,69 @@ namespace WebApi
                 // اقرأ من environment أولاً (أولوية أعلى)
                 var httpPort = int.Parse(
                     Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
                     builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
                     "8001"
                 );
 
                 var grpcPort = int.Parse(
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
                     "5001"
                 );
+
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
+
+            builder.Services.AddSwaggerGen(cfg =>
+            {
+                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                });
+                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
+               {
+                   {
+                   new OpenApiSecurityScheme
+                       {
+                           Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                       },
+                       []
+                   }
+               });
+            });
+
+            builder.Services.AddAuthentication(config =>
+            {
+                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["JwtOptions:Issuer"],
+                    ValidAudience = builder.Configuration["JwtOptions:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
+                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                };
             });
 
             builder.Services.AddGrpc();
             builder.Services.AddGrpcClient<RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient>(o =>
             {
-                o.Address = new Uri("http://authenticationservice:8000");            // AuthenticationService service address
+                o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
             });
 
             // Auto-register all AutoMapper profiles in loaded assemblies (no need to update this file when profiles are added)
