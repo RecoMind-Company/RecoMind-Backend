@@ -14,7 +14,7 @@ namespace Core.Services
         private readonly IAiClientService _aiClientService;
         private readonly IMapper _mapper;
 
-        public ChatBotService( IUnitOfWork<ChatMessage> unitOfWork,
+        public ChatBotService(IUnitOfWork<ChatMessage> unitOfWork,
             IAiClientService aiClientService,
             IMapper mapper)
         {
@@ -23,8 +23,8 @@ namespace Core.Services
             _mapper = mapper;
         }
 
-        public async Task<ChatMessageResponseDto> HandelQuery( CreateChatRequestDto requestDto )
-        {            
+        public async Task<ChatMessageResponseDto> HandelQuery(CreateChatRequestDto requestDto)
+        {
             // Call Ai Service 
             var aiResponse = new ApiResponseDto();
             try
@@ -37,7 +37,7 @@ namespace Core.Services
                 }
             }
             catch (Exception)
-            {                
+            {
                 aiResponse.Success = false;
                 aiResponse.Message = " The AI service is currently unavailable. Please try again later.";
                 return _mapper.Map<ChatMessageResponseDto>(aiResponse);
@@ -50,6 +50,7 @@ namespace Core.Services
             entity.Id = Guid.NewGuid().ToString();
             entity.Response = aiResponse.Message;
             entity.TimeStamp = DateTime.UtcNow;
+            entity.Query = requestDto.Query;
 
 
             // 3. Save
@@ -59,31 +60,61 @@ namespace Core.Services
             // 4. Return DTO
             return _mapper.Map<ChatMessageResponseDto>(saved);
         }
-        public async Task<string> DeleteQuery( string queryId )
-        {
-            var message = await _unitOfWork.Entity.GetByIdAsync( queryId );
 
-            if (message == null)
+        public async Task<IEnumerable<GetHistoryDto>> GetHistory(string userId)
+        {
+            var messages = await _unitOfWork.Entity.FindAll(m => m.UserId == userId);
+
+            if (messages == null || !messages.Any())
             {
-                throw new KeyNotFoundException(queryId);
+                throw new KeyNotFoundException($"User With Id : {userId} Not Found ");
             }
 
-            var result =  _unitOfWork.Entity.Delete(message);
-            await _unitOfWork.Save();
+            var responseDtos = _mapper.Map<IEnumerable<GetHistoryDto>>(messages);
 
-            return $"Query With Id {result.Id} Has Been Deleted Successfuly ";
+            return responseDtos;
         }
 
-        public async Task<ChatMessageResponseDto> GetChatMessageById(string queryId)
+        public async Task DeleteHistory(string userId)
         {
-            var message = await _unitOfWork.Entity.GetByIdAsync(queryId);
+            var messages = await _unitOfWork.Entity.FindAll(x => x.UserId == userId);
 
-            if (message == null)
+            if (messages.Any())
             {
-                throw new KeyNotFoundException(queryId);
+                foreach (var message in messages)
+                {
+                     _unitOfWork.Entity.Delete(message);
+                }
+                await _unitOfWork.Save();
             }
-
-            return _mapper.Map<ChatMessageResponseDto>(message);
+            throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
         }
+
+        //public async Task<string> DeleteQuery( string queryId )
+        //{
+        //    var message = await _unitOfWork.Entity.GetByIdAsync( queryId );
+
+        //    if (message == null)
+        //    {
+        //        throw new KeyNotFoundException(queryId);
+        //    }
+
+        //    var result =  _unitOfWork.Entity.Delete(message);
+        //    await _unitOfWork.Save();
+
+        //    return $"Query With Id {result.Id} Has Been Deleted Successfuly ";
+        //}
+
+        //public async Task<ChatMessageResponseDto> GetChatMessageById(string queryId)
+        //{
+        //    var message = await _unitOfWork.Entity.GetByIdAsync(queryId);
+
+        //    if (message == null)
+        //    {
+        //        throw new KeyNotFoundException(queryId);
+        //    }
+
+        //    return _mapper.Map<ChatMessageResponseDto>(message);
+        //}
     }
 }

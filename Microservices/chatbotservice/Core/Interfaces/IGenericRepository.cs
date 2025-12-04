@@ -16,6 +16,6 @@ namespace Core.Interfaces
 
         // to find by feature
         public Task<List<T>> FindAll(Expression<Func<T, bool>> predicate);
-
+        public  Task<T> Find(Expression<Func<T, bool>> predicate);
     }
 }

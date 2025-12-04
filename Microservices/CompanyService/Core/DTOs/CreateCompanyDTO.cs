@@ -8,11 +8,14 @@ namespace Core.DTOs
 {
     public class CreateCompanyDTO
     {
-        public string Name { get; set; }
-        public string Industry { get; set; } 
-        public string Country { get; set; } 
-        public string Size { get; set; }
-        public string Code {  get; set; }         
-        public string? SubscriptionId { get; set; }
+        public string? Name { get; set; }
+        public string? Industry { get; set; } 
+        public string? Country { get; set; } 
+        public string? Size { get; set; }
+        public string? Code {  get; set; }         
+        public string? Description { get; set; }
+                     
+        public string?  AdminId { get; set; }
+        public string?  SubscriptionId { get; set; }
     }
 }

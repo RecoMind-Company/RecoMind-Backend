@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.DTOs;
 using Core.Models;
+using Core.Services.Protos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Core.Mapping
         public ChatMappingProfile()
         {
             CreateMap<ChatMessage, ChatMessageResponseDto>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src=>src.Id))
                 .ForMember(dest => dest.TimeStamp, opt => opt.Ignore())
                 .ReverseMap();
 
@@ -29,6 +30,15 @@ namespace Core.Mapping
                 .ForMember(dest => dest.TimeStamp, opt => opt.Ignore())
                 .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src.Message))
                 .ReverseMap();
+
+
+            // Mapping between CreateChatRequestDto and CreateChatRequest (gRPC)
+
+            CreateMap<CreateChatRequestDto, CreateChatRequest>();
+
+            CreateMap<chatHistory, GetHistoryDto>()
+                .ReverseMap();
+
         }
     }
 

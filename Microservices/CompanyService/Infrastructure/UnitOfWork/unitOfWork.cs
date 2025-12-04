@@ -5,13 +5,13 @@ using Infrastructure.Repository;
 
 namespace Infrastructure.UnitOfWork
 {
-    public sealed class UnitOfWork<T> : IUnitOfWork<T>, IDisposable where T : class
+    public sealed class unitOfWork<T> : IUnitOfWork<T>, IDisposable where T : class
     {
         private readonly CompanyDbContext _context;
         private IGenericRepository<T>? _repository;
         private bool _disposed;
 
-        public UnitOfWork(CompanyDbContext context)
+        public unitOfWork(CompanyDbContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
