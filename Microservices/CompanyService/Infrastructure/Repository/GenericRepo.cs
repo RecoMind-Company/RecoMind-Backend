@@ -56,7 +56,12 @@ namespace Infrastructure.Repository
         {
             _dbSet.Remove(entity);
             return entity;
-        }               
+        }
+
+        public async Task<T> Find(Expression<Func<T, bool>> predicate)
+        {
+           return await _dbSet.Where(predicate).FirstOrDefaultAsync();
+        }
     }
 
 }

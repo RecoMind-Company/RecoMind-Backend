@@ -4,6 +4,9 @@ using Core.Service.Interface;
 using Core.Service.Protos;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.HttpResults;
+using RecoMindAuthenticationAPI.Grpc.Authentication;
 using static Core.Service.Protos.subscriptionService;
 
 namespace webApi.Grpc.GrpcImplementations
@@ -13,13 +16,16 @@ namespace webApi.Grpc.GrpcImplementations
         private readonly IMapper _mapper;
         private readonly ICompanyService _companyService;
         private readonly subscriptionService.subscriptionServiceClient _subscriptionServiceClient;
-
-
-        public CompanyServiceImpl(IMapper mapper, ICompanyService coreService, subscriptionService.subscriptionServiceClient subscriptionServiceClient)
+        private readonly RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient _authenticationServiceClient;
+        public CompanyServiceImpl(IMapper mapper,
+            ICompanyService coreService,
+            subscriptionService.subscriptionServiceClient subscriptionServiceClient,
+            RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient authenticationServiceClient)
         {
             _mapper = mapper;
             _companyService = coreService;
             _subscriptionServiceClient = subscriptionServiceClient;
+            _authenticationServiceClient = authenticationServiceClient;
         }
 
         public override async Task<CompanyResponse> Create(CreateCompanyRequest request, ServerCallContext context)
@@ -33,14 +39,19 @@ namespace webApi.Grpc.GrpcImplementations
                     var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = createDto.SubscriptionId });
 
                     if (subscription == null)
-                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"Subscription with ID {createDto.SubscriptionId} not found."));
-
-                    var result1 = await _companyService.CreateCompanyAsync(createDto);
-                    return _mapper.Map<CompanyResponse>(result1);
+                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"Subscription with ID {createDto.SubscriptionId} not found."));                        
                 }
 
-                var result2 = await _companyService.CreateCompanyAsync(createDto);
-                return _mapper.Map<CompanyResponse>(result2);
+                if (!string.IsNullOrEmpty(createDto.AdminId))
+                {
+                    var admin = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = createDto.AdminId});
+
+                    if (admin == null || !(admin.Role.ToLower().Equals("admin")) )
+                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"User with ID {createDto.SubscriptionId} Not Valid."));                  
+                }
+
+                var result = await _companyService.CreateCompanyAsync(createDto);
+                return _mapper.Map<CompanyResponse>(result);
             }
             catch (ArgumentNullException ex)
             {
@@ -81,6 +92,22 @@ namespace webApi.Grpc.GrpcImplementations
             {
                 var updateDto = _mapper.Map<CreateCompanyDTO>(request);
 
+                if (!string.IsNullOrEmpty(updateDto.SubscriptionId))
+                {
+                    var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = updateDto.SubscriptionId });
+
+                    if (subscription == null)
+                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"Subscription with ID {updateDto.SubscriptionId} not found."));
+                }
+
+                if (!string.IsNullOrEmpty(updateDto.AdminId))
+                {
+                    var admin = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = updateDto.AdminId });
+
+                    if (admin == null || !(admin.Role.ToLower().Equals("admin")))
+                        throw new RpcException(new Status(StatusCode.InvalidArgument, $"User with ID {updateDto.SubscriptionId} Not Valid."));
+                }               
+
                 var updatedCompanyDto = await _companyService.UpdateCompanyAsync(request.Id, updateDto);
 
                 if (updatedCompanyDto == null)
@@ -111,7 +138,7 @@ namespace webApi.Grpc.GrpcImplementations
             {
                 throw new RpcException(new Status(StatusCode.InvalidArgument, $"Invalid argument: {ex.ParamName}"));
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException)
             {
                 throw new RpcException(new Status(StatusCode.NotFound, $"Company with ID {request.Id} not found for update."));
             }
@@ -136,6 +163,23 @@ namespace webApi.Grpc.GrpcImplementations
             catch (Exception ex)
             {
                 throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while Deleting the company: {ex.Message}"));
+            }
+        }
+
+        public override async Task<CompanyResponse> GetCompanyByAdminId(GitByAdminIdRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var item = await _companyService.GetCompanyByAdminId(request.AdminId);
+                return _mapper.Map<CompanyResponse>(item); 
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Resource not found."));
+            }
+            catch (ArgumentException)
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument , "Resource not found."));
             }
         }
         public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request, ServerCallContext context)
@@ -178,10 +222,10 @@ namespace webApi.Grpc.GrpcImplementations
             var model = new CreateCompanyDTO
             {
                 Name = company.Name,
-                Code = company.Code,
+                //Code = company.Code,
                 Country = company.Country,
                 Industry = company.Industry,
-                Size = company.Size,
+                //Size = company.Size,
                 SubscriptionId = company.SubscriptionId
             };
 
@@ -191,10 +235,10 @@ namespace webApi.Grpc.GrpcImplementations
             {
                 Id = updatedCompanyDTO.Id,
                 Name = updatedCompanyDTO.Name,
-                Code = updatedCompanyDTO.Code,
+                //Code = updatedCompanyDTO.Code,
                 Country = updatedCompanyDTO.Country,
                 Industry = updatedCompanyDTO.Industry,
-                Size = updatedCompanyDTO.Size,
+                //Size = updatedCompanyDTO.Size,
                 SubscriptionId = updatedCompanyDTO.SubscriptionId
             };
         }

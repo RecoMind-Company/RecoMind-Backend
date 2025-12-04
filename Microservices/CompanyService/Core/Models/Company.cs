@@ -17,10 +17,12 @@ namespace Core.Models
         public string Country { get; set; } 
         public string? Size { get; set; }
         public string Code { get; set; }
-        public DateTime CreatedAt { get; set; } 
-      
+        public DateTime CreatedAt { get; set; }        
+        public string? Description { get; set; }
+
         // Relationships
-        public string? SubscriptionId { get; set; }               
+        public string? SubscriptionId { get; set; }  
+        public string? AdminId { get; set; }
         //public IEnumerable<string> CompanySettingsId { get; set; }
         //public IEnumerable<String> TeamsId { get; set; }
     }

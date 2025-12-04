@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Builder;
 
 namespace WebApi.Extensions;
 
 public static class ApiServiceExtention
 {
-    public static void AddPresentationServices(this IHostApplicationBuilder builder, IConfiguration configuration)
+    public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -53,6 +55,28 @@ public static class ApiServiceExtention
                 ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
             };
         });
+
+        builder.WebHost.ConfigureKestrel(options =>
+        {
+            // اقرأ من environment أولاً (أولوية أعلى)
+            var httpPort = int.Parse(
+                Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                "8001"
+            );
+
+            var grpcPort = int.Parse(
+                Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                "5001"
+            );
+
+            options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+        });
+
         builder.Services.AddGrpc();
         builder.Services.AddGrpcReflection();
         builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(o =>
@@ -60,13 +84,13 @@ public static class ApiServiceExtention
             o.Address = new Uri(configuration["Urls:AuthenticationServiceUrl"]);
         }).ConfigurePrimaryHttpMessageHandler(() =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
+            
+            
                 return new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
-            }
+            
             return new HttpClientHandler();
         });
     }

@@ -5,4 +5,5 @@ public enum Periodic
     Weekly,
     Monthly,
     Quarterly,
+    Yearly
 }

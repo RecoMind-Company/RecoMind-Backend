@@ -9,6 +9,8 @@ using Team.Core.Mapper;
 using Team.Core.Services;
 using Team.Infrastructure.Data;
 using Team.Infrastructure.Repositories;
+using Team.WebApi.GrpcServices;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Team.WebApi
 {
@@ -53,15 +55,15 @@ namespace Team.WebApi
                     In = ParameterLocation.Header,
                 });
                 cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-                 {
-                     {
-                     new OpenApiSecurityScheme
-                         {
-                             Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-                         },
-                         []
-                     }
-                 });
+                {
+                    {
+                    new OpenApiSecurityScheme
+                        {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                        },
+                        []
+                    }
+                });
             });
 
             builder.Services.AddAuthentication(config =>
@@ -85,17 +87,36 @@ namespace Team.WebApi
                 };
             });
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
+
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
+
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
