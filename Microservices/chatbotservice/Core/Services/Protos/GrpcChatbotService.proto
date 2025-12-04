@@ -1,0 +1,38 @@
+﻿syntax = "proto3";
+
+package Core.Services.Protos;
+
+option csharp_namespace = "Core.Services.Protos";
+
+
+service GrpcChatbotService {
+    rpc HandelQuery (CreateChatRequest) returns (ChatMessageResponse);
+    rpc GetHistory (GetHistoryRequest) returns (GetHistoryResponse);
+    rpc ClearHistory (GetHistoryRequest) returns (DeleteResponse);
+}
+
+message GetHistoryRequest {
+    string userID = 1;
+}
+
+message chatHistory {
+    string query = 1;
+    string responseMessage = 2;
+}
+
+message GetHistoryResponse {
+    repeated chatHistory chatHistory = 1;
+}
+message CreateChatRequest {
+    string userID = 1;
+    string userRole = 2;
+    string query = 3;
+}
+
+message ChatMessageResponse {
+    string responseMessage = 1;
+}
+
+message DeleteResponse {
+    string message = 1;
+}
