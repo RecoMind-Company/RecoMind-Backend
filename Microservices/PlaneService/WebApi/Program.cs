@@ -62,15 +62,15 @@ namespace WebApi
 
                                     // Configure the HTTP request pipeline.
 
-            if (app.Environment.IsDevelopment())
-            {
+            
+            
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            
 
             app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-            app.UseHttpsRedirection();
+                
 
             app.UseAuthorization();
 

@@ -40,12 +40,6 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
 
-            builder.Services.Configure<AiServiceOptions>(builder.Configuration.GetSection("AiService"));
-
-            builder.Services.AddHttpClient<AiClientService>(client =>
-            {
-                client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("AiService:BaseUrl") ?? "http://localhost:5000");
-            });
 
             var app = builder.Build();
 
@@ -57,13 +51,11 @@ namespace WebApi
             }
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
