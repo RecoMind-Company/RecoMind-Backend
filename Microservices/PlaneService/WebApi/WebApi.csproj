@@ -32,9 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\TeamService\Team.WebApi\Protos\team.proto" GrpcServices="client">
-      <Link>Protos\team.proto</Link>
-    </Protobuf>
+    <Protobuf Include="Protos/team.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>
