@@ -3,6 +3,7 @@ using Hangfire;
 using Infrastructure.AI;
 using Infrastructure.Context;
 using Infrastructure.FileStorage;
+using Infrastructure.gRPC;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -35,5 +36,6 @@ public static class InfrastructureServicesExtension
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IGenerateReportService, GenerateReportService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IGrpcTeamService, GrpcTeamService>();
     }
 }

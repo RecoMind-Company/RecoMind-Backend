@@ -1,6 +1,7 @@
 using Core.Extentions;
 using Hangfire;
 using Infrastructure.Extentions;
+using WebApi.CustomMiddlewares;
 using WebApi.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +20,9 @@ var app = builder.Build();
 
     // app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
+app.UseMiddleware<CustomExceptionHandlerMiddleware>();
 app.UseHangfireDashboard("/dashboard");
 app.Run();

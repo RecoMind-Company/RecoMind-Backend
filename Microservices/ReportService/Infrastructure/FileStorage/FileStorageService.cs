@@ -5,6 +5,7 @@ namespace Infrastructure.FileStorage;
 
 public class FileStorageService(IWebHostEnvironment env) : IFileStorageService
 {
+
     public async Task<string> SaveFileAsync(string content)
     {
         // get the full physical path to the "StaticFiles/Reports" directory
@@ -24,4 +25,13 @@ public class FileStorageService(IWebHostEnvironment env) : IFileStorageService
 
         return dynamicPath; // returning the dynamic path
     }
+    public async Task<string> ReadFileAsync(string dynamicPath)
+    {
+        string rootPath = env.ContentRootPath;
+        string fullPath = Path.Combine(rootPath, dynamicPath);
+        if (!File.Exists(fullPath))
+            return "";
+        return await File.ReadAllTextAsync(fullPath);
+    }
+
 }

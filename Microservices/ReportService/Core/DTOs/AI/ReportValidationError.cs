@@ -2,7 +2,7 @@
 
 namespace Core.DTOs.AI;
 
-public class ReportErrorDetailsDto
+public class ReportValidationError
 {
     [JsonPropertyName("detail")]
     public List<ErrorDetail> Details { get; set; } = new List<ErrorDetail>();
