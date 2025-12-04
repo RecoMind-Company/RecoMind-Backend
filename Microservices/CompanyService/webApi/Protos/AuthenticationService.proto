@@ -1,0 +1,16 @@
+
+syntax = "proto3";
+import  "google/protobuf/empty.proto";
+import "AuthenticationMessages.proto";
+option csharp_namespace = "RecoMindAuthenticationAPI.Grpc.Authentication";
+service AuthenticationService{
+	rpc Register(RegisterMessage) returns (AuthenticatedMessage);
+	rpc Login(LoginMessage) returns (AuthenticatedMessage);
+	rpc CreateRefreshToken(TokenMessage) returns (AuthenticatedMessage);
+	rpc ForgetPassword(ForgetPasswordMessage) returns (BaseMessage);
+	rpc ResetPassword(ResetPasswordMessage) returns (BaseMessage);
+	rpc VerifyCode(VerifyCodeMessage) returns (BaseMessage);
+	rpc GetUserById(GetUserByIdMessage) returns (UserToReturnMessage);
+	rpc GetUsers(GetUsersMessage) returns (UsersToReturnMessage);
+}
+
