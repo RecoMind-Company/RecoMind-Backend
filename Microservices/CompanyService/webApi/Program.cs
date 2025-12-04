@@ -12,6 +12,8 @@ using System;
 using webApi.Grpc.GrpcImplementations;
 using webApi.Mapping;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+
 
 
 namespace Campany.API
@@ -55,12 +57,24 @@ namespace Campany.API
             // Configure Kestrel to listen on a specific port for gRPC
             builder.WebHost.ConfigureKestrel(options =>
             {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-                options.ListenAnyIP(8000, listenOptions =>
-                {
-                    listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-                });
-            });     
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
             if (builder.Environment.IsDevelopment())
             {
