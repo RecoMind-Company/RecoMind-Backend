@@ -1,11 +1,12 @@
 ﻿namespace WebApi.Extensions;
-using WebApi.Grpc;
+
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 
 public static class ApiServicesExtention
 {
-    public static void AddPresentationServices(this IHostApplicationBuilder builder, IConfiguration configuration)
+    public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
 
 
@@ -37,5 +38,5 @@ public static class ApiServicesExtention
 
 
 
-    
+
 }
