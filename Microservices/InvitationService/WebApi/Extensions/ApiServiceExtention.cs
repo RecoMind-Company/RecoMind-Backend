@@ -57,9 +57,13 @@ public static class ApiServiceExtention
         });
 
         builder.WebHost.ConfigureKestrel(options =>
-        {
-            options.ListenAnyIP(8000, o => o.Protocols = HttpProtocols.Http1AndHttp2);
-        });
+            {
+                var httpPort = int.Parse(builder.Configuration["Kestrel:Endpoints:Http:Port"] ?? "8001");
+                var grpcPort = int.Parse(builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ?? "5001");
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
         builder.Services.AddGrpc();
         builder.Services.AddGrpcReflection();
