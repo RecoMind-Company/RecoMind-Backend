@@ -10,7 +10,7 @@ public static class InfrastructureServicesExtension
 {
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnectionString");
+        var connectionString = configuration.GetConnectionString("ProductionConnection_Report");
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(connectionString);
