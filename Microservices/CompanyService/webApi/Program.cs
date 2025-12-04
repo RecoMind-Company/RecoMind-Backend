@@ -6,11 +6,15 @@ using Core.Service.Protos;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using RecoMindAuthenticationAPI.Grpc.Authentication;
 using System;
+using System.Text;
 using webApi.Grpc.GrpcImplementations;
 using webApi.Mapping;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -59,6 +63,7 @@ namespace Campany.API
             });
 
             // Configure Kestrel to listen on a specific port for gRPC
+
             builder.WebHost.ConfigureKestrel(options =>
             {
                 // اقرأ من environment أولاً (أولوية أعلى)
@@ -78,6 +83,49 @@ namespace Campany.API
 
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
+
+            builder.Services.AddSwaggerGen(cfg =>
+            {
+                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                });
+                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
+               {
+                   {
+                   new OpenApiSecurityScheme
+                       {
+                           Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                       },
+                       []
+                   }
+               });
+            });
+
+            builder.Services.AddAuthentication(config =>
+            {
+                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer =builder.Configuration ["JwtOptions:Issuer"],
+                    ValidAudience = builder.Configuration["JwtOptions:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
+                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                };
             });
 
             if (builder.Environment.IsDevelopment())
