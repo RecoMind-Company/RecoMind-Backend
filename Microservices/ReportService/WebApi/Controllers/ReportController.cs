@@ -1,11 +1,13 @@
 ﻿using Core.DTOs;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ReportController(IReportService reportService) : ControllerBase
 {
     [HttpGet("teams/{teamId}")]
