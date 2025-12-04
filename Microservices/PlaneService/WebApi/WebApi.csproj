@@ -28,4 +28,10 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Protobuf Include="..\..\TeamService\Team.WebApi\Protos\team.proto" GrpcServices="client">
+      <Link>Protos\team.proto</Link>
+    </Protobuf>
+  </ItemGroup>
+
 </Project>

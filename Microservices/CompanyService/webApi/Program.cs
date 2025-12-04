@@ -1,13 +1,14 @@
 
 using Core.Configuration;
 using Core.Interfaces;
-using Core.Service;
 using Core.Service.Interface;
 using Core.Service.Protos;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using RecoMindAuthenticationAPI.Grpc.Authentication;
 using System;
 using webApi.Grpc.GrpcImplementations;
 using webApi.Mapping;
@@ -28,7 +29,7 @@ namespace Campany.API
                         sqlOptions.MigrationsAssembly(typeof(CompanyDbContext).Assembly.FullName)                                                  
                         ));
 
-            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(unitOfWork<>));
             builder.Services.AddScoped(typeof(ICompanyService), typeof(Core.Service.CompanyService));
 
             builder.Services.AddAutoMapper( typeof(CopmanyMapping),typeof(MappingForRpc));
@@ -47,9 +48,17 @@ namespace Campany.API
 
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
+<<<<<<< Updated upstream
                 o.Address = new Uri("https://localhost:7142");            // Subscription service address
+=======
+                o.Address = new Uri("http://subscriptionservice:8000");              // Subscription service address
+>>>>>>> Stashed changes
             });
 
+            builder.Services.AddGrpcClient <RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient> (o =>
+            {
+                o.Address = new Uri("http://authenticationservice:8000");            // AuthenticationService service address
+            });
 
             // Configure Kestrel to listen on a specific port for gRPC
             builder.WebHost.ConfigureKestrel(options =>

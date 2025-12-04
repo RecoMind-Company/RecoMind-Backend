@@ -8,6 +8,11 @@ using Infrastructure.Data;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Grpc;
+<<<<<<< Updated upstream
+=======
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Team.Grpc;  // ✅ أضف هذا السطر
+>>>>>>> Stashed changes
 
 namespace WebApi
 {
@@ -43,7 +48,12 @@ namespace WebApi
             {
                 options.Interceptors.Add<GlobalGrpcExceptionInterceptor>();
             });
-            
+
+            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
+            {
+                o.Address = new Uri("http://teamservice:8000");            // Team service address
+            });
+
             builder.Services.AddSingleton<GlobalGrpcExceptionInterceptor>();
             
                                     // Controllers

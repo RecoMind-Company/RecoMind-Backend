@@ -12,7 +12,11 @@ namespace Core.Interfaces
     {
         Task<IEnumerable<T>> GetAllAsync();
         public Task<T?> GetByIdNoTrackingAsync(string id);
+<<<<<<< Updated upstream
         public Task<T?> FindAsync(Expression<Func<T, bool>> predicate);
+=======
+        public Task<T> Find(Expression<Func<T, bool>> predicate);
+>>>>>>> Stashed changes
         public Task<T?> GetByIdAsync(string id);
         Task<T> AddAsync(T entity);
         Task<T> UpdateAsync(T entity);

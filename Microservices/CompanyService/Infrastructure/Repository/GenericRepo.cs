@@ -58,9 +58,15 @@ namespace Infrastructure.Repository
             return entity;
         }
 
+<<<<<<< Updated upstream
         public Task<T?> FindAsync(Expression<Func<T, bool>> predicate)
         {
             return _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate);
+=======
+        public async Task<T> Find(Expression<Func<T, bool>> predicate)
+        {
+           return await _dbSet.Where(predicate).FirstOrDefaultAsync();
+>>>>>>> Stashed changes
         }
     }
 

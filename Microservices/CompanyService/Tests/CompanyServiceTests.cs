@@ -2,6 +2,7 @@ using AutoMapper;
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Core.Service.Protos;
 using Core.Service;
 using Moq;
 

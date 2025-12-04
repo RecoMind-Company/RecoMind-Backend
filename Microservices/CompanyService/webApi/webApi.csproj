@@ -34,8 +34,20 @@
   </ItemGroup>
 
 	<ItemGroup>
+<<<<<<< Updated upstream
 	  <Protobuf Include="..\..\SubscriptionService\Core\Service\Protos\SubscriptionService.proto" GrpcServices="client">
 	    <Link>Protos\SubscriptionService.proto</Link>
 	  </Protobuf>
+=======
+    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationMessages.proto" GrpcServices="client">
+      <Link>Protos\AuthenticationMessages.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationService.proto" GrpcServices="client">
+      <Link>Protos\AuthenticationService.proto</Link>
+    </Protobuf>
+    <Protobuf Include="Protos/SubscriptionService.proto" GrpcServices="client">
+      <Link>Protos\SubscriptionService.proto</Link>
+    </Protobuf>
+>>>>>>> Stashed changes
 	</ItemGroup>
 </Project>

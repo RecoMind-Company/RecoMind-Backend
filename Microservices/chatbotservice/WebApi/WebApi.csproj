@@ -24,12 +24,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Grpc\" />
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationMessages.proto" GrpcServices="client">
+      <Link>Protos\AuthenticationMessages.proto</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationService.proto" GrpcServices="client">
+      <Link>Protos\AuthenticationService.proto</Link>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

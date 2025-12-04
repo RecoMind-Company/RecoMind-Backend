@@ -24,6 +24,9 @@ service CompanyService {
     rpc Delete (DeleteCompanyRequest)
         returns (DeleteCompanyResponse);
 
+    rpc GetCompanyByAdminId (GitByAdminIdRequest)
+        returns (CompanyResponse);
+
     rpc AssignSubscripion (AssignSubscriptionRequest)
         returns (CompanyResponse);
 }
@@ -32,15 +35,25 @@ message GitByIdRequest {
     string id = 1;
 }
 
+message GitByAdminIdRequest {
+    string adminId = 1;
+}
+
 message CreateCompanyRequest {
     string name = 1;
     string industry = 2;
     string country = 3;
     string size = 4;
     string code = 5;
+<<<<<<< Updated upstream
     string SubscriptionId = 6;
     string BusinessDescription = 7;
     string AdminId= 8;
+=======
+    string discription = 7;
+    string adminId = 8;
+    string subscriptionId = 9;
+>>>>>>> Stashed changes
 }
 
 // UPDATE
@@ -50,9 +63,10 @@ message UpdateCompanyRequest {
     string industry = 3;
     string country = 4;
     string size = 5;
-    string code = 6;
-    string Discription = 7;
-    string SubscriptionId = 8;
+    string code = 6;    
+    string discription = 7;
+    string adminId = 8;
+    string subscriptionId = 9;
 }
 
 // DELETE
@@ -70,12 +84,19 @@ message CompanyResponse {
     string id = 1;
     string name = 2;
     string industry = 3;
+<<<<<<< Updated upstream
     string country = 4;
     string size = 5;
     string code = 6;    
     google.protobuf.Timestamp createdAt = 7;
     string SubscriptionId = 8;
     string BusinessDescription = 9;
+=======
+    string country = 4 ;
+    google.protobuf.Timestamp createdAt = 5;
+    string adminId = 6;
+    string subscriptionId = 7;
+>>>>>>> Stashed changes
 }
 
 message GetAllCompaniesResponse {

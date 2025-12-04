@@ -12,8 +12,14 @@ namespace Core.DTOs
         public string Industry { get; set; } 
         public string Country { get; set; } 
         public string Size { get; set; }
+<<<<<<< Updated upstream
         public string Code {  get; set; }
         public string BusinessDescription { get; set; }
+=======
+        public string Code {  get; set; }         
+        public string Description { get; set; }
+
+>>>>>>> Stashed changes
         public string? AdminId { get; set; }
         public string? SubscriptionId { get; set; }
     }

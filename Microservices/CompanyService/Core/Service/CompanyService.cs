@@ -2,20 +2,16 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Core.Service
 {
     public class CompanyService : ICompanyService
     {
 
-        readonly IUnitOfWork<Core.Models.Company> _CompanyUnitOfWork;
+        readonly IUnitOfWork<Models.Company> _CompanyUnitOfWork;
         readonly private IMapper _mapper;
-        public CompanyService(IUnitOfWork<Core.Models.Company> CopmanyUnitOfWork, IMapper mapper)
+        public CompanyService(IUnitOfWork<Models.Company> CopmanyUnitOfWork, IMapper mapper)
         {
             _CompanyUnitOfWork = CopmanyUnitOfWork;
             _mapper = mapper;
@@ -23,8 +19,13 @@ namespace Core.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
+<<<<<<< Updated upstream
                        
             var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
+=======
+        
+            var entity = _mapper.Map<Models.Company>(createCompanyDTO);
+>>>>>>> Stashed changes
             entity.Id = Guid.NewGuid().ToString();
             entity.CreatedAt = DateTime.UtcNow;
             var result = await _CompanyUnitOfWork.Entity.AddAsync(entity);
@@ -48,6 +49,7 @@ namespace Core.Service
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
+<<<<<<< Updated upstream
         public async Task<GetCompanyDTO> GetCompanyByAdminId(string adminId)
         {
 
@@ -55,6 +57,15 @@ namespace Core.Service
 
             if (item == null)
                 throw new KeyNotFoundException($"Company with Admin ID '{adminId}' was not found.");
+=======
+
+        public async Task<GetCompanyDTO> GetCompanyByAdminId(string adminId)
+        {            
+            var item = await _CompanyUnitOfWork.Entity.Find(x=>x.AdminId == adminId);
+            
+            if (item == null)
+                throw new KeyNotFoundException($"Company with Code '{adminId}' was not found.");
+>>>>>>> Stashed changes
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
@@ -67,7 +78,7 @@ namespace Core.Service
             if (existingCompany == null)
                 throw new KeyNotFoundException($"Company with ID '{companyId}' was not found.");
 
-            var entity = _mapper.Map<Core.Models.Company>(companyDTO);
+            var entity = _mapper.Map<Models.Company>(companyDTO);
             entity.Id = companyId;       // Preserve ID
 
             await _CompanyUnitOfWork.Entity.UpdateAsync(entity);
