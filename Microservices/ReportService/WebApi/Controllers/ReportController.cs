@@ -14,8 +14,7 @@ public class ReportController(IReportService reportService) : ControllerBase
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        getReportDto.TeamId = teamId;
-        var result = await reportService.GetReport(getReportDto);
+        var result = await reportService.GetReport(teamId, getReportDto);
         if (result == null)
             return NotFound("there is no team with this id");
         return Ok(result);

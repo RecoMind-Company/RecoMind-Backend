@@ -11,10 +11,10 @@ public class ReportService(IGenerateReportService generateReportService,
                            IFileStorageService fileStorageService,
                            IGrpcTeamService grpcTeamService) : IReportService
 {
-    public async Task<AiReportResponseDto> GetReport(GetReportDto getReportDto)
+    public async Task<AiReportResponseDto> GetReport(string teamId, GetReportDto getReportDto)
     {
         // Call the grpc service to get the TeamName, companyId by {teamId}
-        var teamDetails = grpcTeamService.GetTeamDetails(getReportDto.TeamId);
+        var teamDetails = grpcTeamService.GetTeamDetails(teamId);
         if (teamDetails is null)
             return null;
         var analysisRequest = new AnalysisRequestDto
@@ -40,7 +40,7 @@ public class ReportService(IGenerateReportService generateReportService,
         var report = new Report
         {
             Id = Guid.NewGuid().ToString(),
-            TeamId = getReportDto.TeamId,
+            TeamId = teamId,
             FilePath = dynamicPath,
             FileType = ".txt",
             GeneratedDate = DateTime.Now,
