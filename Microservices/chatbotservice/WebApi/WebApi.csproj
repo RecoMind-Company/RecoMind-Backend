@@ -32,12 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationMessages.proto" GrpcServices="client">
-      <Link>Protos\AuthenticationMessages.proto</Link>
-    </Protobuf>
-    <Protobuf Include="..\..\AuthenticationService\RecoMindAuthenticationAPI\Grpc\Authentication\AuthenticationService.proto" GrpcServices="client">
-      <Link>Protos\AuthenticationService.proto</Link>
-    </Protobuf>
+    <Protobuf Include="Protos/AuthenticationMessages.proto" ProtoRoot="Protos" />
+    <Protobuf Include="Protos/AuthenticationService.proto" GrpcServices="Client" ProtoRoot="Protos" />
   </ItemGroup>
 
 </Project>
