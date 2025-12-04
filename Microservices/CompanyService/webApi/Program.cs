@@ -1,17 +1,24 @@
-
+﻿
 using Core.Configuration;
 using Core.Interfaces;
-using Core.Service;
 using Core.Service.Interface;
 using Core.Service.Protos;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using RecoMindAuthenticationAPI.Grpc.Authentication;
 using System;
+using System.Text;
 using webApi.Grpc.GrpcImplementations;
 using webApi.Mapping;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace Campany.API
 {
@@ -28,7 +35,7 @@ namespace Campany.API
                         sqlOptions.MigrationsAssembly(typeof(CompanyDbContext).Assembly.FullName)                                                  
                         ));
 
-            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(unitOfWork<>));
             builder.Services.AddScoped(typeof(ICompanyService), typeof(Core.Service.CompanyService));
 
             builder.Services.AddAutoMapper( typeof(CopmanyMapping),typeof(MappingForRpc));
@@ -47,20 +54,79 @@ namespace Campany.API
 
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
-                o.Address = new Uri("https://localhost:7142");            // Subscription service address
+                o.Address = new Uri("http://subscriptionservice:5004");              // Subscription service address
             });
 
+            builder.Services.AddGrpcClient <RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient> (o =>
+            {
+                o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
+            });
 
             // Configure Kestrel to listen on a specific port for gRPC
+
             builder.WebHost.ConfigureKestrel(options =>
             {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-                options.ListenAnyIP(5001, listenOptions =>
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
+
+            builder.Services.AddSwaggerGen(cfg =>
+            {
+                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
                 {
-                    listenOptions.UseHttps(); 
-                    listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
                 });
-            });     
+                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
+               {
+                   {
+                   new OpenApiSecurityScheme
+                       {
+                           Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                       },
+                       []
+                   }
+               });
+            });
+
+            builder.Services.AddAuthentication(config =>
+            {
+                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer =builder.Configuration ["JwtOptions:Issuer"],
+                    ValidAudience = builder.Configuration["JwtOptions:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
+                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                };
+            });
 
             if (builder.Environment.IsDevelopment())
             {
@@ -70,13 +136,11 @@ namespace Campany.API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
             
-            app.UseHttpsRedirection();
+            
+            // app.UseHttpsRedirection();
 
             app.UseAuthorization();
 

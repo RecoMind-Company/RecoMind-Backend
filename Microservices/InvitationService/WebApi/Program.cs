@@ -11,16 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddPresentationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddCoreServices();
+
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
-app.UseHttpsRedirection();
+app.UseStaticFiles();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

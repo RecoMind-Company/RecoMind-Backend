@@ -1,10 +1,15 @@
 ﻿using AutoMapper;
 using Core.DTOs;
+using Core.Interfaces;
 using Core.Service.Interface;
 using Core.Service.Protos;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using RecoMindAuthenticationAPI.Grpc.Authentication;
+using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
 
 namespace Company.API.Controllers
 {
@@ -14,11 +19,18 @@ namespace Company.API.Controllers
     {
         private readonly ICompanyService _companyService;
         private readonly subscriptionService.subscriptionServiceClient _subscriptionServiceClient;
+        private readonly IUnitOfWork<Core.Models.Company> _Repo;
+        RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient _authenticationServiceClient;
 
-        public CompaniesController(ICompanyService companyService, subscriptionService.subscriptionServiceClient subscriptionServiceClient)
+        public CompaniesController(ICompanyService companyService,
+            subscriptionService.subscriptionServiceClient subscriptionServiceClient,
+            IUnitOfWork<Core.Models.Company> repo ,
+             RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient authenticationServiceClient)
         {
             _companyService = companyService;
             _subscriptionServiceClient = subscriptionServiceClient;
+            _Repo = repo;
+            _authenticationServiceClient = authenticationServiceClient;
         }
 
         [HttpGet]
@@ -27,6 +39,26 @@ namespace Company.API.Controllers
         {
             var items = await _companyService.GetAllCompaniesAsync();
             return Ok(items);
+        }
+
+        [HttpGet("Admin/{AdminID}")]
+        [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByAdminId(string AdminID)
+        {
+            try
+            {
+                var item = await _companyService.GetCompanyByAdminId(AdminID);
+                return Ok(item);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
@@ -60,11 +92,17 @@ namespace Company.API.Controllers
             if (!string.IsNullOrEmpty(dto.SubscriptionId))
             {
                 var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
-                if (subscription == null)
-                    return NotFound($"Subscription Id {dto.SubscriptionId} Not Found ");
 
-                var result1 = await _companyService.CreateCompanyAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = result1.Id }, result1);
+                if (subscription == null)
+                    throw new ArgumentException( $"Subscription with ID {dto.SubscriptionId} not found.");
+            }
+
+            if (!string.IsNullOrEmpty(dto.AdminId))
+            {
+                var admin = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = dto.AdminId });
+
+                if (admin == null || !(admin.Role.ToLower().Equals("admin")))
+                    throw new ArgumentException($"User with ID {dto.SubscriptionId} Not Valid.");
             }
 
             var result2 = await _companyService.CreateCompanyAsync(dto);
@@ -122,27 +160,45 @@ namespace Company.API.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            var company = await _companyService.GetCompanyByIdAsync(Dto.companyId);
-            var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = Dto.subscriptionId });
-
+            var company = await _Repo.Entity.GetByIdAsync(Dto.companyId);          
             if (company == null)
                 return NotFound($"Company {Dto.companyId} Not Found ");
 
+            var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = Dto.subscriptionId });
             if (subscription == null)
                 return NotFound($"Subscription Id {Dto.subscriptionId} Not Found ");
 
             company.SubscriptionId = Dto.subscriptionId;
 
-            var model = new CreateCompanyDTO
+            var model = new Core.Models.Company
             {
+                Id = company.Id,
                 Name = company.Name,
                 Code = company.Code,
                 Country = company.Country,
                 Industry = company.Industry,
                 Size = company.Size,
+                AdminId = company.AdminId,
+                Description = company.Description, 
+                CreatedAt = company.CreatedAt,
                 SubscriptionId = company.SubscriptionId
             };
-            return Ok(await _companyService.UpdateCompanyAsync(company.Id, model));
+            var result = _Repo.Entity.UpdateAsync( model);
+            _Repo.Save();
+            
+            UpdateCompanyDTO updateCompanyDTO = new UpdateCompanyDTO
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Code = company.Code,
+                Country = model.Country,
+                Industry = model.Industry,
+                Size = model.Size,
+                AdminId = model.AdminId,
+                Description = model.Description,
+                SubscriptionId = model.SubscriptionId
+            };
+            return Ok(updateCompanyDTO);
         }
     }
 }

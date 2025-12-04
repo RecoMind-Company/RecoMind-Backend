@@ -3,6 +3,8 @@ using Core.DTOs;
 using Core.Service.Protos;
 using Core.Services.Interface;
 using Grpc.Core;
+using Team.Grpc;
+using static Team.Grpc.TeamGrpcService;
 
 namespace WebApi.Grpc
 {
@@ -10,16 +12,27 @@ namespace WebApi.Grpc
     {
         private readonly IPlanService _planService;
         private readonly IMapper _mapper;
-        public PlanServiceImpl(IPlanService planService , IMapper mapper)
+        private readonly TeamGrpcServiceClient _teamGrpcServiceClient;
+        public PlanServiceImpl(IPlanService planService , IMapper mapper , TeamGrpcServiceClient teamGrpcServiceClient)
         {
             _planService = planService;
             _mapper = mapper;
+            _teamGrpcServiceClient = teamGrpcServiceClient;
         }
 
         public override async Task<PlanResponse> CreatePlan(CreatePlanRequest request,ServerCallContext context)
-        {
+        { 
             var dto = _mapper.Map<CreatePlanDto>(request);
 
+            if (!string.IsNullOrEmpty( request.TeamId ))
+            {
+                GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = dto.TeamId };
+                var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
+                if (validTeamId == null)
+                {
+                    throw new KeyNotFoundException($"Team With Id {dto.TeamId} Not Found !");
+                }
+            }           
             var plan = await _planService.CreatePlan(dto);
 
             return _mapper.Map<PlanResponse>(plan);
@@ -58,7 +71,15 @@ namespace WebApi.Grpc
         public override async Task<PlanResponse> UpdatePlan(UpdatePlanRequest request, ServerCallContext context)
         {
             var dto = _mapper.Map<CreatePlanDto>(request);
-
+            if (!string.IsNullOrEmpty(request.TeamId))
+            {
+                GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = dto.TeamId };
+                var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
+                if (validTeamId == null)
+                {
+                    throw new KeyNotFoundException($"Team With Id {dto.TeamId} Not Found !");
+                }
+            }
             var plan = await _planService.UpdatePlan(request.Id , dto);
 
             return _mapper.Map<PlanResponse>(plan);

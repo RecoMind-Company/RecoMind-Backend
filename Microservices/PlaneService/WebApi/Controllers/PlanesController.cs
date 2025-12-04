@@ -1,8 +1,11 @@
-﻿using Core.DTOs;
+﻿using Azure.Core;
+using Core.DTOs;
 using Core.Services.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Migrations.Operations.Builders;
+using Team.Grpc;
+using static Team.Grpc.TeamGrpcService;
 
 namespace WebApi.Controllers
 {
@@ -11,9 +14,12 @@ namespace WebApi.Controllers
     public class PlansController : ControllerBase
     {
         private readonly IPlanService _planService;
-        public PlansController(IPlanService planService)
+        private readonly TeamGrpcServiceClient _teamGrpcServiceClient;
+
+        public PlansController(IPlanService planService , TeamGrpcServiceClient teamGrpcServiceClient)
         {
             _planService = planService;
+            _teamGrpcServiceClient = teamGrpcServiceClient;
         }
 
         [HttpGet("{planId}")]       
@@ -37,6 +43,16 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            if (!string.IsNullOrEmpty(planDto.TeamId))
+            {
+                GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = planDto.TeamId };
+                var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
+                if (validTeamId == null)
+                {
+                    throw new KeyNotFoundException($"Team With Id {planDto.TeamId} Not Found !");
+                }
+            }
             var createdPlan = await _planService.CreatePlan(planDto);
             return CreatedAtAction(nameof(GetPlan), new { planId = createdPlan.Id }, createdPlan);
         }
@@ -47,6 +63,16 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            if (!string.IsNullOrEmpty(planDto.TeamId))
+            {
+                GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = planDto.TeamId };
+                var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
+                if (validTeamId == null)
+                {
+                    throw new KeyNotFoundException($"Team With Id {planDto.TeamId} Not Found !");
+                }
             }
             var updatedPlan = await _planService.UpdatePlan(PlanId , planDto);
             return Ok(updatedPlan);

@@ -133,4 +133,20 @@ public class GrpcAuthenticationService(IAuthenticationService AuthService, IVeri
 
         return new BaseMessage { Success = response.Success, Message = response.Message };
     }
+    public override async Task<UserToReturnMessage> GetUserById(GetUserByIdMessage request, ServerCallContext context)
+    {
+        var user = await AuthService.GetUserById(request.UserId);
+        return new UserToReturnMessage { Email = user.Email ?? string.Empty, Id = user.Id ?? string.Empty, Role = user.Role ?? string.Empty };
+    }
+    public override async Task<UsersToReturnMessage> GetUsers(GetUsersMessage request, ServerCallContext context)
+    {
+        var users = await AuthService.GetUsersByIds(request.Ids.ToList());
+        if (!users.UserNames.Any())
+            return new UsersToReturnMessage { UserNames = { } };
+
+        return new UsersToReturnMessage
+        {
+            UserNames = { users.UserNames }
+        };
+    }
 }

@@ -10,4 +10,6 @@ service AuthenticationService{
 	rpc ForgetPassword(ForgetPasswordMessage) returns (BaseMessage);
 	rpc ResetPassword(ResetPasswordMessage) returns (BaseMessage);
 	rpc VerifyCode(VerifyCodeMessage) returns (BaseMessage);
+	rpc GetUserById(GetUserByIdMessage) returns (UserToReturnMessage);
+	rpc GetUsers(GetUsersMessage) returns (UsersToReturnMessage);
 }

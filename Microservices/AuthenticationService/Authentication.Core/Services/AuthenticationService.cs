@@ -24,6 +24,8 @@ public interface IAuthenticationService
     Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto);
     Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto);
     Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email);
+    Task<UserToReturnDto> GetUserById(string id);
+    Task<UsersToReturnDto> GetUsersByIds(List<string> ids);
 
 }
 
@@ -289,6 +291,33 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         };
     }
 
+    public async Task<UserToReturnDto> GetUserById(string id)
+    {
+        var user = await userManager.FindByIdAsync(id);
+        if (user is null)
+            return null;
+        var userToReturn = new UserToReturnDto
+        {
+            Email = user.Email!,
+            Id = user.Id,
+            Role = (await userManager.GetRolesAsync(user)).FirstOrDefault()!
+        };
+        return userToReturn;
+
+    }
+
+    public async Task<UsersToReturnDto> GetUsersByIds(List<string> ids)
+    {
+        var userNamesList = await userManager.Users
+             .Where(u => ids.Contains(u.Id))
+             .Select(u => u.UserName)
+             .ToListAsync();
+        var usersToReturnDto = new UsersToReturnDto
+        {
+            UserNames = userNamesList
+        };
+        return usersToReturnDto;
+    }
 }
 
 
