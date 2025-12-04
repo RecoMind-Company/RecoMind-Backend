@@ -22,6 +22,7 @@ namespace Team.Core.Services
             _mapper = mapper;
         }
 
+        // Get Functions => get team team for Rest, get team for gRPC, get list, get list for AI
 
         public async Task<TeamResponseDto> GetTeamAsync(string teamId, string companyId)
         {

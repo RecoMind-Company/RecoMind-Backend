@@ -97,9 +97,7 @@ namespace Team.Infrastructure.Repositories
                 TeamId = teamId,
                 EmployeeId = employeeId,
                 AddedAt = DateTime.UtcNow
-
             };
-
 
             await _context.TeamEmployees.AddAsync(entry);
             await _context.SaveChangesAsync();
