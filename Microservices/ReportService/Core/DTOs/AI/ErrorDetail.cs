@@ -12,5 +12,4 @@ public class ErrorDetail
 
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
-    public bool IsValid { get; set; }
 }

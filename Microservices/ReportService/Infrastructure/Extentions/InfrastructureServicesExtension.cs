@@ -3,6 +3,7 @@ using Hangfire;
 using Infrastructure.AI;
 using Infrastructure.Context;
 using Infrastructure.FileStorage;
+using Infrastructure.gRPC;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ public static class InfrastructureServicesExtension
 {
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnectionString");
+        var connectionString = configuration.GetConnectionString("ProductionConnectionString_Report");
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(connectionString);
@@ -35,5 +36,6 @@ public static class InfrastructureServicesExtension
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IGenerateReportService, GenerateReportService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IGrpcTeamService, GrpcTeamService>();
     }
 }

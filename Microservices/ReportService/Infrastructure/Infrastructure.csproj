@@ -7,7 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\team.proto" />
+    <None Remove="gRPC\TeamMessage.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.33.1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
     <PackageReference Include="Grpc.Tools" Version="2.76.0">
       <PrivateAssets>all</PrivateAssets>
@@ -25,11 +31,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="gRPC\" />
+    <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
+	  <Protobuf Include="gRPC\team.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\</ProtoRoot>
+	  </Protobuf>
+    <Protobuf Include="gRPC\TeamMessage.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\</ProtoRoot>
+	  </Protobuf>
   </ItemGroup>
 
 </Project>
