@@ -54,15 +54,15 @@ namespace Team.WebApi
                     In = ParameterLocation.Header,
                 });
                 cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-                 {
-                     {
-                     new OpenApiSecurityScheme
-                         {
-                             Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-                         },
-                         []
-                     }
-                 });
+                {
+                    {
+                    new OpenApiSecurityScheme
+                        {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                        },
+                        []
+                    }
+                });
             });
 
             builder.Services.AddAuthentication(config =>
