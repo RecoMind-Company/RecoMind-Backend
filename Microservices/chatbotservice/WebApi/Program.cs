@@ -41,17 +41,18 @@ namespace WebApi
                 // اقرأ من environment أولاً (أولوية أعلى)
                 var httpPort = int.Parse(
                     Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
                     builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
                     "8001"
                 );
 
                 var grpcPort = int.Parse(
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
                     "5001"
                 );
+
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
@@ -59,7 +60,7 @@ namespace WebApi
             builder.Services.AddGrpc();
             builder.Services.AddGrpcClient<RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient>(o =>
             {
-                o.Address = new Uri("http://authenticationservice:8000");            // AuthenticationService service address
+                o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
             });
 
             // Auto-register all AutoMapper profiles in loaded assemblies (no need to update this file when profiles are added)
