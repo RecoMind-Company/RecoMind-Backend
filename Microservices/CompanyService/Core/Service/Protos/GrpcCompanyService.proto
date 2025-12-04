@@ -12,9 +12,6 @@ service CompanyService {
 
     rpc GetAll (Empty) returns (GetAllCompaniesResponse);
 
-    rpc GetAllByAdminId (GitByIdRequest) 
-        returns (CompanyResponse);
-
     rpc Create (CreateCompanyRequest)
         returns (CompanyResponse);
 
@@ -47,6 +44,7 @@ message CreateCompanyRequest {
     string code = 5;
 <<<<<<< Updated upstream
     string SubscriptionId = 6;
+<<<<<<< HEAD
     string BusinessDescription = 7;
     string AdminId= 8;
 =======
@@ -54,6 +52,8 @@ message CreateCompanyRequest {
     string adminId = 8;
     string subscriptionId = 9;
 >>>>>>> Stashed changes
+=======
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
 }
 
 // UPDATE
@@ -90,6 +90,7 @@ message CompanyResponse {
     string code = 6;    
     google.protobuf.Timestamp createdAt = 7;
     string SubscriptionId = 8;
+<<<<<<< HEAD
     string BusinessDescription = 9;
 =======
     string country = 4 ;
@@ -97,6 +98,8 @@ message CompanyResponse {
     string adminId = 6;
     string subscriptionId = 7;
 >>>>>>> Stashed changes
+=======
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
 }
 
 message GetAllCompaniesResponse {

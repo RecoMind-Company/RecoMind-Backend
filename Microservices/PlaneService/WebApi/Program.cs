@@ -27,7 +27,7 @@ namespace WebApi
             // DbContext
             builder.Services.AddDbContext<PlanServiceDbContext>(options =>
                     options.UseSqlServer(
-                        builder.Configuration.GetConnectionString("ProdcutionConnection_Plan"),
+                        builder.Configuration.GetConnectionString("ProdcutionConnection_PlanService"),
                         sqlOptions =>
                         sqlOptions.MigrationsAssembly(typeof(PlanServiceDbContext).Assembly.FullName)
                         ));

@@ -19,8 +19,12 @@ namespace Core.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                        
+=======
+        
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
             var entity = _mapper.Map<Core.Models.Company>(createCompanyDTO);
 =======
         
@@ -49,6 +53,7 @@ namespace Core.Service
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         public async Task<GetCompanyDTO> GetCompanyByAdminId(string adminId)
         {
@@ -69,6 +74,8 @@ namespace Core.Service
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
+=======
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
         public async Task<UpdateCompanyDTO> UpdateCompanyAsync(string companyId, CreateCompanyDTO companyDTO)
         {
             if (string.IsNullOrWhiteSpace(companyId))

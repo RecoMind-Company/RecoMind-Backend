@@ -14,7 +14,7 @@ namespace DatabaseSetting.Core.Services
         Task<DbSettingResponse?> GetByIdAsync(string id, string companyId);
         Task<DbSettingModel> GetConnectionByIdAsync(string Id, string companyId);
 
-        Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request);
+        Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request, string companyId);
         Task<DbSettingResponse> UpdateAsync(string id, string companyId, UpdateDbSettingModel request);
         Task<bool> DeleteAsync(string id, string companyId);
 

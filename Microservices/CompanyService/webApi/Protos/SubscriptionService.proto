@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package Subscription.service;
+
+option csharp_namespace = "Core.Service.Protos";
+
+import "google/protobuf/timestamp.proto";
+
+service subscriptionService {
+    rpc create (createSubscriptionRequest)
+        returns (subscriptionResponse);
+
+    rpc getById (getByIdRequest)
+        returns (subscriptionResponse);
+
+    rpc getAll (empty)
+        returns (getAllSubscriptionResponse);
+
+    rpc update (updateSubscriptionRequest)
+        returns (subscriptionResponse);
+
+    rpc delete (getByIdRequest)
+        returns (deleteSubscriptionResponse);
+}
+
+message createSubscriptionRequest {
+    string planeName = 1;
+    string billingCycle = 2;
+}
+
+message getByIdRequest {
+    string id = 1;
+}
+
+message empty {
+}
+
+message updateSubscriptionRequest {
+    string id = 1;
+    string planeName = 2;
+    string billingCycle = 3;
+}
+
+message subscriptionResponse {
+    string id = 1;
+    string planeName = 2;
+    string billingCycle = 3;
+    string Price = 4;
+    google.protobuf.Timestamp startDate = 5;
+    google.protobuf.Timestamp endDate = 6;
+    bool isActive = 7;
+}
+
+message getAllSubscriptionResponse {
+    repeated subscriptionResponse subscriptions = 1; 
+}
+
+message deleteSubscriptionResponse {
+    string id = 1;
+    string msg = 2;
+}

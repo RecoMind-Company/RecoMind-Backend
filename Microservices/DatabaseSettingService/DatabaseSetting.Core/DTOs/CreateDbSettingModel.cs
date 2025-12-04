@@ -12,9 +12,6 @@ namespace DatabaseSetting.Core.DTOs
     {
         [Required]
         public string Name { get; set; }
-
-        [Required]
-        public string CompanyId { get; set; }
   
         [Required]
         public string DbType { get; set; } // SqlServer, MySql, PostgreSql

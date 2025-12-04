@@ -165,6 +165,7 @@ namespace webApi.Grpc.GrpcImplementations
                 throw new RpcException(new Status(StatusCode.Internal, $"An error occurred while Deleting the company: {ex.Message}"));
             }
         }
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         public async override Task<CompanyResponse> GetAllByAdminId(GitByIdRequest request, ServerCallContext context)
         {
@@ -203,6 +204,8 @@ namespace webApi.Grpc.GrpcImplementations
 >>>>>>> Stashed changes
             }
         }
+=======
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
         public override async Task<CompanyResponse> AssignSubscripion(AssignSubscriptionRequest request, ServerCallContext context)
         {
             var company = await _companyService.GetCompanyByIdAsync(request.CompanyId);

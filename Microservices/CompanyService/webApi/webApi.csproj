@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>82b0d735-1bf5-4d19-b65a-3c08b5c2f0d1</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
@@ -34,6 +36,7 @@
   </ItemGroup>
 
 	<ItemGroup>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 	  <Protobuf Include="..\..\SubscriptionService\Core\Service\Protos\SubscriptionService.proto" GrpcServices="client">
 	    <Link>Protos\SubscriptionService.proto</Link>
@@ -49,5 +52,10 @@
       <Link>Protos\SubscriptionService.proto</Link>
     </Protobuf>
 >>>>>>> Stashed changes
+=======
+    <Protobuf Include="Protos/SubscriptionService.proto" GrpcServices="client">
+      <Link>Protos\SubscriptionService.proto</Link>
+    </Protobuf>
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
 	</ItemGroup>
 </Project>

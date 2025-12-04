@@ -23,7 +23,7 @@ namespace Infrastructure.Repository
             _context = context;
             _dbSet = _context.Set<T>();
         }
-        public async Task<IEnumerable<T?>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
@@ -56,6 +56,7 @@ namespace Infrastructure.Repository
         {
             _dbSet.Remove(entity);
             return entity;
+<<<<<<< HEAD
         }
 
 <<<<<<< Updated upstream
@@ -68,6 +69,9 @@ namespace Infrastructure.Repository
            return await _dbSet.Where(predicate).FirstOrDefaultAsync();
 >>>>>>> Stashed changes
         }
+=======
+        }               
+>>>>>>> b55309eff502b485ffbac0fff343644a670244ed
     }
 
 }
