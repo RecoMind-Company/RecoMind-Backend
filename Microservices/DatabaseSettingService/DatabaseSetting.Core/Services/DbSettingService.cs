@@ -1,12 +1,15 @@
 ﻿using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Entities;
 using DatabaseSetting.Core.Interfaces;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace DatabaseSetting.Core.Services
 {
@@ -69,7 +72,14 @@ namespace DatabaseSetting.Core.Services
                 CompanyId = companyId,
                 Name = request.Name,
                 DbType = request.DbType,
-                ConnectionString = _encryptionService.Encrypt(request.ConnectionString),
+
+                Server = request.Server,
+                DbName = request.DbName,
+                User = request.User,
+                Password = request.Password,
+
+                ConnectionString = _encryptionService.Encrypt($"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};"),
+
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -95,11 +105,12 @@ namespace DatabaseSetting.Core.Services
             entity.Name = request.Name;
             entity.DbType = request.DbType;
 
-            if (!string.IsNullOrWhiteSpace(request.ConnectionString) &&
-                request.ConnectionString != _encryptionService.Decrypt(entity.ConnectionString))
-            {
-                entity.ConnectionString = _encryptionService.Encrypt(request.ConnectionString);
-            }
+            entity.Server = request.Server;
+            entity.DbName = request.DbName;
+            entity.User = request.User;
+            entity.Password = request.Password;
+
+            entity.ConnectionString = _encryptionService.Encrypt($"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};");
 
             var updated = await _repository.UpdateAsync(entity);
 
@@ -111,7 +122,6 @@ namespace DatabaseSetting.Core.Services
         {
             return await _repository.DeleteAsync(id, companyId);
         }
-
 
 
         private DbSettingResponse MapToResponse(DbSettingModel entity) => new DbSettingResponse

@@ -22,14 +22,6 @@ namespace DatabaseSetting.WebApi.Controllers
             _logger = logger;
         }
 
-        // endpoint to test authorized request
-        [Authorize]
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            return Ok(new { message = "Authorized access successful." });
-        }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -50,14 +42,22 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpGet("connection/{id}")]
-        public async Task<IActionResult> GetConnectionById(string id)
+        public async Task<IActionResult> GetConnectionStringById(string id)
         {
             var result = await _service.GetConnectionByIdAsync(id, companyId);
 
             if (result == null)
                 return NotFound();
 
-            return Ok(result);
+            return Ok(
+                new
+                {
+                    Server = result.Server,
+                    DatabaseName = result.DbName,
+                    User = result.User,
+                    Password = result.Password,
+                    companyId = result.CompanyId
+                });
         }
 
         [HttpPost]

@@ -38,6 +38,7 @@ namespace Team.WebApi
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
+
             builder.Services.AddGrpc();
 
 
@@ -121,6 +122,7 @@ namespace Team.WebApi
             app.UseAuthorization();
 
             app.MapGrpcService<TeamGrpcServiceImpl>();
+
             app.MapControllers();
 
             app.Run();
