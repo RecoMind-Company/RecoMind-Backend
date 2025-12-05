@@ -44,7 +44,7 @@ public class GenerateReportService(HttpClient httpClient, ILogger<GenerateReport
         if (status!.Status == Status.FAILURE)
         {
             logger.LogError("Task with ID {0} failed during processing.", taskId);
-            throw new Exception($"Task with ID {taskId} failed during processing.");
+            throw new Exception($"Task with ID {taskId} failed during processing, {status.Result}");
         }
         return status!;
     }

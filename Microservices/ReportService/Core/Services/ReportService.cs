@@ -11,28 +11,33 @@ public class ReportService(IGenerateReportService generateReportService,
                            IFileStorageService fileStorageService,
                            IGrpcTeamService grpcTeamService) : IReportService
 {
-    public async Task<AiReportResponseDto> GetReport(string teamId, GetReportDto getReportDto)
+    public async Task<AnalysisResponseDto> CreateReport()
     {
         // Call the grpc service to get the TeamName, companyId by {teamId}
-        var teamDetails = grpcTeamService.GetTeamDetails(teamId);
-        if (teamDetails is null)
-            return null;
+        //var teamDetails = grpcTeamService.GetTeamDetails(teamId);``
+        //if (teamDetails is null)
+        //    return null;
         var analysisRequest = new AnalysisRequestDto
         {
-            CompanyId = teamDetails.CompanyId,
-            TeamName = teamDetails.TeamName,
-            UserRequest = getReportDto.UserRequest
+            CompanyId = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",    //teamDetails.CompanyId,
+            TeamName = "HR", //teamDetails.TeamName,
+            UserRequest = "Full Employees Report including their Salaries." // getReportDto.UserRequest
         };
         var generateReportInitialResponse = await generateReportService.GenerateReport(analysisRequest);
-        TaskStatusResponseDto taskStatusResponse;
-
-        do
+        return generateReportInitialResponse;
+    }
+    public async Task<AiReportResponseDto> GetReport(string teamId, string taskId)
+    {
+        var generatedReportStatus = await generateReportService.GetStatus(taskId);
+        if (generatedReportStatus.Status == Status.PENDING || generatedReportStatus.Status == Status.PROGRESS)
         {
-            taskStatusResponse = await generateReportService.GetStatus(generateReportInitialResponse.TaskId);
-            await Task.Delay(180000);
+            return null;
         }
-        while (taskStatusResponse.Status != Status.SUCCESS);
-        var dynamicPath = await fileStorageService.SaveFileAsync(taskStatusResponse.Result!);
+        // The Status are have only 3 values PENDING, FAILURE, SUCCESS
+        // FAILURE CASE HANDELD IN GENERATE REPORT SERVICE
+        // PENDING CASE HANDELD ABOVE
+        // SUCCESS
+        var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
         // create report model 
         // add to database
         // save changes
@@ -44,13 +49,13 @@ public class ReportService(IGenerateReportService generateReportService,
             FilePath = dynamicPath,
             FileType = ".txt",
             GeneratedDate = DateTime.Now,
-            Periodic = Enum.Parse<Periodic>(getReportDto.Periodic)
+            Periodic = Periodic.Weekly
         };
         await reportRepository.AddAsync(report);
         await unitOfWork.Save();
         var aiReportResponse = new AiReportResponseDto
         {
-            AiResponse = taskStatusResponse.Result!,
+            AiResponse = generatedReportStatus.Result!,
             GeneratedDate = DateTime.UtcNow
         };
         return aiReportResponse;
