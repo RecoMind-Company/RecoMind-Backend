@@ -1,7 +1,0 @@
-# For more info on HTTP files go to https://aka.ms/vs/httpfile
-@TestAiService_HostAddress = http://localhost:5263
-
-GET {{TestAiService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
