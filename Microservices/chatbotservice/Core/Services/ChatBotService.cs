@@ -75,7 +75,7 @@ namespace Core.Services
                 var aiResponse = new FinalResponseDto();
                 aiResponse.Status = Status.FAILURE;
                 aiResponse.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
-                aiResponse.Query = requestDto.query;
+                aiResponse.Query = requestDto.user_question;
 
                 return aiResponse;
             }

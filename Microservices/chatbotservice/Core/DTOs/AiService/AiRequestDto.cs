@@ -11,6 +11,6 @@ namespace Core.DTOs.AiService
     {
         public string compnay_id { get; set; }
         public string team_name { get; set; }
-        public string query { get; set; }
+        public string user_question { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;  // ✅ أضف هذا السطر
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,28 +40,41 @@ namespace WebApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.Configure<AiServiceOptions>(
+                     builder.Configuration.GetSection("AIService"));
+
             builder.Services.AddHttpClient();
 
-            //builder.WebHost.ConfigureKestrel(options =>
-            //{
-            //    // اقرأ من environment أولاً (أولوية أعلى)
-            //    var httpPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-            //        "8001"
-            //    );
+            builder.Services.AddHttpClient<IAiClientService, AiClientService>(client =>
+            {
+                var baseUrl = builder.Configuration.GetValue<string>("AIService:BaseUrl");
 
-            //    var grpcPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-            //        "5001"
-            //    );
+                if (!string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    client.BaseAddress = new Uri(baseUrl);
+                }
+            });
 
-            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            //});
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
+
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
             builder.Services.AddSwaggerGen(cfg =>
             {

@@ -13,18 +13,22 @@ namespace WebApi.Grpc.ConnectedService
         }
         public async Task<GetTeamInformationDto> GetTeamByUserId(string userId)
         {
-            var request = new GetTeamByIdRequest
-            {
-                TeamId = userId
-            };
-            var response = await _teamServiceClient.GetTeamByUserIdAsync(request);
-            if (response == null || string.IsNullOrEmpty(response.TeamName))
-                return null;
-            var teamInfoDto = new GetTeamInformationDto
-            {
-                TeamName = response.TeamName,
-                CompanyId = response.CompanyId
-            }
+            //var request = new GetTeamByIdRequest
+            //{
+            //    TeamId = userId
+            //};
+            //var response = await _teamServiceClient.GetTeamByUserIdAsync(request);
+
+            //if (response == null || string.IsNullOrEmpty(response.TeamName))
+            //    return null;
+
+            //var teamInfoDto = new GetTeamInformationDto
+            //{
+            //    TeamName = response.TeamName,
+            //    CompanyId = response.CompanyId
+            //};
+            throw new NotImplementedException();
+        }
 
         public async Task<bool> CheckValidTeam(string userId)
         {

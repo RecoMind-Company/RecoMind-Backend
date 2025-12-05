@@ -30,7 +30,9 @@ message CreateChatRequest {
 }
 
 message ChatMessageResponse {
-    string responseMessage = 1;
+    string status = 1 ;
+    string query = 2 ;
+    string responseMessage = 3;
 }
 
 message DeleteResponse {

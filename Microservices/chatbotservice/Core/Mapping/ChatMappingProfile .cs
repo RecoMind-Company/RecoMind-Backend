@@ -22,6 +22,9 @@ namespace Core.Mapping
 
             CreateMap<CreateChatRequestDto, CreateChatRequest>();
 
+            CreateMap<ChatMessageResponse,FinalResponseDto>()
+                .ReverseMap();
+
             CreateMap<chatHistory, GetHistoryDto>()
                 .ReverseMap();
 

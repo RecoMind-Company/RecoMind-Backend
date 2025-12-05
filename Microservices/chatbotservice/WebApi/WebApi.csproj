@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Protos\TeamService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.33.1" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Grpc.Tools" Version="2.76.0">
@@ -31,14 +35,11 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
 
-    <Protobuf Include="Protos/AuthenticationMessages.proto" ProtoRoot="Protos" />
-    <Protobuf Include="Protos/AuthenticationService.proto" GrpcServices="Client" ProtoRoot="Protos" />
-
-    <Protobuf Include="Protos\team.proto" ProtoRoot="Protos" />
-    <Protobuf Include="Protos\team.proto" GrpcServices="Client" ProtoRoot="Protos"  />
-          
-  </ItemGroup>
+		<Protobuf Include="Protos/AuthenticationMessages.proto" ProtoRoot="Protos" />
+		<Protobuf Include="Protos/AuthenticationService.proto" GrpcServices="Client" ProtoRoot="Protos" />
+		<Protobuf Include="Protos\TeamService.proto" GrpcServices="Client" />
+	</ItemGroup>
 
 </Project>
