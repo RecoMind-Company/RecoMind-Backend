@@ -12,27 +12,33 @@ service GrpcChatbotService {
 }
 
 message GetHistoryRequest {
-    string userID = 1;
+    string user_id = 1; 
 }
 
-message chatHistory {
+message HistoryEntry {
     string query = 1;
-    string responseMessage = 2;
+    string response_message = 2; 
 }
 
 message GetHistoryResponse {
-    repeated chatHistory chatHistory = 1;
+    repeated HistoryEntry history_entries = 1; 
 }
+
 message CreateChatRequest {
-    string userID = 1;
-    string userRole = 2;
+    string user_id = 1; 
+    string user_role = 2;
     string query = 3;
 }
 
+message AiResponseMessage {
+    string answer = 1;
+    string sql_query = 2;
+}
+
 message ChatMessageResponse {
-    string status = 1 ;
-    string query = 2 ;
-    string responseMessage = 3;
+    string task_id = 1; 
+    string status = 2;      
+    AiResponseMessage response_details = 3; 
 }
 
 message DeleteResponse {

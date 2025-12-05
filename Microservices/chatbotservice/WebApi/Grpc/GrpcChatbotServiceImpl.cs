@@ -15,13 +15,13 @@ namespace WebApi.Grpc
         private readonly IChatBotService _chatBotService;
         private readonly IMapper _mapper;
         private readonly AuthService _authService;
-        private readonly TeamService _teamService;
-        public GrpcChatbotServiceImpl(IChatBotService chatBotService , IMapper mapper, AuthService authService , TeamService teamService)
+        //private readonly TeamService _teamService;
+        public GrpcChatbotServiceImpl(IChatBotService chatBotService , IMapper mapper, AuthService authService )// , TeamService teamService)
         {
             _chatBotService = chatBotService;
             _mapper = mapper;
             _authService = authService;
-            _teamService = teamService;
+           // _teamService = teamService;
         }
 
         public override async Task<ChatMessageResponse> HandelQuery(CreateChatRequest request, ServerCallContext context)
@@ -30,15 +30,15 @@ namespace WebApi.Grpc
             {
                 var dto = _mapper.Map<CreateChatRequestDto>(request);
 
-                if (!(await _authService.CheckValidUser(dto) && !(await _teamService.CheckValidTeam(dto.UserID))))
+                if (!(await _authService.CheckValidUser(dto))) //&& !(await _teamService.CheckValidTeam(dto.UserID))))
                     throw new ArgumentException("Request body Has Invalid Data ");
 
-                var team = await _teamService.GetTeamByUserId(dto.UserID);
+                //var team = await _teamService.GetTeamByUserId(dto.UserID);
 
                 var Dto = new AiRequestDto
                 {
-                    compnay_id = team.CompanyId,
-                    team_name = team.TeamName,
+                    compnay_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",//team.CompanyId,
+                    team_name = "Sales",//team.TeamName,
                     user_question = dto.Query
                 };
 
@@ -49,26 +49,32 @@ namespace WebApi.Grpc
             {
                 return new ChatMessageResponse
                 {
-                   ResponseMessage= knfEx.Message                   
+                    ResponseDetails = new AiResponseMessage
+                    {
+                        Answer = knfEx.Message
+                    }
                 };
             }
             catch (Exception ex)
             {
                return new ChatMessageResponse
                {
-                    ResponseMessage = ex.Message
+                   ResponseDetails = new AiResponseMessage
+                   {
+                       Answer = ex.Message
+                   }
                };
             }
         }
 
         public override async Task<GetHistoryResponse> GetHistory(GetHistoryRequest request, ServerCallContext context)
         {
-            var result = await _chatBotService.GetHistory(request.UserID);
+            var result = await _chatBotService.GetHistory(request.UserId);
             var response = new GetHistoryResponse();
             foreach (var item in result)
             {
-                var msg = _mapper.Map<chatHistory>(item);
-                response.ChatHistory.Add(msg);
+                var msg = _mapper.Map<HistoryEntry>(item);
+                response.HistoryEntries.Add(msg);
             }
 
             return response;
@@ -78,7 +84,7 @@ namespace WebApi.Grpc
         {
             try 
             {
-                await _chatBotService.DeleteHistory(request.UserID);
+                await _chatBotService.DeleteHistory(request.UserId);
                 return new DeleteResponse
                 {
                     Message = " History Cleared Successfully"

@@ -25,61 +25,61 @@ namespace Core.Services
             _mapper = mapper;
         }
 
-        public async Task<FinalResponseDto> HandelQuery(AiRequestDto requestDto)
-        {                        
+        public async Task<LastResponseDto> HandelQuery(AiRequestDto requestDto)
+        {
+            AiResponseDto postResponse;
             try
             {
-                // Call Ai Service 
-                // 1. Post Method To Create Request And To Get The Task Id  
-
-                var responsemodel = new FinalResponseDto();
-                var responseDto = await _aiClientService.SentRequestToAiService(requestDto);
-
-                if (requestDto == null)
-                {
-                    responsemodel.Status = Status.FAILURE;
-                    responsemodel.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
-                }
-
-                // 2. Get Method To Get The Response By Using The Task Id
-
-                var aiResponse = await CallGetMethod(responseDto.task_id);
-
-                if (aiResponse.Status == Status.SUCCESS)
-                {
-                    // 2. Build entity
-                    var entity = _mapper.Map<ChatMessage>(requestDto);
-
-                    entity.Id = Guid.NewGuid().ToString();
-                    entity.Response = aiResponse.ResponseMessage;
-                    entity.TimeStamp = DateTime.UtcNow;
-                    entity.Query = aiResponse.Query;
-
-
-                    // 3. Save to database
-                    var saved = await _unitOfWork.Entity.AddAsync(entity);
-                    await _unitOfWork.Save();
-
-                    // 4. Return DTO
-                    return aiResponse;
-                }
-                else
-                {
-                    responsemodel.Status = Status.FAILURE;
-                    responsemodel.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
-                    return responsemodel;
-                }
+                //1.Call Post Method
+                postResponse = await _aiClientService.SentRequestToAiService(requestDto);
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
-                var aiResponse = new FinalResponseDto();
-                aiResponse.Status = Status.FAILURE;
-                aiResponse.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
-                aiResponse.Query = requestDto.user_question;
-
-                return aiResponse;
+                return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = $"AI service connection failed: {ex.Message}",                    
+                };
             }
-           
+            
+            if (postResponse == null || string.IsNullOrWhiteSpace(postResponse.task_id))
+            {                
+                return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = "AI service failed to start the task or returned an empty ID.",
+                };
+            }
+
+            // 3. Get Method (Poling)
+            var aiResponse = await CallGetMethod(postResponse.task_id);
+
+            if (aiResponse.Status == Status.SUCCESS)
+            {
+                //  Database
+                var entity = _mapper.Map<ChatMessage>(requestDto);
+                
+                entity.Id = Guid.NewGuid().ToString();
+                entity.Response.Answer = aiResponse.Response.Answer;
+                entity.Response.Sql_Query = aiResponse.Response.Sql_Query;
+                entity.TimeStamp = DateTime.UtcNow;               
+                entity.Query = requestDto.user_question;
+
+                await _unitOfWork.Entity.AddAsync(entity);
+                await _unitOfWork.Save();
+
+                // 5. Return DTO
+                var aiResponseDto = _mapper.Map<LastResponseDto>(aiResponse);
+                return aiResponseDto;
+            }
+            else
+            {               
+               return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = "AI service failed to process the request.",
+                };
+            }
         }
 
         public async Task<IEnumerable<GetHistoryDto>> GetHistory(string userId)
@@ -107,6 +107,7 @@ namespace Core.Services
                      _unitOfWork.Entity.Delete(message);
                 }
                 await _unitOfWork.Save();
+                return;
             }
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
         }
@@ -125,7 +126,7 @@ namespace Core.Services
                     case Status.FAILURE:
                     case Status.REVOKED: 
                         responseDto.Status = Status.FAILURE;
-                        responseDto.ResponseMessage = "The AI service failed or was revoked.";
+                        responseDto.Response.Answer = "The AI service failed or was revoked.";
                         return responseDto;
 
                     case Status.PENDING:

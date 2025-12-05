@@ -10,13 +10,16 @@ namespace DatabaseSetting.Core.DTOs
 {
     public class CreateDbSettingModel
     {
-        [Required]
         public string Name { get; set; }
-  
-        [Required]
         public string DbType { get; set; } // SqlServer, MySql, PostgreSql
-        
+
         [Required]
-        public string ConnectionString { get; set; }
+        public string Server { get; set; }
+        [Required]
+        public string DbName { get; set; }
+        [Required]
+        public string User { get; set; }
+        [Required]
+        public string Password { get; set; }
     }
 }

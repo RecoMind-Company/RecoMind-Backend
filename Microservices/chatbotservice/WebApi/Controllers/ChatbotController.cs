@@ -17,12 +17,12 @@ namespace WebApi.Controllers
     {
         private readonly IChatBotService _chatBotService;
         private readonly AuthService _authService;
-        private readonly TeamService _teamService;
-        public ChatbotController(IChatBotService chatBotService, AuthService authService ,TeamService teamService)
+        //private readonly TeamService _teamService;
+        public ChatbotController(IChatBotService chatBotService, AuthService authService)// ,TeamService teamService)
         {
             _chatBotService = chatBotService;
             _authService = authService;
-            _teamService = teamService;
+//            _teamService = teamService;
         }
 
         [HttpPost]
@@ -31,17 +31,17 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!(await _authService.CheckValidUser(createChatRequestDto) && !(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))
+            if (!(await _authService.CheckValidUser(createChatRequestDto)))//&& !(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))
                 return BadRequest("Request body Has Invalid Data ");
 
             try
             {
-                var team = await _teamService.GetTeamByUserId(createChatRequestDto.UserID);
+                //var team = await _teamService.GetTeamByUserId(createChatRequestDto.UserID);
 
                 var Dto = new AiRequestDto
                 {
-                    compnay_id = team.CompanyId,
-                    team_name = team.TeamName,
+                    compnay_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9", //team.CompanyId,
+                    team_name = "Sales", //team.TeamName,
                     user_question = createChatRequestDto.Query
                 };
                 var result = await _chatBotService.HandelQuery(Dto);

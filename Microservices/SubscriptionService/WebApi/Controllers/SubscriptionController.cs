@@ -16,6 +16,20 @@ namespace WebApi.Controllers
             _subscriptionService = subscriptionService;
         }
 
+        [HttpGet("BillingCycles")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public IEnumerable<string> GetAllBillingCycles()
+        {
+            return Enum.GetNames(typeof(BillingCycle));
+        }
+
+        [HttpGet("PlanNames")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public IEnumerable<string> GetAllPlans()
+        {
+            return Enum.GetNames(typeof(PlanType));
+        }
+
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<GetSubscriptionDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()

@@ -9,8 +9,14 @@ namespace Core.DTOs.AiService
 {
     public class FinalResponseDto
     {
-        public string Query { get; set; }
-        public string ResponseMessage { get; set; }
+        public string TaskId { get; set; }
+        public ResponseMessage Response{ get; set; }
         public Status Status { get; set; }
+    }
+    
+    public class ResponseMessage
+    {
+        public string Sql_Query { get; set; }
+        public string Answer { get; set; }
     }
 }

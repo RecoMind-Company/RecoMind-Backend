@@ -13,7 +13,6 @@ namespace Team.Core.Models
         [Key]
         public string Id { get; set; }
 
-
         [ForeignKey("TeamId")]
         public TeamModel Team { get; set; }
         public string TeamId { get; set; }
