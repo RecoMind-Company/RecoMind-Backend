@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core.Const;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
@@ -8,12 +9,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs
+namespace Core.DTOs.AiService
 {
-    public class ApiResponseDto
+    public class AiResponseDto
     {        
-        public bool Success { get; set; }
-        public string Message { get; set; }
+        public string task_id { get; set; }
+        public Status status { get; set; }       
     }
-
 }

@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using Team.Grpc;
 
 namespace WebApi
 {
@@ -40,26 +41,26 @@ namespace WebApi
 
             builder.Services.AddHttpClient();
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    // اقرأ من environment أولاً (أولوية أعلى)
+            //    var httpPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+            //        "8001"
+            //    );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+            //    var grpcPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+            //        "5001"
+            //    );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            //});
 
             builder.Services.AddSwaggerGen(cfg =>
             {
@@ -108,6 +109,11 @@ namespace WebApi
             builder.Services.AddGrpcClient<RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient>(o =>
             {
                 o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
+            });
+
+            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
+            {
+                o.Address = new Uri("http://teamservice:8010");                       // Team service address
             });
 
             // Auto-register all AutoMapper profiles in loaded assemblies (no need to update this file when profiles are added)

@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AiService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,7 @@ namespace Core.Services.Interface
 {
     public interface IAiClientService
     {
-        public Task<ApiResponseDto> GetAiResponse( string Query );
+        public Task<FinalResponseDto> GetResponseFromAiService( string TasskId );
+        public Task<AiResponseDto> SentRequestToAiService ( AiRequestDto ReqDto );        
     }
 }

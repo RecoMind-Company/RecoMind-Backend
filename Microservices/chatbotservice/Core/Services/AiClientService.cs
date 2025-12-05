@@ -1,8 +1,9 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AiService;
 using Core.Models;
 using Core.Services.Interface;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -25,18 +26,27 @@ namespace Core.Services
             //    _http.DefaultRequestHeaders.Authorization =
             //        new AuthenticationHeaderValue("Bearer", _apiKey);
             //}
-        }
-        public async Task<ApiResponseDto> GetAiResponse(string Query)
+        }        
+        public async Task<FinalResponseDto> GetResponseFromAiService(string taskId)
         {
-            
-            var resp = await _http.PostAsJsonAsync($"{_aiBaseUrl}", Query);
+            var request = new HttpRequestMessage( HttpMethod.Get , $"api/{_aiBaseUrl}");
 
-            resp.EnsureSuccessStatusCode();
+            request.Content = JsonContent.Create(taskId);
 
-            var dto = await resp.Content.ReadFromJsonAsync<ApiResponseDto>()
-                ?? new ApiResponseDto { Message = "" };
+            var response =await _http.SendAsync(request);
 
-            return dto;
+            var resultObject = await response.Content.ReadFromJsonAsync<FinalResponseDto>();
+
+            return resultObject!;
         }
+        
+        public async Task<AiResponseDto> SentRequestToAiService(AiRequestDto Dto)
+        {
+            var response = await _http.PostAsJsonAsync( $"api/{_aiBaseUrl}" , Dto);
+
+            var resultObject = await response.Content.ReadFromJsonAsync<AiResponseDto>();
+
+            return resultObject!;
+        }        
     }
 }

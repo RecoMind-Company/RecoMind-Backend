@@ -1,10 +1,12 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AiService;
+using Core.DTOs.Chatbot;
 using Core.Services.Interface;
 using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Migrations.Operations.Builders;
 using RecoMindAuthenticationAPI.Grpc.Authentication;
+using WebApi.Grpc.ConnectedService;
 using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
 
 namespace WebApi.Controllers
@@ -14,31 +16,35 @@ namespace WebApi.Controllers
     public class ChatbotController : ControllerBase
     {
         private readonly IChatBotService _chatBotService;
-        private readonly RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient _authenticationServiceClient;
-        public ChatbotController(IChatBotService chatBotService, AuthenticationServiceClient authenticationServiceClient)
+        private readonly AuthService _authService;
+        private readonly TeamService _teamService;
+        public ChatbotController(IChatBotService chatBotService, AuthService authService , TeamService teamService)
         {
             _chatBotService = chatBotService;
-            _authenticationServiceClient = authenticationServiceClient;
+            _authService = authService;
+            _teamService = teamService;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateQuery(CreateChatRequestDto createChatRequestDto)
         {
-            if (!ModelState.IsValid)
-            {
+            if (!ModelState.IsValid)            
                 return BadRequest(ModelState);
-            }
+            
+            if (!(await _authService.CheckValidUser(createChatRequestDto)&&!(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))            
+                return BadRequest("Request body Has Invalid Data ");
+                     
             try
-            {
-                if (!string.IsNullOrEmpty(createChatRequestDto.UserID))
+            { 
+                var team = await _teamService.GetTeamByUserId(createChatRequestDto.UserID); 
+                
+                var Dto = new AiRequestDto
                 {
-                    var user = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = createChatRequestDto.UserID });
-
-                    if (user == null || !(user.Role.ToLower().Equals(createChatRequestDto.UserRole)))
-                        throw new KeyNotFoundException($" Invalid UserId Or Role");
-                }
-
-                var result = await _chatBotService.HandelQuery(createChatRequestDto);
+                    compnay_id = team.CompanyId,
+                    team_name = team.TeamName,
+                    query = createChatRequestDto.Query
+                };
+                var result = await _chatBotService.HandelQuery(Dto);
                 return Ok(result);
             }
             catch (KeyNotFoundException knfEx)

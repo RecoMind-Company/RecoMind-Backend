@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using Core.DTOs;
+using Core.Const;
+using Core.DTOs.AiService;
+using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
@@ -23,42 +25,61 @@ namespace Core.Services
             _mapper = mapper;
         }
 
-        public async Task<ChatMessageResponseDto> HandelQuery(CreateChatRequestDto requestDto)
-        {
-            // Call Ai Service 
-            var aiResponse = new ApiResponseDto();
+        public async Task<FinalResponseDto> HandelQuery(AiRequestDto requestDto)
+        {                        
             try
             {
-                aiResponse = await _aiClientService.GetAiResponse(requestDto.Query);
+                // Call Ai Service 
+                // 1. Post Method To Create Request And To Get The Task Id  
 
-                if (string.IsNullOrWhiteSpace(aiResponse.Message))
+                var responsemodel = new FinalResponseDto();
+                var responseDto = await _aiClientService.SentRequestToAiService(requestDto);
+
+                if (requestDto == null)
                 {
-                    throw new Exception();
+                    responsemodel.Status = Status.FAILURE;
+                    responsemodel.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
+                }
+
+                // 2. Get Method To Get The Response By Using The Task Id
+
+                var aiResponse = await CallGetMethod(responseDto.task_id);
+
+                if (aiResponse.Status == Status.SUCCESS)
+                {
+                    // 2. Build entity
+                    var entity = _mapper.Map<ChatMessage>(requestDto);
+
+                    entity.Id = Guid.NewGuid().ToString();
+                    entity.Response = aiResponse.ResponseMessage;
+                    entity.TimeStamp = DateTime.UtcNow;
+                    entity.Query = aiResponse.Query;
+
+
+                    // 3. Save to database
+                    var saved = await _unitOfWork.Entity.AddAsync(entity);
+                    await _unitOfWork.Save();
+
+                    // 4. Return DTO
+                    return aiResponse;
+                }
+                else
+                {
+                    responsemodel.Status = Status.FAILURE;
+                    responsemodel.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
+                    return responsemodel;
                 }
             }
             catch (Exception)
             {
-                aiResponse.Success = false;
-                aiResponse.Message = " The AI service is currently unavailable. Please try again later.";
-                return _mapper.Map<ChatMessageResponseDto>(aiResponse);
+                var aiResponse = new FinalResponseDto();
+                aiResponse.Status = Status.FAILURE;
+                aiResponse.ResponseMessage = " The AI service is currently unavailable. Please try again later.";
+                aiResponse.Query = requestDto.query;
+
+                return aiResponse;
             }
-
-
-            // 2. Build entity
-            var entity = _mapper.Map<ChatMessage>(requestDto);
-
-            entity.Id = Guid.NewGuid().ToString();
-            entity.Response = aiResponse.Message;
-            entity.TimeStamp = DateTime.UtcNow;
-            entity.Query = requestDto.Query;
-
-
-            // 3. Save
-            var saved = await _unitOfWork.Entity.AddAsync(entity);
-            await _unitOfWork.Save();
-
-            // 4. Return DTO
-            return _mapper.Map<ChatMessageResponseDto>(saved);
+           
         }
 
         public async Task<IEnumerable<GetHistoryDto>> GetHistory(string userId)
@@ -90,31 +111,34 @@ namespace Core.Services
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
         }
 
-        //public async Task<string> DeleteQuery( string queryId )
-        //{
-        //    var message = await _unitOfWork.Entity.GetByIdAsync( queryId );
+        public async Task<FinalResponseDto> CallGetMethod(string taskId)
+        {
+            while (true)
+            {
+                var responseDto = await _aiClientService.GetResponseFromAiService(taskId);
 
-        //    if (message == null)
-        //    {
-        //        throw new KeyNotFoundException(queryId);
-        //    }
+                switch (responseDto.Status)
+                {
+                    case Status.SUCCESS:                        
+                        return responseDto;
 
-        //    var result =  _unitOfWork.Entity.Delete(message);
-        //    await _unitOfWork.Save();
+                    case Status.FAILURE:
+                    case Status.REVOKED: 
+                        responseDto.Status = Status.FAILURE;
+                        responseDto.ResponseMessage = "The AI service failed or was revoked.";
+                        return responseDto;
 
-        //    return $"Query With Id {result.Id} Has Been Deleted Successfuly ";
-        //}
+                    case Status.PENDING:
+                    case Status.STARTED:
+                    case Status.RETRY:
+                       
+                        await Task.Delay(TimeSpan.FromSeconds(10));                       
+                        break;
 
-        //public async Task<ChatMessageResponseDto> GetChatMessageById(string queryId)
-        //{
-        //    var message = await _unitOfWork.Entity.GetByIdAsync(queryId);
-
-        //    if (message == null)
-        //    {
-        //        throw new KeyNotFoundException(queryId);
-        //    }
-
-        //    return _mapper.Map<ChatMessageResponseDto>(message);
-        //}
+                    default:
+                        throw new Exception("An unexpected status occurred from the AI service.");
+                }
+            }
+        }       
     }
 }

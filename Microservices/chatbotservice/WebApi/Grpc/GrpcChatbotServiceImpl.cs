@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Core.DTOs;
+using Core.DTOs.Chatbot;
 using Core.Services.Interface;
 using Core.Services.Protos;
 using Grpc.Core;
@@ -21,38 +21,38 @@ namespace WebApi.Grpc
             _authenticationServiceClient = authenticationServiceClient;
         }
 
-        public override async Task<ChatMessageResponse> HandelQuery(CreateChatRequest request, ServerCallContext context)
-        {
-            var dto = _mapper.Map<CreateChatRequestDto>(request);
-            try
-            {
-                // Call The Authentication Service to validate the user 
+        //public override async Task<ChatMessageResponse> HandelQuery(CreateChatRequest request, ServerCallContext context)
+        //{
+        //    var dto = _mapper.Map<CreateChatRequestDto>(request);
+        //    try
+        //    {
+        //        // Call The Authentication Service to validate the user 
 
-                if (!string.IsNullOrEmpty(dto.UserID))
-                {
-                    var user = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = dto.UserID });
+        //        if (!string.IsNullOrEmpty(dto.UserID))
+        //        {
+        //            var user = _authenticationServiceClient.GetUserById(new GetUserByIdMessage { UserId = dto.UserID });
 
-                    if (user == null || !(user.Role.ToLower().Equals(dto.UserRole)))
-                        throw new RpcException(new Status(StatusCode.InvalidArgument, $" Invalid UserId Or Role"));
-                }
+        //            if (user == null || !(user.Role.ToLower().Equals(dto.UserRole)))
+        //                throw new RpcException(new Status(StatusCode.InvalidArgument, $" Invalid UserId Or Role"));
+        //        }
 
-                // Call The ChatBot Service to process the query
+        //        // Call The ChatBot Service to process the query
 
-                var result = await _chatBotService.HandelQuery(dto);
+        //        var result = await _chatBotService.HandelQuery(dto);
                
-                return new ChatMessageResponse
-                {
-                    ResponseMessage = result.Response,
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ChatMessageResponse
-                {
-                    ResponseMessage = ex.Message,
-                };
-            }
-        }
+        //        return new ChatMessageResponse
+        //        {
+        //            ResponseMessage = result.Response,
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new ChatMessageResponse
+        //        {
+        //            ResponseMessage = ex.Message,
+        //        };
+        //    }
+        //}
 
         public override async Task<GetHistoryResponse> GetHistory(GetHistoryRequest request, ServerCallContext context)
         {
