@@ -9,7 +9,7 @@ namespace Core.DTOs.Chatbot
 {
     public class LastResponseDto
     {
-        public Status status { get; set; }
+        public string status { get; set; }
         public string ResponseMessage { get; set; }
     }
 }

@@ -37,9 +37,9 @@ namespace WebApi.Grpc
 
                 var Dto = new AiRequestDto
                 {
-                    compnay_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",//team.CompanyId,
+                    company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",//team.CompanyId,
                     team_name = "Sales",//team.TeamName,
-                    user_question = dto.Query
+                    user_question = dto.user_question,
                 };
 
                 var result = await _chatBotService.HandelQuery(Dto);

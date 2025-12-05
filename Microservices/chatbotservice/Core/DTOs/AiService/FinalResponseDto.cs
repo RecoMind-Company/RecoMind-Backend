@@ -11,7 +11,7 @@ namespace Core.DTOs.AiService
     {
         public string TaskId { get; set; }
         public ResponseMessage Response{ get; set; }
-        public Status Status { get; set; }
+        public string Status { get; set; }
     }
     
     public class ResponseMessage

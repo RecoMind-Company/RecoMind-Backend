@@ -17,6 +17,8 @@ using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
 using Team.Grpc;
+using WebApi.Grpc;
+using WebApi.Grpc.ConnectedService;
 
 namespace WebApi
 {
@@ -136,6 +138,7 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
+            builder.Services.AddScoped(typeof(AuthService));
 
 
             var app = builder.Build();
@@ -156,7 +159,7 @@ namespace WebApi
 
             app.UseAuthorization();
 
-
+            app.MapGrpcService<GrpcChatbotServiceImpl>();
             app.MapControllers();
 
             app.Run();

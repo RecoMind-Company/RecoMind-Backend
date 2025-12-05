@@ -58,6 +58,8 @@ namespace Core.Services
             {
                 //  Database
                 var entity = _mapper.Map<ChatMessage>(requestDto);
+
+                
                 
                 entity.Id = Guid.NewGuid().ToString();
                 entity.Response.Answer = aiResponse.Response.Answer;

@@ -1,7 +1,5 @@
 ﻿using Core.DTOs.Chatbot;
 using RecoMindAuthenticationAPI.Grpc.Authentication;
-using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
-
 namespace WebApi.Grpc.ConnectedService
 {
     public class AuthService

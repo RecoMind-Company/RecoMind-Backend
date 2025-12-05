@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations.Operations.Builders;
 using RecoMindAuthenticationAPI.Grpc.Authentication;
 using WebApi.Grpc.ConnectedService;
 using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
+using static System.Net.WebRequestMethods;
 
 namespace WebApi.Controllers
 {
@@ -23,6 +24,9 @@ namespace WebApi.Controllers
             _chatBotService = chatBotService;
             _authService = authService;
 //            _teamService = teamService;
+    
+           
+            
         }
 
         [HttpPost]
@@ -31,8 +35,9 @@ namespace WebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!(await _authService.CheckValidUser(createChatRequestDto)))//&& !(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))
-                return BadRequest("Request body Has Invalid Data ");
+            //if (!(await _authService.CheckValidUser(createChatRequestDto)))//&& !(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))
+            //    return BadRequest("Request body Has Invalid Data ");
+
 
             try
             {
@@ -40,9 +45,9 @@ namespace WebApi.Controllers
 
                 var Dto = new AiRequestDto
                 {
-                    compnay_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9", //team.CompanyId,
+                    company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9", //team.CompanyId,
                     team_name = "Sales", //team.TeamName,
-                    user_question = createChatRequestDto.Query
+                    user_question = createChatRequestDto.user_question
                 };
                 var result = await _chatBotService.HandelQuery(Dto);
                 return Ok(result);

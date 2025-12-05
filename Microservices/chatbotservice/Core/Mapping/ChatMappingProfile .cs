@@ -15,14 +15,14 @@ namespace Core.Mapping
     {
         public ChatMappingProfile()
         {
-            CreateMap<ChatMessage, CreateChatRequestDto>()
-                .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.Query, opt => opt.MapFrom(src => src.Query))
-                 .ReverseMap()
+            //CreateMap<ChatMessage, CreateChatRequestDto>()
+            //    .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserId))
+            //    .ForMember(dest => dest.user_question, opt => opt.MapFrom(src => src.Response.Answer))
+            //    .ReverseMap()
 
-                .ForMember(dest => dest.Id, opt => opt.Ignore())       
-                .ForMember(dest => dest.TimeStamp, opt => opt.Ignore())
-                .ForMember(dest => dest.Response, opt => opt.Ignore());
+            //    .ForMember(dest => dest.Id, opt => opt.Ignore())       
+            //    .ForMember(dest => dest.TimeStamp, opt => opt.Ignore())
+            //    .ForMember(dest => dest.Response, opt => opt.Ignore());
 
             CreateMap<ChatMessageResponse, FinalResponseDto>()
                 .ForMember(dest => dest.Status,

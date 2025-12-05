@@ -10,6 +10,6 @@ namespace Core.DTOs.Chatbot
     {
         public string UserID { get; set; }
         public string UserRole { get; set; }
-        public string Query { get; set; }
+        public string user_question { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace Core.DTOs.AiService
 {
     public class AiRequestDto
     {
-        public string compnay_id { get; set; }
+        public string company_id { get; set; }
         public string team_name { get; set; }
         public string user_question { get; set; }
     }

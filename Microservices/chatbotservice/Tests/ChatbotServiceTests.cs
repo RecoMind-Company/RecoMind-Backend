@@ -37,7 +37,7 @@ public class ChatBotServiceTests
         
         _mockAiClientService
             .Setup(s => s.SentRequestToAiService(requestDto))
-            .ReturnsAsync(new AiResponseDto { task_id = taskId, status = Status.STARTED });
+            .ReturnsAsync(new AiResponseDto { task_id = taskId, Status = Status.STARTED });
 
         
         var callCount = 0;

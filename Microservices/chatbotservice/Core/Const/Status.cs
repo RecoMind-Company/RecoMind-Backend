@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Core.Const
 {
-    public enum Status
+    public static class Status
     {
-        STARTED ,
-        SUCCESS ,
-        REVOKED,
-        FAILURE,
-        RETRY,
-        PENDING
+        public const string STARTED = "STARTED";
+        public const string SUCCESS = "SUCCESS";
+        public const string REVOKED = "REVOKED";
+        public const string FAILURE = "FAILURE";
+        public const string RETRY = "RETRY";
+        public const string PENDING = "PENDING";
     }
 }
