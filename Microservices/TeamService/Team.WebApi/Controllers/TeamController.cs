@@ -51,14 +51,6 @@ namespace Team.WebApi.Controllers
             return Ok(teams);
         }
 
-        [Authorize]
-        [HttpGet("Return-hello-world")]
-        public IActionResult ReturnHelloWorld()
-        {
-            return Ok("Hello, World!");
-        }
-
-
 
         [HttpPost]
         public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
