@@ -111,32 +111,32 @@ namespace WebApi
             });
 
             builder.Services.AddSingleton<GlobalGrpcExceptionInterceptor>();
-            
-                                    // Controllers
+
+            // Controllers
             builder.Services.AddControllers();
 
-                                    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-                                    // Dependency Injection
+            // Dependency Injection
             builder.Services.AddScoped<IPlanService, PlanService>();
             builder.Services.AddAutoMapper(typeof(PlanMapping));
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 
             var app = builder.Build();
 
-                                    // Configure the HTTP request pipeline.
+            // Configure the HTTP request pipeline.
 
-            
-            
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-                
+
 
             app.UseAuthorization();
 

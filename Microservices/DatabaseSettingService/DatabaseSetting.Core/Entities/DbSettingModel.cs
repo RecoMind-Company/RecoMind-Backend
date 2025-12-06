@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
-namespace DatabaseSetting.Core.Entities
+﻿namespace DatabaseSetting.Core.Entities
 {
     public class DbSettingModel
     {
@@ -25,7 +16,7 @@ namespace DatabaseSetting.Core.Entities
         public string Password { get; set; }
         // End database connection details
 
-        public string ConnectionString { get; set; }
+        public string? ConnectionString { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

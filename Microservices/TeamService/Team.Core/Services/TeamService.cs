@@ -1,14 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Team.Core.DTOs;
-using Team.Core.Models;
-using Team.Core.Interfaces;
 using Team.Core.Exceptions;
+using Team.Core.Interfaces;
+using Team.Core.Models;
 
 namespace Team.Core.Services
 {
@@ -16,10 +10,12 @@ namespace Team.Core.Services
     {
         private readonly ITeamRepository _repo;
         private readonly IMapper _mapper;
-        public TeamService(ITeamRepository repo, IMapper mapper)
+        private readonly IGrpcAuthService _authService;
+        public TeamService(ITeamRepository repo, IMapper mapper, IGrpcAuthService authService)
         {
             _repo = repo;
             _mapper = mapper;
+            _authService = authService;
         }
 
         // Get Functions => get team team for Rest, get team for gRPC, get list, get list for AI
@@ -29,8 +25,12 @@ namespace Team.Core.Services
             var team = await _repo.GetByIdAsync(teamId);
             if (team == null || team.CompanyId != companyId)
                 throw new NotFoundException("Team not found");
-
-            return _mapper.Map<TeamResponseDto>(team);
+            var teamToReturn = _mapper.Map<TeamResponseDto>(team);
+            var teamLeader = await _authService.GetUserByIdAsync(team.TeamLeadId);
+            var employee = await _authService.GetUsersByIdsAsync(team.TeamEmployees.ToList());
+            _mapper.Map(teamLeader, teamToReturn);
+            _mapper.Map(employee, teamToReturn);
+            return teamToReturn;
         }
 
         public async Task<TeamModel?> InternalGetTeamAsync(string teamId)
@@ -41,7 +41,15 @@ namespace Team.Core.Services
         public async Task<List<TeamResponseDto>> GetTeamsForCompanyAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
-            return _mapper.Map<List<TeamResponseDto>>(teams);
+            var teamToReturn = _mapper.Map<List<TeamResponseDto>>(teams);
+            foreach (var team in teams)
+            {
+                var teamLeader = await _authService.GetUserByIdAsync(team.TeamLeadId);
+                var employee = await _authService.GetUsersByIdsAsync(team.TeamEmployees.ToList());
+                _mapper.Map(teamLeader, teamToReturn.First(t => t.Id == team.Id));
+                _mapper.Map(employee, teamToReturn.First(t => t.Id == team.Id));
+            }
+            return teamToReturn;
         }
 
         public async Task<List<TeamResponseWithoutDetailsDto>> GetTeamsForAiAsync(string companyId)

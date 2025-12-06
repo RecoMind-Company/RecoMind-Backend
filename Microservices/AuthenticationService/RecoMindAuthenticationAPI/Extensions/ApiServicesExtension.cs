@@ -1,7 +1,8 @@
 ﻿using Authentication.Infrastructure.gRPC.Protos;
+using Authentication.Infrastructure.gRPC.TeamGrpc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace RecoMindAuthenticationAPI.Extensions
 {
@@ -60,14 +61,24 @@ namespace RecoMindAuthenticationAPI.Extensions
                 c.Address = new Uri(configuration["Urls:InvitationServiceUrl"]);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
-                
-                
-                    return new HttpClientHandler
-                    {
-                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                    };
-                
-                return new HttpClientHandler();
+
+
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
+            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(c =>
+            {
+                c.Address = new Uri(configuration["Urls:TeamServiceUrl"]);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+
+
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
             });
         }
         public static StaticFileOptions AddMyStaticFiles(this IApplicationBuilder app, IWebHostEnvironment env)

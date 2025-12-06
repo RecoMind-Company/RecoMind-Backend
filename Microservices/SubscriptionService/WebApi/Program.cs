@@ -1,12 +1,12 @@
-
+﻿
 using Core.Interfaces;
 using Core.Mapping;
-using Core.Models;
 using Core.Service;
 using Core.Service.Interface;
 using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -30,12 +30,23 @@ namespace WebApi
 
             builder.WebHost.ConfigureKestrel(options =>
             {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-                options.ListenAnyIP(8000, listenOptions =>
-                {
-                    // listenOptions.UseHttps();
-                    listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
-                });
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
             builder.Services.AddGrpc(options =>
@@ -115,9 +126,9 @@ namespace WebApi
 
             // Configure the HTTP request pipeline.
 
-                app.UseSwagger();
-                app.UseSwaggerUI();
-                
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             // app.UseHttpsRedirection();
 

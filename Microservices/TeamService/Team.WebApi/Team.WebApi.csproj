@@ -9,6 +9,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Team.WebApi\**" />
+    <Content Remove="Team.WebApi\**" />
+    <EmbeddedResource Remove="Team.WebApi\**" />
+    <None Remove="Team.WebApi\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AuthGrpc\AuthenticationMessages.proto" />
+    <None Remove="AuthGrpc\AuthenticationService.proto" />
+    <None Remove="Protos\team.proto" />
+    <None Remove="Protos\teamMessages.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="Google.Protobuf" Version="3.33.1" />
@@ -38,12 +52,19 @@
     <ProjectReference Include="..\Team.Core\Team.Core.csproj" />
     <ProjectReference Include="..\Team.Infrastructure\Team.Infrastructure.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Protos\" />
-  </ItemGroup>
 	
     <ItemGroup>
-	    <Protobuf Include="Protos\team.proto" GrpcServices="Server" ProtoRoot="Protos" />
+		<Protobuf Include="AuthGrpc\AuthenticationMessages.proto" GrpcServices="None">
+			<ProtoRoot>AuthGrpc</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="AuthGrpc\AuthenticationService.proto" GrpcServices="Client">
+			<ProtoRoot>AuthGrpc</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="Protos\team.proto" GrpcServices="Server" >
+			<ProtoRoot>Protos</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="Protos\teamMessages.proto" GrpcServices="None">
+			<ProtoRoot>Protos</ProtoRoot>
+		</Protobuf>
 	</ItemGroup>
 </Project>

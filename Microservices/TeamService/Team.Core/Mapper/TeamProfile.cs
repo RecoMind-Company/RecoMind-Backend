@@ -1,9 +1,5 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Mail;
 using Team.Core.DTOs;
 using Team.Core.Models;
 
@@ -14,11 +10,15 @@ namespace Team.Core.Mapper
     {
         public TeamProfile()
         {
-            CreateMap<TeamModel, TeamResponseDto>()
+            CreateMap<TeamModel, TeamResponseDto>();
+
+            CreateMap<UserToReturnDto, TeamResponseDto>()
+                .ForMember(d => d.TeamLeadName,
+                   o => o.MapFrom(s => new MailAddress(s.Email).User));
+
+            CreateMap<UsersToReturnDto, TeamResponseDto>()
                 .ForMember(d => d.Employees,
-                   o => o.MapFrom(s => s.TeamEmployees.Select(x => x.EmployeeId)));
-
-
+                o => o.MapFrom(s => s.Usernames));
 
             CreateMap<CreateTeamDto, TeamModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())

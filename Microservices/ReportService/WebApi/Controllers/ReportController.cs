@@ -1,22 +1,34 @@
 ﻿using Core.DTOs;
+using Core.DTOs.AI;
 using Core.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class ReportController(IReportService reportService) : ControllerBase
 {
-    [HttpGet("teams/{teamId}")]
-    public async Task<ActionResult> GetReport([FromRoute] string teamId, [FromQuery] GetReportDto getReportDto)
+    //[HttpPost("teams/{teamId}")]
+    [HttpPost("teams")]
+    public async Task<ActionResult<AnalysisResponseDto>> CreateReport()
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        var result = await reportService.GetReport(teamId, getReportDto);
+        var result = await reportService.CreateReport();
+        if (result == null)
+            return NotFound("there is no team with this id");
+        return Ok(result);
+    }
+    [HttpGet("teams/{teamId}")]
+    public async Task<ActionResult> GetReport([FromRoute] string teamId, [FromQuery] string taskId)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var result = await reportService.GetReport(teamId, taskId);
         if (result == null)
             return NotFound("there is no team with this id");
         return Ok(result);

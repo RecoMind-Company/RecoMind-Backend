@@ -1,5 +1,4 @@
 using Core.Extentions;
-using Hangfire;
 using Infrastructure.Extentions;
 using WebApi.CustomMiddlewares;
 using WebApi.Extensions;
@@ -14,15 +13,15 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
-    // app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.UseMiddleware<CustomExceptionHandlerMiddleware>();
-app.UseHangfireDashboard("/dashboard");
+//app.UseHangfireDashboard("/dashboard");
 app.Run();
