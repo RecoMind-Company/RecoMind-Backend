@@ -145,8 +145,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 return userToReturn;
             }
         }
-        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
-        var token = await CreateToken(user, userTeam.CompanyId);
+        //var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
+        var token = await CreateToken(user, compnayId: "fb140d33-7e96-474d-a06d-ab3a6c65d1a9");
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
