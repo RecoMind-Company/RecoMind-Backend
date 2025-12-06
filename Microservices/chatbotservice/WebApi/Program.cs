@@ -7,6 +7,7 @@ using Infrastructure.Data;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;  // ✅ أضف هذا السطر
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Text;
+using Team.Grpc;
+using WebApi.Grpc;
+using WebApi.Grpc.ConnectedService;
 
 namespace WebApi
 {
@@ -38,7 +42,20 @@ namespace WebApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.Configure<AiServiceOptions>(
+                     builder.Configuration.GetSection("AIService"));
+
             builder.Services.AddHttpClient();
+
+            builder.Services.AddHttpClient<IAiClientService, AiClientService>(client =>
+            {
+                var baseUrl = builder.Configuration.GetValue<string>("AIService:BaseUrl");
+
+                if (!string.IsNullOrWhiteSpace(baseUrl))
+                {
+                    client.BaseAddress = new Uri(baseUrl);
+                }
+            });
 
             builder.WebHost.ConfigureKestrel(options =>
             {
@@ -110,12 +127,18 @@ namespace WebApi
                 o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
             });
 
+            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
+            {
+                o.Address = new Uri("http://teamservice:8010");                       // Team service address
+            });
+
             // Auto-register all AutoMapper profiles in loaded assemblies (no need to update this file when profiles are added)
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
+            builder.Services.AddScoped(typeof(AuthService));
 
 
             var app = builder.Build();
@@ -136,7 +159,7 @@ namespace WebApi
 
             app.UseAuthorization();
 
-
+            app.MapGrpcService<GrpcChatbotServiceImpl>();
             app.MapControllers();
 
             app.Run();

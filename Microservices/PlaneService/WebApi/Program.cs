@@ -28,33 +28,33 @@ namespace WebApi
             // DbContext
             builder.Services.AddDbContext<PlanServiceDbContext>(options =>
                     options.UseSqlServer(
-                        builder.Configuration.GetConnectionString("ProdcutionConnection_PlanService"),
+                        builder.Configuration.GetConnectionString("ProdcutionConnection_Plan"),
                         sqlOptions =>
                         sqlOptions.MigrationsAssembly(typeof(PlanServiceDbContext).Assembly.FullName)
                         ));
 
             //  Configurations for gRPC
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    // اقرأ من environment أولاً (أولوية أعلى)
+            //    var httpPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+            //        "8001"
+            //    );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+            //    var grpcPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+            //        "5001"
+            //    );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            //});
 
             builder.Services.AddSwaggerGen(cfg =>
             {

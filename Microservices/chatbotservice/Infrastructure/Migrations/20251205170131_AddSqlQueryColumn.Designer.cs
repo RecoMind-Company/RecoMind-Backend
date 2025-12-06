@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ChatbotDbContext))]
-    [Migration("20251202185623_InitialCreation")]
-    partial class InitialCreation
+    [Migration("20251205170131_AddSqlQueryColumn")]
+    partial class AddSqlQueryColumn
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,10 +34,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Response")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("TimeStamp")
                         .HasColumnType("datetime2");
 
@@ -52,6 +48,33 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ChatMessages");
+                });
+
+            modelBuilder.Entity("Core.Models.ChatMessage", b =>
+                {
+                    b.OwnsOne("Core.DTOs.AiService.ResponseMessage", "Response", b1 =>
+                        {
+                            b1.Property<string>("ChatMessageId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("Answer")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Sql_Query")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ChatMessageId");
+
+                            b1.ToTable("ChatMessages");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ChatMessageId");
+                        });
+
+                    b.Navigation("Response")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

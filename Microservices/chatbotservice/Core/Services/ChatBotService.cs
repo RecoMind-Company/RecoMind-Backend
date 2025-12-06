@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
-using Core.DTOs;
+using Core.Const;
+using Core.DTOs.AiService;
+using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
@@ -23,42 +25,63 @@ namespace Core.Services
             _mapper = mapper;
         }
 
-        public async Task<ChatMessageResponseDto> HandelQuery(CreateChatRequestDto requestDto)
+        public async Task<LastResponseDto> HandelQuery(AiRequestDto requestDto)
         {
-            // Call Ai Service 
-            var aiResponse = new ApiResponseDto();
+            AiResponseDto postResponse;
             try
             {
-                aiResponse = await _aiClientService.GetAiResponse(requestDto.Query);
-
-                if (string.IsNullOrWhiteSpace(aiResponse.Message))
-                {
-                    throw new Exception();
-                }
+                //1.Call Post Method
+                postResponse = await _aiClientService.SentRequestToAiService(requestDto);
             }
-            catch (Exception)
+            catch (HttpRequestException ex)
             {
-                aiResponse.Success = false;
-                aiResponse.Message = " The AI service is currently unavailable. Please try again later.";
-                return _mapper.Map<ChatMessageResponseDto>(aiResponse);
+                return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = $"AI service connection failed: {ex.Message}",                    
+                };
+            }
+            
+            if (postResponse == null || string.IsNullOrWhiteSpace(postResponse.task_id))
+            {                
+                return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = "AI service failed to start the task or returned an empty ID.",
+                };
             }
 
+            // 3. Get Method (Poling)
+            var aiResponse = await CallGetMethod(postResponse.task_id);
 
-            // 2. Build entity
-            var entity = _mapper.Map<ChatMessage>(requestDto);
+            if (aiResponse.Status == Status.SUCCESS)
+            {
+                //  Database
+                var entity = _mapper.Map<ChatMessage>(requestDto);
 
-            entity.Id = Guid.NewGuid().ToString();
-            entity.Response = aiResponse.Message;
-            entity.TimeStamp = DateTime.UtcNow;
-            entity.Query = requestDto.Query;
+                
+                
+                entity.Id = Guid.NewGuid().ToString();
+                entity.Response.Answer = aiResponse.Response.Answer;
+                entity.Response.Sql_Query = aiResponse.Response.Sql_Query;
+                entity.TimeStamp = DateTime.UtcNow;               
+                entity.Query = requestDto.user_question;
 
+                await _unitOfWork.Entity.AddAsync(entity);
+                await _unitOfWork.Save();
 
-            // 3. Save
-            var saved = await _unitOfWork.Entity.AddAsync(entity);
-            await _unitOfWork.Save();
-
-            // 4. Return DTO
-            return _mapper.Map<ChatMessageResponseDto>(saved);
+                // 5. Return DTO
+                var aiResponseDto = _mapper.Map<LastResponseDto>(aiResponse);
+                return aiResponseDto;
+            }
+            else
+            {               
+               return new LastResponseDto
+                {
+                    status = Status.FAILURE,
+                    ResponseMessage = "AI service failed to process the request.",
+                };
+            }
         }
 
         public async Task<IEnumerable<GetHistoryDto>> GetHistory(string userId)
@@ -86,35 +109,39 @@ namespace Core.Services
                      _unitOfWork.Entity.Delete(message);
                 }
                 await _unitOfWork.Save();
+                return;
             }
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
         }
 
-        //public async Task<string> DeleteQuery( string queryId )
-        //{
-        //    var message = await _unitOfWork.Entity.GetByIdAsync( queryId );
+        public async Task<FinalResponseDto> CallGetMethod(string taskId)
+        {
+            while (true)
+            {
+                var responseDto = await _aiClientService.GetResponseFromAiService(taskId);
 
-        //    if (message == null)
-        //    {
-        //        throw new KeyNotFoundException(queryId);
-        //    }
+                switch (responseDto.Status)
+                {
+                    case Status.SUCCESS:                        
+                        return responseDto;
 
-        //    var result =  _unitOfWork.Entity.Delete(message);
-        //    await _unitOfWork.Save();
+                    case Status.FAILURE:
+                    case Status.REVOKED: 
+                        responseDto.Status = Status.FAILURE;
+                        responseDto.Response.Answer = "The AI service failed or was revoked.";
+                        return responseDto;
 
-        //    return $"Query With Id {result.Id} Has Been Deleted Successfuly ";
-        //}
+                    case Status.PENDING:
+                    case Status.STARTED:
+                    case Status.RETRY:
+                       
+                        await Task.Delay(TimeSpan.FromSeconds(10));                       
+                        break;
 
-        //public async Task<ChatMessageResponseDto> GetChatMessageById(string queryId)
-        //{
-        //    var message = await _unitOfWork.Entity.GetByIdAsync(queryId);
-
-        //    if (message == null)
-        //    {
-        //        throw new KeyNotFoundException(queryId);
-        //    }
-
-        //    return _mapper.Map<ChatMessageResponseDto>(message);
-        //}
+                    default:
+                        throw new Exception("An unexpected status occurred from the AI service.");
+                }
+            }
+        }       
     }
 }

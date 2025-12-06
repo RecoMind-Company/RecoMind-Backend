@@ -1,4 +1,5 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AiService;
+using Core.DTOs.Chatbot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Core.Services.Interface
 {
     public interface IChatBotService
     {
-        public Task<ChatMessageResponseDto> HandelQuery(CreateChatRequestDto requestDto);
+        public Task<LastResponseDto> HandelQuery(AiRequestDto requestDto);
         public Task<IEnumerable<GetHistoryDto>> GetHistory(string userId);
         public Task DeleteHistory(string userId);
 

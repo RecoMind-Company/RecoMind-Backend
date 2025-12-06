@@ -15,7 +15,8 @@ namespace Infrastructure.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ChatMessage>()
+                .OwnsOne(c => c.Response);
         }
     }
 }
