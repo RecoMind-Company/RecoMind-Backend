@@ -1,10 +1,6 @@
 ﻿using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 
 namespace DatabaseSetting.WebApi.Controllers
 {
@@ -14,7 +10,6 @@ namespace DatabaseSetting.WebApi.Controllers
     {
         private readonly IDbSettingService _service;
         private readonly ILogger<DbSettingController> _logger;
-        private string companyId => GetCompanyIdFromClaims();
 
         public DbSettingController(IDbSettingService service, ILogger<DbSettingController> logger)
         {
@@ -23,15 +18,15 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("{companyId}")]
+        public async Task<IActionResult> GetAll(string companyId)
         {
             var result = await _service.GetAllByCompanyIdAsync(companyId);
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        [HttpGet("{companyId}/{id}")]
+        public async Task<IActionResult> GetById(string id, string companyId)
         {
             var result = await _service.GetByIdAsync(id, companyId);
 
@@ -41,8 +36,8 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("connection/{id}")]
-        public async Task<IActionResult> GetConnectionStringById(string id)
+        [HttpGet("connection/{companyId}/{id}")]
+        public async Task<IActionResult> GetConnectionStringById(string id, string companyId)
         {
             var result = await _service.GetConnectionByIdAsync(id, companyId);
 
@@ -60,8 +55,8 @@ namespace DatabaseSetting.WebApi.Controllers
                 });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateDbSettingModel request)
+        [HttpPost("{companyId}")]
+        public async Task<IActionResult> Create(string companyId, [FromBody] CreateDbSettingModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -75,8 +70,8 @@ namespace DatabaseSetting.WebApi.Controllers
             );
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingModel request)
+        [HttpPut("{companyId}/{id}")]
+        public async Task<IActionResult> Update(string companyId, string id, [FromBody] UpdateDbSettingModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -89,8 +84,8 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete("{companyId}/{id}")]
+        public async Task<IActionResult> Delete(string companyId, string id)
         {
             var success = await _service.DeleteAsync(id, companyId);
             if (!success) return NotFound();
@@ -98,14 +93,14 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         // Helper to get company id from claims (single source of truth)
-        private string GetCompanyIdFromClaims()
-        {
-            var claim = User.FindFirst("companyId") ?? User.FindFirst("tenant") ?? User.FindFirst(ClaimTypes.GroupSid);
+        //private string GetCompanyIdFromClaims()
+        //{
+        //    var claim = User.FindFirst("companyId") ?? User.FindFirst("tenant") ?? User.FindFirst(ClaimTypes.GroupSid);
 
-            if (claim == null)
-                throw new Exception("Company claim not found");
+        //    if (claim == null)
+        //        throw new Exception("Company claim not found");
 
-            return claim.Value;
-        }
+        //    return claim.Value;
+        //}
     }
 }

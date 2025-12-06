@@ -1,7 +1,6 @@
 ﻿using Core.Consts;
 using Core.DTOs;
 using Core.Service.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers
@@ -16,7 +15,7 @@ namespace WebApi.Controllers
             _subscriptionService = subscriptionService;
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         [ProducesResponseType(typeof(IEnumerable<GetSubscriptionDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
@@ -31,8 +30,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("{id}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(typeof(GetSubscriptionDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetById(string id)
         {
@@ -62,8 +60,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("{id}")]
+        [HttpPut("{id}")]
         [ProducesResponseType(typeof(UpdateSubscriptionDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(string id, [FromBody] CreateSubscriptionDto subscriptionDto)
         {
@@ -78,8 +75,7 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("{id}")]
+        [HttpDelete("{id}")]
         [ProducesResponseType(typeof(DeleteSubscriptionDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> Delete(string id)
         {
@@ -92,6 +88,14 @@ namespace WebApi.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }        
+        }
+        public IEnumerable<string> GetAllPlans()
+        {
+            return Enum.GetNames(typeof(PlanType));
+        }
+        public IEnumerable<string> GetAllBillingCycles()
+        {
+            return Enum.GetNames(typeof(BillingCycle));
+        }
     }
 }
