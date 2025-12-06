@@ -9,6 +9,8 @@
   <ItemGroup>
     <None Remove="gRPC\Protos\InvitationMessages.proto" />
     <None Remove="gRPC\Protos\InvitationService.proto" />
+    <None Remove="gRPC\TeamGrpc\team.proto" />
+    <None Remove="gRPC\TeamGrpc\teamMessages.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +42,12 @@
 	  </Protobuf>
 	  <Protobuf Include="gRPC\Protos\InvitationService.proto" GrpcServices="Client">
 		  <ProtoRoot>gRPC\Protos</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\TeamGrpc\team.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\TeamGrpc</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\TeamGrpc\teamMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\TeamGrpc</ProtoRoot>
 	  </Protobuf>
   </ItemGroup>
 
