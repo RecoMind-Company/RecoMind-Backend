@@ -43,12 +43,12 @@ namespace WebApi.Controllers
 
             if (!string.IsNullOrEmpty(planDto.TeamId))
             {
-                //GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = planDto.TeamId };
-                //var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
-                //if (validTeamId == null)
-                //{
-                //    throw new KeyNotFoundException($"Team With Id {planDto.TeamId} Not Found !");
-                //}
+                GetTeamByIdRequest teamId = new GetTeamByIdRequest() { TeamId = planDto.TeamId };
+                var validTeamId = _teamGrpcServiceClient.GetTeamBasicInfo(teamId);
+                if (validTeamId == null)
+                {
+                    throw new KeyNotFoundException($"Team With Id {planDto.TeamId} Not Found !");
+                }
             }
             var createdPlan = await _planService.CreatePlan(planDto);
             return CreatedAtAction(nameof(GetPlan), new { planId = createdPlan.Id }, createdPlan);
