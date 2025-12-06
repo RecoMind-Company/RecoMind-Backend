@@ -16,6 +16,6 @@ namespace Team.Core.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public ICollection<string> TeamEmployees { get; set; } = new List<string>();
+        public ICollection<TeamEmployee> TeamEmployees { get; set; } = new List<TeamEmployee>();
     }
 }

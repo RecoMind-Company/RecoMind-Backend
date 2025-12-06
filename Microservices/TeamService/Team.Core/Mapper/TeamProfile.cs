@@ -12,14 +12,6 @@ namespace Team.Core.Mapper
         {
             CreateMap<TeamModel, TeamResponseDto>();
 
-            CreateMap<UserToReturnDto, TeamResponseDto>()
-                .ForMember(d => d.TeamLeadName,
-                   o => o.MapFrom(s => new MailAddress(s.Email).User));
-
-            CreateMap<UsersToReturnDto, TeamResponseDto>()
-                .ForMember(d => d.Employees,
-                o => o.MapFrom(s => s.Usernames));
-
             CreateMap<CreateTeamDto, TeamModel>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.CompanyId, opt => opt.Ignore())
