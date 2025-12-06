@@ -1,0 +1,13 @@
+syntax = "proto3";
+import "teamMessages.proto";
+option csharp_namespace = "Authentication.Infrastructure.gRPC.TeamGrpc";
+
+service TeamGrpcService {
+  rpc GetTeamById (GetTeamRequest) returns (TeamResponse);
+  rpc GetTeamsByCompanyId (GetCompanyTeamsRequest) returns (TeamsListResponse);
+  rpc GetTeamEmployees (GetTeamRequest) returns (EmployeesResponse);
+  rpc GetTeamLeader (GetTeamRequest) returns (LeaderResponse);
+
+  rpc GetTeamBasicInfo (GetTeamByIdRequest) returns (TeamBasicInfoResponse);
+  rpc GetUserTeam (GetUserTeamRequest) returns (TeamResponse);
+}

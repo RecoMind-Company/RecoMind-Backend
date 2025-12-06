@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
 using Team.Core.Interfaces;
 using Team.Core.Mapper;
-using Team.Core.Services;
 using Team.Infrastructure.Data;
+using Team.Infrastructure.Grpc;
 using Team.Infrastructure.Repositories;
+using Team.WebApi.AuthGrpc;
 using Team.WebApi.GrpcServices;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Team.WebApi
 {
@@ -29,7 +29,7 @@ namespace Team.WebApi
                     maxRetryDelay: TimeSpan.FromSeconds(10),
                     errorNumbersToAdd: null)
                 )
-            ); 
+            );
 
 
             // Add services to the container.
@@ -38,7 +38,7 @@ namespace Team.WebApi
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
-
+            builder.Services.AddScoped<IGrpcAuthService, GrpcAuthService>();
             builder.Services.AddGrpc();
 
 
@@ -107,14 +107,25 @@ namespace Team.WebApi
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
+            builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
+            {
+                c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
 
+
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             // app.UseHttpsRedirection();
 

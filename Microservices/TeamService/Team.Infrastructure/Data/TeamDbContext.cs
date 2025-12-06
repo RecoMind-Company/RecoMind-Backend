@@ -1,9 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Team.Core.Models;
 
 namespace Team.Infrastructure.Data
@@ -34,11 +29,11 @@ namespace Team.Infrastructure.Data
             .IsUnique();
 
 
-            modelBuilder.Entity<TeamEmployee>()
-            .HasOne(te => te.Team)
-            .WithMany(t => t.TeamEmployees)
-            .HasForeignKey(te => te.TeamId)
-            .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<TeamEmployee>()
+            //.HasOne(te => te.Team)
+            //.WithMany(t => t.TeamEmployees)
+            //.HasForeignKey(te => te.TeamId)
+            //.OnDelete(DeleteBehavior.Cascade);
         }
 
     }

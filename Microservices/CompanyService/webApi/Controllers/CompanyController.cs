@@ -1,15 +1,9 @@
-﻿using AutoMapper;
-using Core.DTOs;
+﻿using Core.DTOs;
 using Core.Interfaces;
 using Core.Service.Interface;
 using Core.Service.Protos;
-using Grpc.Core;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using RecoMindAuthenticationAPI.Grpc.Authentication;
-using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
 
 namespace Company.API.Controllers
 {
@@ -24,7 +18,7 @@ namespace Company.API.Controllers
 
         public CompaniesController(ICompanyService companyService,
             subscriptionService.subscriptionServiceClient subscriptionServiceClient,
-            IUnitOfWork<Core.Models.Company> repo ,
+            IUnitOfWork<Core.Models.Company> repo,
              RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient authenticationServiceClient)
         {
             _companyService = companyService;
@@ -33,7 +27,7 @@ namespace Company.API.Controllers
             _authenticationServiceClient = authenticationServiceClient;
         }
 
-        [HttpGet]
+        [HttpGet("getAll")]
         [ProducesResponseType(typeof(IEnumerable<GetCompanyDTO>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
@@ -81,7 +75,7 @@ namespace Company.API.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         [ProducesResponseType(typeof(GetCompanyDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreateCompanyDTO dto)
@@ -94,7 +88,7 @@ namespace Company.API.Controllers
                 var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
 
                 if (subscription == null)
-                    throw new ArgumentException( $"Subscription with ID {dto.SubscriptionId} not found.");
+                    throw new ArgumentException($"Subscription with ID {dto.SubscriptionId} not found.");
             }
 
             if (!string.IsNullOrEmpty(dto.AdminId))
@@ -160,7 +154,7 @@ namespace Company.API.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            var company = await _Repo.Entity.GetByIdAsync(Dto.companyId);          
+            var company = await _Repo.Entity.GetByIdAsync(Dto.companyId);
             if (company == null)
                 return NotFound($"Company {Dto.companyId} Not Found ");
 
@@ -179,13 +173,13 @@ namespace Company.API.Controllers
                 Industry = company.Industry,
                 Size = company.Size,
                 AdminId = company.AdminId,
-                Description = company.Description, 
+                Description = company.Description,
                 CreatedAt = company.CreatedAt,
                 SubscriptionId = company.SubscriptionId
             };
-            var result = _Repo.Entity.UpdateAsync( model);
+            var result = _Repo.Entity.UpdateAsync(model);
             _Repo.Save();
-            
+
             UpdateCompanyDTO updateCompanyDTO = new UpdateCompanyDTO
             {
                 Id = model.Id,

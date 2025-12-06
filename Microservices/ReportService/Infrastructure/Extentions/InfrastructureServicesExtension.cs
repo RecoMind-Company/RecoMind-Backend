@@ -1,5 +1,4 @@
 ﻿using Core.Interfaces;
-using Hangfire;
 using Infrastructure.AI;
 using Infrastructure.Context;
 using Infrastructure.FileStorage;
@@ -21,11 +20,11 @@ public static class InfrastructureServicesExtension
         {
             options.UseSqlServer(connectionString);
         });
-        services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
-        services.AddHangfireServer();
+        //services.AddHangfire(x => x.UseSqlServerStorage(connectionString));
+        //services.AddHangfireServer();
         services.AddHttpClient<IGenerateReportService, GenerateReportService>(client =>
         {
-            client.BaseAddress = new Uri("https://ai.recomind.site/");
+            client.BaseAddress = new Uri("https://ai.recomind.site/reporting/");
             client.DefaultRequestHeaders.Add("Accept", "application/json");
             client.Timeout = TimeSpan.FromSeconds(30);
         }).AddTransientHttpErrorPolicy(policy =>
@@ -34,7 +33,6 @@ public static class InfrastructureServicesExtension
         );
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IGenerateReportService, GenerateReportService>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IGrpcTeamService, GrpcTeamService>();
     }

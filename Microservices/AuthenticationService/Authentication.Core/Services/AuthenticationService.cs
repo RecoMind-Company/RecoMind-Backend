@@ -34,7 +34,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                                    IOptions<JwtSettings> jwtOptions,
                                    IVerificationEmailService sendEmailService,
                                    IEmailSender emailSender,
-                                   IGrpcInvitationService invitationService) : IAuthenticationService
+                                   IGrpcInvitationService invitationService,
+                                   IGrpcTeamService grpcTeamService) : IAuthenticationService
 {
     private readonly JwtSettings jwtSettings = jwtOptions.Value;
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -144,7 +145,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 return userToReturn;
             }
         }
-        var token = await CreateToken(user);
+        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
+        var token = await CreateToken(user, userTeam.CompanyId);
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
@@ -200,7 +202,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         user.RefreshTokens.Add(newRefreshToken);
         await userManager.UpdateAsync(user);
 
-        var jwtToken = await CreateToken(user);
+        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
+        var jwtToken = await CreateToken(user, userTeam.CompanyId);
         var roles = await userManager.GetRolesAsync(user);
 
         userToReturn.IsAuthenticated = true;
@@ -252,15 +255,16 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         await userManager.UpdateAsync(user);
         return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
     }
-    private async Task<JwtSecurityToken> CreateToken(AppUser user)
+
+    private async Task<JwtSecurityToken> CreateToken(AppUser user, string compnayId = null) // null comany id 
     {
-        var Claims = new List<Claim>()
-        {
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Name,user.UserName)
-        };
+        var Claims = new List<Claim>();
+        Claims.Add(new Claim("", JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
+        Claims.Add(new Claim(ClaimTypes.Email, user.Email));
+        Claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
+        Claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+        if (compnayId is not null)
+            Claims.Add(new Claim("companyId", compnayId));
         var roles = await userManager.GetRolesAsync(user);
         foreach (var role in roles)
             Claims.Add(new(ClaimTypes.Role, role));
