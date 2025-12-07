@@ -62,6 +62,7 @@ public class AccountService(UserManager<AppUser> userManager, IWebHostEnvironmen
         if (user is null)
             return null;
 
+        profileToReturn.Id = user.Id;
         profileToReturn.Email = user.Email;
         profileToReturn.Name = user.FullName;
 
