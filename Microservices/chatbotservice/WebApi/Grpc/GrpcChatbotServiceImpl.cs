@@ -42,7 +42,7 @@ namespace WebApi.Grpc
                     user_question = dto.user_question,
                 };
 
-                var result = await _chatBotService.HandelQuery(Dto);
+                var result = await _chatBotService.SendQuryToAiService(Dto);
                 return _mapper.Map<ChatMessageResponse>(result);
             }
             catch (KeyNotFoundException knfEx)

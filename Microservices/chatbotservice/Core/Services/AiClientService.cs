@@ -53,25 +53,18 @@ namespace Core.Services
             }
             catch (Exception ex)
             {
-                throw;
+                throw new Exception($"Error while getting response from AI service: {ex.Message}", ex);
             }
         }
 
         public async Task<AiResponseDto> SentRequestToAiService(AiRequestDto dto)
-        {
-            
-                // التحقق من البيانات
-                
-
-                // إنشء الـ Request
-                var requestDto = new AiRequestDto
-                {
-                    company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",
-                    team_name = "Sales",
-                    user_question = dto.user_question
-                };
-
-
+        {            
+            var requestDto = new AiRequestDto
+            {
+                company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",
+                team_name = "Sales",
+                user_question = dto.user_question
+            };
 
             // تحويل إلى JSON
             var response = await _http.PostAsJsonAsync(_postEndPoint, requestDto);
@@ -79,9 +72,10 @@ namespace Core.Services
             response.EnsureSuccessStatusCode();
 
             var analysisResponse = await response.Content.ReadFromJsonAsync<AiResponseDto>();
+
+            analysisResponse.user_question = dto.user_question;
+
             return analysisResponse!;
-
-
         }
     }
 }
