@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Core.DTOs.AiService;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Core.Models
         public string UserId { get; set; }
         public string UserRole { get; set; }
         public string Query { get; set; }
-        public string Response { get; set; }
+        public ResponseMessage Response { get; set; }
         public DateTime TimeStamp { get; set; }
     }
 }

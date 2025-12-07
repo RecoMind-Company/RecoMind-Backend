@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 using System.Security.Claims;
 using Team.Core.DTOs;
 using Team.Core.Exceptions;
@@ -15,8 +16,6 @@ namespace Team.WebApi.Controllers
     {
         private readonly ITeamService _service;
         private readonly ILogger<TeamController> _logger;
-        private string CompanyId => GetCompanyIdFromClaims();
-
         public TeamController(ITeamService service, ILogger<TeamController> logger)
         {
             _service = service;
@@ -24,44 +23,44 @@ namespace Team.WebApi.Controllers
         }
 
 
-        [HttpGet("{teamId}")]
-        public async Task<IActionResult> GetTeam(string teamId)
+        [HttpGet("{teamId}/company/{companyId}")]
+        public async Task<IActionResult> GetTeam(string teamId, string companyId)
         {
             try
             {
                 var team = await _service
-                    .GetTeamAsync(teamId, CompanyId);
+                    .GetTeamAsync(teamId, companyId);
                 return Ok(team);
             }
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
             catch (ForbiddenException ex) { return StatusCode(403, new { message = ex.Message }); }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetTeamsForCompany()
+        [HttpGet("company/{companyId}")]
+        public async Task<IActionResult> GetTeamsForCompany(string companyId)
         {
-            var teams = await _service.GetTeamsForCompanyAsync(CompanyId);
+            var teams = await _service.GetTeamsForCompanyAsync(companyId);
             return Ok(teams);
         }
 
-        [HttpGet("for-AI-model")]
-        public async Task<IActionResult> GetTeamsForAI()
+        [HttpGet("company/{companyId}/for-ai-model")]
+        public async Task<IActionResult> GetTeamsForAI(string companyId)
         {
-            var teams = await _service.GetTeamsForAiAsync(CompanyId);
+            var teams = await _service.GetTeamsForAiAsync(companyId);
             return Ok(teams);
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
+        [HttpPost("company/{companyId}")]
+        public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto, string companyId)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
             try
             {
-                var created = await _service.CreateTeamAsync(CompanyId, dto);
-                return CreatedAtAction(nameof(GetTeam), new { teamId = created.Id }, created);
+                var created = await _service.CreateTeamAsync(companyId, dto);
+                return Ok(created);
             }
             catch (ConflictException ex)
             {
@@ -69,39 +68,39 @@ namespace Team.WebApi.Controllers
             }
         }
 
-        [HttpPut("{teamId}")]
-        public async Task<IActionResult> UpdateTeam(string teamId, [FromBody] UpdateTeamDto dto)
+        [HttpPut("{teamId}/company/{companyId}")]
+        public async Task<IActionResult> UpdateTeam(string teamId, [FromBody] UpdateTeamDto dto, string companyId)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
             try
             {
-                var updated = await _service.UpdateTeamAsync(teamId, CompanyId, dto);
+                var updated = await _service.UpdateTeamAsync(teamId, companyId, dto);
                 return Ok(updated);
             }
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
             catch (ConflictException ex) { return Conflict(new { message = ex.Message }); }
         }
 
-        [HttpDelete("{teamId}")]
-        public async Task<IActionResult> DeleteTeam(string teamId)
+        [HttpDelete("{teamId}/company/{companyId}")]
+        public async Task<IActionResult> DeleteTeam(string teamId, string companyId)
         {
             try
             {
-                await _service.DeleteTeamAsync(teamId, CompanyId);
+                await _service.DeleteTeamAsync(teamId, companyId);
                 return NoContent();
             }
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
         }
 
-        [HttpPost("{teamId}/employees")]
-        public async Task<IActionResult> AddEmployee(string teamId, [FromBody] AddEmployeeDto emp)
+        [HttpPost("{teamId}/company/{companyId}/employees")]
+        public async Task<IActionResult> AddEmployee(string teamId, [FromBody] AddEmployeeDto emp, string companyId)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
             try
             {
-                var added = await _service.AddEmployeeAsync(teamId, CompanyId, emp.EmployeeId);
+                var added = await _service.AddEmployeeAsync(teamId, companyId, emp.EmployeeId);
                 if (!added) return BadRequest(new { message = "Employee already in team" });
                 
                 return Ok(new { message = "Employee added" });
@@ -110,29 +109,18 @@ namespace Team.WebApi.Controllers
         }
 
 
-        [HttpDelete("{teamId}/employees/{employeeId}")]
-        public async Task<IActionResult> RemoveEmployee(string teamId, string employeeId)
+        [HttpDelete("{teamId}/company/{companyId}/employees/{employeeId}")]
+        public async Task<IActionResult> RemoveEmployee(string teamId, string companyId, string employeeId)
         {
             try
             {
-                var removed = await _service.RemoveEmployeeAsync(teamId, CompanyId, employeeId);
+                var removed = await _service.RemoveEmployeeAsync(teamId, companyId, employeeId);
 
                 if (!removed) return BadRequest(new { message = "Employee not found in team" });
 
                 return Ok(new { message = "Employee removed" });
             }
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-        }
-
-        // Helper to get company id from claims (single source of truth)
-        private string GetCompanyIdFromClaims()
-        {
-            var claim = User.FindFirst("companyId") ?? User.FindFirst("tenant") ?? User.FindFirst(ClaimTypes.GroupSid);
-
-            if (claim == null) 
-                throw new ForbiddenException("Company claim not found");
-
-            return claim.Value;
         }
     }
 }

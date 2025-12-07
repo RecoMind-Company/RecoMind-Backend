@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs
+namespace Core.DTOs.Chatbot
 {
     public class CreateChatRequestDto
     {
         public string UserID { get; set; }
         public string UserRole { get; set; }
-        public string Query { get; set; }
+        public string user_question { get; set; }
     }
 }

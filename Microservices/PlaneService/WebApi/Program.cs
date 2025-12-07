@@ -28,7 +28,7 @@ namespace WebApi
             // DbContext
             builder.Services.AddDbContext<PlanServiceDbContext>(options =>
                     options.UseSqlServer(
-                        builder.Configuration.GetConnectionString("ProdcutionConnection_PlanService"),
+                        builder.Configuration.GetConnectionString("ProdcutionConnection_Plan"),
                         sqlOptions =>
                         sqlOptions.MigrationsAssembly(typeof(PlanServiceDbContext).Assembly.FullName)
                         ));
@@ -124,6 +124,17 @@ namespace WebApi
             builder.Services.AddAutoMapper(typeof(PlanMapping));
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -133,13 +144,13 @@ namespace WebApi
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
+           
             app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 
 
             app.UseAuthorization();
-
+             app.UseCors("OpenCors");
             app.MapControllers();
             app.MapGrpcService<PlanServiceImpl>();
 

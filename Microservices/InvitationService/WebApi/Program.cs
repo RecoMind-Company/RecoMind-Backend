@@ -1,4 +1,4 @@
-using Core.Extensions;
+﻿using Core.Extensions;
 using Hangfire;
 using Infrastructure;
 using Infrastructure.Extentions;
@@ -12,6 +12,16 @@ builder.AddPresentationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddCoreServices();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OpenCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin()     // يسمح بأي دومين
+            .AllowAnyHeader()     // يسمح بأي هيدر
+            .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+    });
+});
 
 var app = builder.Build();
 
@@ -23,7 +33,7 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseCors("OpenCors");
 app.MapControllers();
 app.MapGrpcService<GrpcInvitationService>();
 app.MapGrpcReflectionService();

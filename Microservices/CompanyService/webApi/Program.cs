@@ -128,6 +128,17 @@ namespace Campany.API
                 builder.Services.AddGrpcReflection();
             }
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -138,7 +149,7 @@ namespace Campany.API
             // app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapControllers();
 
             app.MapGrpcService<CompanyServiceImpl>();
