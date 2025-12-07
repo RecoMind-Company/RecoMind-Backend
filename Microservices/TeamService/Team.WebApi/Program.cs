@@ -146,7 +146,9 @@ namespace Team.WebApi
 
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseCors("OpenCors");
+
             app.MapGrpcService<TeamGrpcServiceImpl>();
 
             app.MapControllers();

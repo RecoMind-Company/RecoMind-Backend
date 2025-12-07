@@ -18,14 +18,14 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
 
-        [HttpGet("{companyId}")]
+        [HttpGet("company/{companyId}")]
         public async Task<IActionResult> GetAll(string companyId)
         {
-            var result = await _service.GetAllByCompanyIdAsync(companyId);
+            var result = await _service.GetAllByCompanyIdForAiAsync(companyId);
             return Ok(result);
         }
 
-        [HttpGet("{companyId}/{id}")]
+        [HttpGet("{id}/company/{companyId}/")]
         public async Task<IActionResult> GetById(string id, string companyId)
         {
             var result = await _service.GetByIdAsync(id, companyId);
@@ -36,26 +36,7 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpGet("connection/{companyId}/{id}")]
-        public async Task<IActionResult> GetConnectionStringById(string id, string companyId)
-        {
-            var result = await _service.GetConnectionByIdAsync(id, companyId);
-
-            if (result == null)
-                return NotFound();
-
-            return Ok(
-                new
-                {
-                    Server = result.Server,
-                    DatabaseName = result.DbName,
-                    User = result.User,
-                    Password = result.Password,
-                    companyId = result.CompanyId
-                });
-        }
-
-        [HttpPost("{companyId}")]
+        [HttpPost("company/{companyId}")]
         public async Task<IActionResult> Create(string companyId, [FromBody] CreateDbSettingModel request)
         {
             if (!ModelState.IsValid)
@@ -70,7 +51,7 @@ namespace DatabaseSetting.WebApi.Controllers
             );
         }
 
-        [HttpPut("{companyId}/{id}")]
+        [HttpPut("{id}/company/{companyId}/")]
         public async Task<IActionResult> Update(string companyId, string id, [FromBody] UpdateDbSettingModel request)
         {
             if (!ModelState.IsValid)
@@ -84,7 +65,7 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{companyId}/{id}")]
+        [HttpDelete("{id}/company/{companyId}")]
         public async Task<IActionResult> Delete(string companyId, string id)
         {
             var success = await _service.DeleteAsync(id, companyId);
