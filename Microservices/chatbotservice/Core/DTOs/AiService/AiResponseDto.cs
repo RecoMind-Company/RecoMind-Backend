@@ -16,11 +16,9 @@ namespace Core.DTOs.AiService
     {
         public string task_id { get; set; }
 
-
         [JsonPropertyName("status")]
-        public string Status { get; set; }
-
-        
-       
+        public string? status { get; set; }    
+        public string? message { get; set; }
+        public string? user_question { get; set; }
     }
 }
