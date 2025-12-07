@@ -120,6 +120,17 @@ namespace Team.WebApi
                 };
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -131,7 +142,7 @@ namespace Team.WebApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapGrpcService<TeamGrpcServiceImpl>();
 
             app.MapControllers();
