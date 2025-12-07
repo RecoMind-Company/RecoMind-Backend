@@ -9,7 +9,8 @@ public class ReportService(IGenerateReportService generateReportService,
                            IUnitOfWork unitOfWork,
                            IReportRepository reportRepository,
                            IFileStorageService fileStorageService,
-                           IGrpcTeamService grpcTeamService) : IReportService
+                           IGrpcTeamService grpcTeamService,
+                           IDataAssignService dataAssignService) : IReportService
 {
     public async Task<AnalysisResponseDto> CreateReport(string userRequest)
     {
@@ -86,5 +87,14 @@ public class ReportService(IGenerateReportService generateReportService,
         return "Report deleted successfully";
     }
 
-
+    public async Task<string> AssignCompanyData(string companyId)
+    {
+        var taskId = await dataAssignService.DataAssign(companyId);
+        return taskId;
+    }
+    public async Task<string> GetAssignCompanyDataStatus(string taskId)
+    {
+        var status = await dataAssignService.DataAssignResult(taskId);
+        return status;
+    }
 }

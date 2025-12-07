@@ -1,13 +1,9 @@
 ﻿using Infrastructure.gRPC;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 namespace WebApi.Extensions;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 
 public static class ApiServicesExtention
@@ -16,26 +12,26 @@ public static class ApiServicesExtention
     {
 
 
-        builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+        //builder.WebHost.ConfigureKestrel(options =>
+        //    {
+        //        // اقرأ من environment أولاً (أولوية أعلى)
+        //        var httpPort = int.Parse(
+        //            Environment.GetEnvironmentVariable("HTTP_PORT") ??
+        //            Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+        //            builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+        //            "8001"
+        //        );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+        //        var grpcPort = int.Parse(
+        //            Environment.GetEnvironmentVariable("GRPC_PORT") ??
+        //            Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+        //            builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+        //            "5001"
+        //        );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+        //        options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+        //        options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+        //    });
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -60,26 +56,26 @@ public static class ApiServicesExtention
                    }
                });
         });
-        builder.Services.AddAuthentication(config =>
-        {
-            config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
-        {
-            options.SaveToken = true;
-            options.RequireHttpsMetadata = true;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = configuration["JwtOptions:Issuer"],
-                ValidAudience = configuration["JwtOptions:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtOptions:SecretKey"])),
-                ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
-            };
-        });
+        //builder.Services.AddAuthentication(config =>
+        //{
+        //    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        //    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        //    config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        //}).AddJwtBearer(options =>
+        //{
+        //    options.SaveToken = true;
+        //    options.RequireHttpsMetadata = true;
+        //    options.TokenValidationParameters = new TokenValidationParameters
+        //    {
+        //        ValidateIssuer = true,
+        //        ValidateAudience = true,
+        //        ValidateIssuerSigningKey = true,
+        //        ValidIssuer = configuration["JwtOptions:Issuer"],
+        //        ValidAudience = configuration["JwtOptions:Audience"],
+        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtOptions:SecretKey"])),
+        //        ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+        //    };
+        //});
         builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
         {
             o.Address = new Uri(configuration["Urls:TeamServiceUrl"]);
