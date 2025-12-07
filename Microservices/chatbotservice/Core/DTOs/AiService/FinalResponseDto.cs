@@ -10,7 +10,7 @@ namespace Core.DTOs.AiService
     public class FinalResponseDto
     {
         public string TaskId { get; set; }
-        public ResponseMessage Response{ get; set; }
+        public ResponseMessage Response{ get; set; }=new ResponseMessage();
         public string Status { get; set; }
     }
     

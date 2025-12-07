@@ -1,3 +1,4 @@
+using Core.DTOs.AiService;
 using Core.Interfaces;
 using Core.Mapping;
 using Core.Models;
@@ -139,8 +140,7 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
             builder.Services.AddScoped(typeof(AuthService));
-
-
+           
             var app = builder.Build();
 
             // Validate AutoMapper configuration at startup (fail fast)
