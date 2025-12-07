@@ -113,13 +113,13 @@ namespace WebApi
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    });
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
             });
 
             var app = builder.Build();
@@ -133,6 +133,7 @@ namespace WebApi
             // app.UseHttpsRedirection();
 
             app.UseAuthorization();
+            app.UseCors("OpenCors");
 
             app.MapGrpcService<SubscriptionGrpcService>();
             app.MapControllers();

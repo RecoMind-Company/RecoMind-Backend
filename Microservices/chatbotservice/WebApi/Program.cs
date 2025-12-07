@@ -140,7 +140,18 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
             builder.Services.AddScoped(typeof(AuthService));
-           
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
+
             var app = builder.Build();
 
             // Validate AutoMapper configuration at startup (fail fast)
@@ -158,7 +169,7 @@ namespace WebApi
             // app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapGrpcService<GrpcChatbotServiceImpl>();
             app.MapControllers();
 

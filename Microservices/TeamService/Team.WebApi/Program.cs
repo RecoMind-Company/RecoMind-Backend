@@ -134,6 +134,7 @@ namespace Team.WebApi
             });
 
 
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -145,7 +146,7 @@ namespace Team.WebApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapGrpcService<TeamGrpcServiceImpl>();
 
             app.MapControllers();

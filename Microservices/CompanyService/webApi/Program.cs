@@ -59,26 +59,26 @@ namespace Campany.API
 
             // Configure Kestrel to listen on a specific port for gRPC
 
-            //builder.WebHost.ConfigureKestrel(options =>
-            //{
-            //    // اقرأ من environment أولاً (أولوية أعلى)
-            //    var httpPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-            //        "8001"
-            //    );
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-            //    var grpcPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-            //        "5001"
-            //    );
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
 
-            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            //});
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
             builder.Services.AddSwaggerGen(cfg =>
             {
@@ -128,6 +128,17 @@ namespace Campany.API
                 builder.Services.AddGrpcReflection();
             }
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -138,7 +149,7 @@ namespace Campany.API
             // app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapControllers();
 
             app.MapGrpcService<CompanyServiceImpl>();

@@ -1,4 +1,4 @@
-using Authentication.Core.Extensions;
+﻿using Authentication.Core.Extensions;
 using Authentication.Infrastructure;
 using Authentication.Infrastructure.Extensions;
 using RecoMindAuthenticationAPI.Extensions;
@@ -9,6 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddPresentationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddCoreServices(builder.Configuration);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OpenCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin()     // يسمح بأي دومين
+            .AllowAnyHeader()     // يسمح بأي هيدر
+            .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+    });
+});
 
 var app = builder.Build();
 
@@ -28,6 +39,7 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.UseCors("OpenCors");
 app.MapControllers();
 app.MapGrpcService<GrpcAuthenticationService>();
 app.MapGrpcReflectionService();

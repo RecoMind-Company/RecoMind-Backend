@@ -107,6 +107,16 @@ namespace DatabaseSetting.WebApi
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
 
             var app = builder.Build();
 
@@ -120,7 +130,7 @@ namespace DatabaseSetting.WebApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseCors("OpenCors");
             app.MapGrpcService<DbSettingGrpcServiceImpl>();
             app.MapControllers();
 
