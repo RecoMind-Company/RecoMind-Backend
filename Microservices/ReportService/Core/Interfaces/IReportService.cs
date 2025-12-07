@@ -9,4 +9,6 @@ public interface IReportService
     Task<AiReportResponseDto> GetReportById(string reportId);
     Task<string> DeleteReport(string reportId);
     Task<AnalysisResponseDto> CreateReport(string userRequest);
+    Task<string> AssignCompanyData(string companyId);
+    Task<string> GetAssignCompanyDataStatus(string taskId);
 }

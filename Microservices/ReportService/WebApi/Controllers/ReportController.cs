@@ -55,4 +55,26 @@ public class ReportController(IReportService reportService) : ControllerBase
             return NotFound("there is no report with this id");
         return Ok(result);
     }
+    [HttpPost("dataAssing/{companyId}")]
+    public async Task<ActionResult<string>> AssignDataToCompany([FromRoute] string companyId)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var result = await reportService.AssignCompanyData(companyId);
+        if (string.IsNullOrEmpty(result))
+            return NotFound("there is no company with this id");
+        return Ok(result);
+    }
+    [HttpGet("dataAssignStatus/{taskId}")]
+    public async Task<ActionResult<string>> GetDataAssignResult([FromRoute] string taskId)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var result = await reportService.GetAssignCompanyDataStatus(taskId);
+        if (result == null)
+            return NotFound("there is no task with this id");
+        return Ok(result);
+    }
 }

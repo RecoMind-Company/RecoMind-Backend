@@ -31,6 +31,15 @@ public static class InfrastructureServicesExtension
             policy.WaitAndRetryAsync(3,
                 retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
         );
+        services.AddHttpClient<IDataAssignService, DataAssignService>(client =>
+        {
+            client.BaseAddress = new Uri("https://ai.recomind.site/embedding/");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.Timeout = TimeSpan.FromSeconds(30);
+        }).AddTransientHttpErrorPolicy(policy =>
+            policy.WaitAndRetryAsync(3,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+        );
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IFileStorageService, FileStorageService>();

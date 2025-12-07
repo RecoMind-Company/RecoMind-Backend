@@ -1,14 +1,13 @@
 ﻿using Infrastructure.gRPC;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 namespace WebApi.Extensions;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 public static class ApiServicesExtention
 {
