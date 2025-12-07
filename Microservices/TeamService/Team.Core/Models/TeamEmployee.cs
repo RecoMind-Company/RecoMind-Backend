@@ -18,7 +18,6 @@ namespace Team.Core.Models
         public string TeamId { get; set; }
 
         public string EmployeeId { get; set; }
-
         public DateTime AddedAt { get; set; }
     }
 }

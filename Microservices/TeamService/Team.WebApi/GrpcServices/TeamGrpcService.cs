@@ -22,7 +22,7 @@ namespace Team.WebApi.GrpcServices
                 Id = team.Id,
                 Name = team.Name,
                 CompanyId = team.CompanyId,
-                TeamLeadId = team.TeamLeadName,
+                TeamLeadId = team.TeamLeadId,
                 Employees = { team.Employees }
             };
         }
@@ -54,7 +54,7 @@ namespace Team.WebApi.GrpcServices
                     Id = t.Id,
                     Name = t.Name,
                     CompanyId = t.CompanyId,
-                    TeamLeadId = t.TeamLeadName,
+                    TeamLeadId = t.TeamLeadId,
                     Employees = { t.Employees }
                 });
             }
@@ -77,7 +77,7 @@ namespace Team.WebApi.GrpcServices
 
             return new LeaderResponse
             {
-                LeaderId = team.TeamLeadName
+                LeaderId = team.TeamLeadId
             };
         }
     }

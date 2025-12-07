@@ -22,7 +22,7 @@ namespace Team.WebApi
 
             // Add DbContext
             builder.Services.AddDbContext<TeamDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProdcutionConnection_Team"), // "DefaultConnection"),
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"), // "DefaultConnection"),
 
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
@@ -30,6 +30,18 @@ namespace Team.WebApi
                     errorNumbersToAdd: null)
                 )
             );
+
+            // Configure CORS Policy
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("OpenCors", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()     // يسمح بأي دومين
+                        .AllowAnyHeader()     // يسمح بأي هيدر
+                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                });
+            });
 
 
             // Add services to the container.
@@ -107,6 +119,7 @@ namespace Team.WebApi
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
+
             builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
             {
                 c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
@@ -120,6 +133,7 @@ namespace Team.WebApi
                 };
             });
 
+<<<<<<< HEAD
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("OpenCors", policy =>
@@ -130,6 +144,8 @@ namespace Team.WebApi
                         .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
                 });
             });
+=======
+>>>>>>> 919bb79472fb0e591d829e976077bcafe93ef116
 
             var app = builder.Build();
 
