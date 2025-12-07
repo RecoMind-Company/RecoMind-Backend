@@ -1,42 +1,87 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AiService;
 using Core.Models;
 using Core.Services.Interface;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Core.Services
 {
     public class AiClientService : IAiClientService
     {
         private readonly HttpClient _http;
-        private readonly string _aiBaseUrl;
-        private readonly string _apiKey;
+        private readonly string _baseUrl;
+        private readonly string _getEndPoint;
+        private readonly string _postEndPoint;
 
-        public AiClientService(HttpClient http, IOptions<AiServiceOptions> options)
+        public AiClientService(IOptions<AiServiceOptions> options)
         {
-            _http = http;
-            _aiBaseUrl = options.Value.BaseUrl;
-            _apiKey = options.Value.ApiKey;
+            _baseUrl = options.Value.BaseUrl;
+            _getEndPoint = options.Value.GetEndPoint;
+            _postEndPoint = options.Value.PostEndPont;
 
-            //if (!string.IsNullOrWhiteSpace(_apiKey))
-            //{
-            //    _http.DefaultRequestHeaders.Authorization =
-            //        new AuthenticationHeaderValue("Bearer", _apiKey);
-            //}
+            var handler = new HttpClientHandler();
+            _http = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(_baseUrl),
+                Timeout = TimeSpan.FromMinutes(30)
+            };
+
+            _http.DefaultRequestHeaders.Add("Accept", "application/json");
+            _http.DefaultRequestHeaders.Add("User-Agent", "AiClientService");
         }
-        public async Task<ApiResponseDto> GetAiResponse(string Query)
+
+        public async Task<FinalResponseDto> GetResponseFromAiService(string taskId)
+        {
+            try
+            {
+                var endpoint = $"{_getEndPoint}/{taskId}";
+
+                var response = await _http.GetAsync(endpoint);
+                response.EnsureSuccessStatusCode();
+
+                var resultObject = await response.Content.ReadFromJsonAsync<FinalResponseDto>();
+
+                return resultObject!;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<AiResponseDto> SentRequestToAiService(AiRequestDto dto)
         {
             
-            var resp = await _http.PostAsJsonAsync($"{_aiBaseUrl}", Query);
+                // التحقق من البيانات
+                
 
-            resp.EnsureSuccessStatusCode();
+                // إنشء الـ Request
+                var requestDto = new AiRequestDto
+                {
+                    company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",
+                    team_name = "Sales",
+                    user_question = dto.user_question
+                };
 
-            var dto = await resp.Content.ReadFromJsonAsync<ApiResponseDto>()
-                ?? new ApiResponseDto { Message = "" };
 
-            return dto;
+
+            // تحويل إلى JSON
+            var response = await _http.PostAsJsonAsync(_postEndPoint, requestDto);
+
+            response.EnsureSuccessStatusCode();
+
+            var analysisResponse = await response.Content.ReadFromJsonAsync<AiResponseDto>();
+            return analysisResponse!;
+
+
         }
     }
 }
