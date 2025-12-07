@@ -89,10 +89,14 @@ namespace WebApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("GetAllPlans")]
         public IEnumerable<string> GetAllPlans()
         {
             return Enum.GetNames(typeof(PlanType));
         }
+
+        [HttpGet("GetAllBillingCycles")]
         public IEnumerable<string> GetAllBillingCycles()
         {
             return Enum.GetNames(typeof(BillingCycle));
