@@ -10,7 +10,7 @@ namespace RecoMindAuthenticationAPI.Controllers
     [ApiController]
     public class AccountController(IAccountService accountService) : ControllerBase
     {
-        [HttpPut("profile")]
+        [HttpPut("updateProfile")]
         [Authorize]
         public async Task<ActionResult<BaseToReturnDto>> UpdateProfile([FromForm] ProfileDto profile)
         {
@@ -23,7 +23,7 @@ namespace RecoMindAuthenticationAPI.Controllers
                 return BadRequest(result);
             return Ok(result);
         }
-        [HttpGet("profile")]
+        [HttpGet("getProfile")]
         [Authorize]
         public async Task<ActionResult<ProfileToReturnDto>> GetProfile()
         {
