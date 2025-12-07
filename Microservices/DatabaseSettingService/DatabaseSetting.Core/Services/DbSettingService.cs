@@ -24,6 +24,24 @@ namespace DatabaseSetting.Core.Services
         }
 
 
+        public async Task<IEnumerable<DbSettingResponseForAi>> GetAllByCompanyIdForAiAsync(string companyId)
+        {
+            var entities = await _repository.GetAllByCompanyIdAsync(companyId);
+
+            if (entities == null || !entities.Any())
+                return new List<DbSettingResponseForAi>();
+
+            return entities.Select(entity => new DbSettingResponseForAi
+            {
+                Id = entity.Id,
+                CompanyId = entity.CompanyId,
+                Server = entity.Server,
+                DbName = entity.DbName,
+                User = entity.User,
+                Password = entity.Password
+            });
+        }
+
         public async Task<IEnumerable<DbSettingResponse>> GetAllByCompanyIdAsync(string companyId)
         {
             var entities = await _repository.GetAllByCompanyIdAsync(companyId);
@@ -35,11 +53,13 @@ namespace DatabaseSetting.Core.Services
             {
                 Id = entity.Id,
                 CompanyId = entity.CompanyId,
-                Name = entity.Name,
                 DbType = entity.DbType,
+                Name = entity.Name,
                 CreatedAt = entity.CreatedAt
             });
         }
+        
+
 
         public async Task<DbSettingResponse?> GetByIdAsync(string id, string companyId)
         {
@@ -58,7 +78,7 @@ namespace DatabaseSetting.Core.Services
             if (entity == null)
                 return null;
 
-            entity.ConnectionString = _encryptionService.Decrypt(entity.ConnectionString);
+            entity.ConnectionString = entity.ConnectionString;
 
             return entity;
         }
@@ -78,7 +98,7 @@ namespace DatabaseSetting.Core.Services
                 User = request.User,
                 Password = request.Password,
 
-                ConnectionString = _encryptionService.Encrypt($"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};"),
+                ConnectionString = $"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};",
 
                 CreatedAt = DateTime.UtcNow
             };
@@ -89,8 +109,8 @@ namespace DatabaseSetting.Core.Services
             {
                 Id = saved.Id,
                 CompanyId = saved.CompanyId,
-                Name = saved.Name,
                 DbType = saved.DbType,
+                Name = saved.Name,
                 CreatedAt = saved.CreatedAt
             };
         }
@@ -110,7 +130,7 @@ namespace DatabaseSetting.Core.Services
             entity.User = request.User;
             entity.Password = request.Password;
 
-            entity.ConnectionString = _encryptionService.Encrypt($"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};");
+            entity.ConnectionString = $"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};";
 
             var updated = await _repository.UpdateAsync(entity);
 
@@ -128,9 +148,9 @@ namespace DatabaseSetting.Core.Services
         {
             Id = entity.Id,
             CompanyId = entity.CompanyId,
-            Name = entity.Name,
             DbType = entity.DbType,
-            CreatedAt = entity.CreatedAt
+            Name = entity.Name,
+            CreatedAt = entity.CreatedAt,
         };
     }
 }

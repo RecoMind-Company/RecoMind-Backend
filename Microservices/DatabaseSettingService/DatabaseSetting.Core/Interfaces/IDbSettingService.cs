@@ -10,6 +10,7 @@ namespace DatabaseSetting.Core.Services
 {
     public interface IDbSettingService
     {
+        Task<IEnumerable<DbSettingResponseForAi>> GetAllByCompanyIdForAiAsync(string companyId);
         Task<IEnumerable<DbSettingResponse>> GetAllByCompanyIdAsync(string companyId);
         Task<DbSettingResponse?> GetByIdAsync(string id, string companyId);
         Task<DbSettingModel> GetConnectionByIdAsync(string Id, string companyId);
