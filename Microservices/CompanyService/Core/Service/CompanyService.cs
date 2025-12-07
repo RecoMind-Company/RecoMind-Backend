@@ -19,7 +19,7 @@ namespace Core.Service
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
-        
+
             var entity = _mapper.Map<Models.Company>(createCompanyDTO);
             entity.Id = Guid.NewGuid().ToString();
             entity.CreatedAt = DateTime.UtcNow;
@@ -46,9 +46,9 @@ namespace Core.Service
         }
 
         public async Task<GetCompanyDTO> GetCompanyByAdminId(string adminId)
-        {            
-            var item = await _CompanyUnitOfWork.Entity.Find(x=>x.AdminId == adminId);
-            
+        {
+            var item = await _CompanyUnitOfWork.Entity.Find(x => x.AdminId == adminId);
+
             if (item == null)
                 throw new KeyNotFoundException($"Company with Code '{adminId}' was not found.");
 

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Core.DTOs
+﻿namespace Core.DTOs
 {
-    public class GetCompanyDTO 
+    public class GetCompanyDTO
     {
         public string? Id { get; set; }
         public string? Name { get; set; }
@@ -14,6 +8,7 @@ namespace Core.DTOs
         public string? Country { get; set; }
         public string? AdminId { get; set; }
         public string? SubscriptionId { get; set; }
-        public DateTime CreatedAt { get; set; }     
+        public string? Description { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }
