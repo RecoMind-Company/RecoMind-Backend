@@ -11,7 +11,7 @@ public class ReportService(IGenerateReportService generateReportService,
                            IFileStorageService fileStorageService,
                            IGrpcTeamService grpcTeamService) : IReportService
 {
-    public async Task<AnalysisResponseDto> CreateReport()
+    public async Task<AnalysisResponseDto> CreateReport(string userRequest)
     {
         // Call the grpc service to get the TeamName, companyId by {teamId}
         //var teamDetails = grpcTeamService.GetTeamDetails(teamId);``
@@ -21,7 +21,7 @@ public class ReportService(IGenerateReportService generateReportService,
         {
             CompanyId = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",    //teamDetails.CompanyId,
             TeamName = "HR", //teamDetails.TeamName,
-            UserRequest = "Full Employees Report including their Salaries." // getReportDto.UserRequest
+            UserRequest = userRequest // getReportDto.UserRequest
         };
         var generateReportInitialResponse = await generateReportService.GenerateReport(analysisRequest);
         return generateReportInitialResponse;

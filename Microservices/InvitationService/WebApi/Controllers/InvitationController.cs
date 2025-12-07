@@ -11,7 +11,7 @@ namespace WebApi.Controllers;
 [Authorize]
 public class InvitationController(IInvitationService invitationService) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("createInvitation")]
     public async Task<ActionResult<BaseToReturnDto>> SendInvitation(SendInvitationDto invitation)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
@@ -34,7 +34,7 @@ public class InvitationController(IInvitationService invitationService) : Contro
             return NotFound($"There is no invitation with id : {id}");
         return Ok(response);
     }
-    [HttpGet]
+    [HttpGet("byStatus")]
     public async Task<ActionResult<IEnumerable<InvitationsToReturnDto>>> GetInvitaions([FromQuery] GetInvitationDto invitationDto)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);

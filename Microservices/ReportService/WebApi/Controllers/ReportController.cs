@@ -12,12 +12,12 @@ public class ReportController(IReportService reportService) : ControllerBase
 {
     //[HttpPost("teams/{teamId}")]
     [HttpPost("teams")]
-    public async Task<ActionResult<AnalysisResponseDto>> CreateReport()
+    public async Task<ActionResult<AnalysisResponseDto>> CreateReport(string userRequest)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        var result = await reportService.CreateReport();
+        var result = await reportService.CreateReport(userRequest);
         if (result == null)
             return NotFound("there is no team with this id");
         return Ok(result);
