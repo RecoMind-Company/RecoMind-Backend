@@ -133,19 +133,7 @@ namespace Team.WebApi
                 };
             });
 
-<<<<<<< HEAD
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("OpenCors", policy =>
-                {
-                    policy
-                        .AllowAnyOrigin()     // يسمح بأي دومين
-                        .AllowAnyHeader()     // يسمح بأي هيدر
-                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
-                });
-            });
-=======
->>>>>>> 919bb79472fb0e591d829e976077bcafe93ef116
+
 
             var app = builder.Build();
 
