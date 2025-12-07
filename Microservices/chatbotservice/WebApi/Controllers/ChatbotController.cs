@@ -29,7 +29,7 @@ namespace WebApi.Controllers
             
         }
 
-        [HttpPost]
+        [HttpPost("CreateQuery")]
         public async Task<IActionResult> CreateQuery(CreateChatRequestDto createChatRequestDto)
         {
             if (!ModelState.IsValid)
@@ -49,7 +49,7 @@ namespace WebApi.Controllers
                     team_name = "Sales", //team.TeamName,
                     user_question = createChatRequestDto.user_question
                 };
-                var result = await _chatBotService.HandelQuery(Dto);
+                var result = await _chatBotService.SendQuryToAiService(Dto);
                 return Ok(result);
             }
             catch (KeyNotFoundException knfEx)
@@ -62,14 +62,28 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpPost("ChatbotResponse")]
+        public async Task<IActionResult> GetResult(GetMethodDto dto)
+        {
+            try 
+            {
+                var result = await _chatBotService.GetResponseFromAiService(dto);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetHistory")]
         public async Task<IActionResult> GetHistory(string UserId)
         {
             var result = await _chatBotService.GetHistory(UserId);
             return Ok(result);
         }
 
-        [HttpDelete]
+        [HttpDelete("DeleteHistory")]
         public async Task<IActionResult> DeleteHistory(string UserId)
         {
             await _chatBotService.DeleteHistory(UserId);

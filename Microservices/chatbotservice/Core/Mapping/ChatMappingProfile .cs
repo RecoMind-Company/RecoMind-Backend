@@ -14,15 +14,7 @@ namespace Core.Mapping
     public class ChatMappingProfile : Profile
     {
         public ChatMappingProfile()
-        {
-            //CreateMap<ChatMessage, CreateChatRequestDto>()
-            //    .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserId))
-            //    .ForMember(dest => dest.user_question, opt => opt.MapFrom(src => src.Response.Answer))
-            //    .ReverseMap()
-
-            //    .ForMember(dest => dest.Id, opt => opt.Ignore())       
-            //    .ForMember(dest => dest.TimeStamp, opt => opt.Ignore())
-            //    .ForMember(dest => dest.Response, opt => opt.Ignore());
+        {            
 
             CreateMap<ChatMessageResponse, FinalResponseDto>()
                 .ForMember(dest => dest.Status,
@@ -38,6 +30,11 @@ namespace Core.Mapping
 
             CreateMap<FinalResponseDto, LastResponseDto>()
                 .ForMember(dest => dest.ResponseMessage, opt => opt.MapFrom(src => src.Response.Answer));
+
+            //CreateMap<GetMethodDto, ChatMessage>()
+            //    .ForMember(dest => dest.UserQuestion, opt => opt.MapFrom(src => src.user_question))
+            //    .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserID))
+            //    .ForMember(dest => dest.UserRole, opt => opt.MapFrom(src => src.UserRole));                
         }
     }
 

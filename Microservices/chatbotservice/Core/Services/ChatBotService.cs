@@ -25,47 +25,39 @@ namespace Core.Services
             _mapper = mapper;
         }
 
-        public async Task<LastResponseDto> HandelQuery(AiRequestDto requestDto)
+        public async Task<AiResponseDto> SendQuryToAiService(AiRequestDto requestDto)
         {
             AiResponseDto postResponse;
             try
             {
                 //1.Call Post Method
                 postResponse = await _aiClientService.SentRequestToAiService(requestDto);
+                return postResponse;
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex)
             {
-                return new LastResponseDto
+                return new AiResponseDto
                 {
-                    status = Status.FAILURE,
-                    ResponseMessage = $"AI service connection failed: {ex.Message}",                    
+                    status = Status.FAILURE,                                            
                 };
             }
-            
-            if (postResponse == null || string.IsNullOrWhiteSpace(postResponse.task_id))
-            {                
-                return new LastResponseDto
-                {
-                    status = Status.FAILURE,
-                    ResponseMessage = "AI service failed to start the task or returned an empty ID.",
-                };
-            }
+        }
 
-            // 3. Get Method (Poling)
-            var aiResponse = await CallGetMethod(postResponse.task_id);
-
+        public async Task<LastResponseDto> GetResponseFromAiService(GetMethodDto dto)
+        {
+            var aiResponse = await _aiClientService.GetResponseFromAiService(dto.TaskId);
+           
             if (aiResponse.Status == Status.SUCCESS)
             {
-                //  Database
-                var entity = _mapper.Map<ChatMessage>(requestDto);
+                var entity = _mapper.Map<ChatMessage>(aiResponse);
 
-                
-                
                 entity.Id = Guid.NewGuid().ToString();
                 entity.Response.Answer = aiResponse.Response.Answer;
                 entity.Response.Sql_Query = aiResponse.Response.Sql_Query;
-                entity.TimeStamp = DateTime.UtcNow;               
-                entity.Query = requestDto.user_question;
+                entity.TimeStamp = DateTime.UtcNow;
+                entity.UserQuestion = dto.user_question;
+                entity.UserId = dto.UserID;
+                entity.UserRole = dto.UserRole;
 
                 await _unitOfWork.Entity.AddAsync(entity);
                 await _unitOfWork.Save();
@@ -75,11 +67,11 @@ namespace Core.Services
                 return aiResponseDto;
             }
             else
-            {               
-               return new LastResponseDto
+            {
+                return new LastResponseDto
                 {
-                    status = Status.FAILURE,
-                    ResponseMessage = "AI service failed to process the request.",
+                    status = aiResponse.Status,
+                    ResponseMessage = " Pleas Try Again ",
                 };
             }
         }
@@ -106,42 +98,13 @@ namespace Core.Services
             {
                 foreach (var message in messages)
                 {
-                     _unitOfWork.Entity.Delete(message);
+                    _unitOfWork.Entity.Delete(message);
                 }
                 await _unitOfWork.Save();
                 return;
             }
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
-        }
-
-        public async Task<FinalResponseDto> CallGetMethod(string taskId)
-        {
-            while (true)
-            {
-                var responseDto = await _aiClientService.GetResponseFromAiService(taskId);
-
-                switch (responseDto.Status)
-                {
-                    case Status.SUCCESS:                        
-                        return responseDto;
-
-                    case Status.FAILURE:
-                    case Status.REVOKED: 
-                        responseDto.Status = Status.FAILURE;
-                        responseDto.Response.Answer = "The AI service failed or was revoked.";
-                        return responseDto;
-
-                    case Status.PENDING:
-                    case Status.STARTED:
-                    case Status.RETRY:
-                       
-                        await Task.Delay(TimeSpan.FromSeconds(10));                       
-                        break;
-
-                    default:
-                        throw new Exception("An unexpected status occurred from the AI service.");
-                }
-            }
-        }       
+        }        
     }
 }
+
