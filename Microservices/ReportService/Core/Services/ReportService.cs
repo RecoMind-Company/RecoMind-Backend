@@ -1,7 +1,6 @@
 ﻿using Core.DTOs;
 using Core.DTOs.AI;
 using Core.Interfaces;
-using Core.Models;
 
 namespace Core.Services;
 
@@ -34,26 +33,26 @@ public class ReportService(IGenerateReportService generateReportService,
         {
             return null;
         }
-        // The Status are have only 3 values PENDING, FAILURE, SUCCESS
+        //The Status are have only 3 values PENDING, FAILURE, SUCCESS
         // FAILURE CASE HANDELD IN GENERATE REPORT SERVICE
         // PENDING CASE HANDELD ABOVE
         // SUCCESS
-        var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
-        // create report model 
-        // add to database
-        // save changes
-        // return report model
-        var report = new Report
-        {
-            Id = Guid.NewGuid().ToString(),
-            TeamId = teamId,
-            FilePath = dynamicPath,
-            FileType = ".txt",
-            GeneratedDate = DateTime.Now,
-            Periodic = Periodic.Weekly
-        };
-        await reportRepository.AddAsync(report);
-        await unitOfWork.Save();
+        //var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
+        //// create report model 
+        //// add to database
+        //// save changes
+        //// return report model
+        //var report = new Report
+        //{
+        //    Id = Guid.NewGuid().ToString(),
+        //    TeamId = teamId,
+        //    FilePath = dynamicPath,
+        //    FileType = ".txt",
+        //    GeneratedDate = DateTime.Now,
+        //    Periodic = Periodic.Weekly
+        //};
+        //await reportRepository.AddAsync(report);
+        //await unitOfWork.Save();
         var aiReportResponse = new AiReportResponseDto
         {
             AiResponse = generatedReportStatus.Result!,
