@@ -3,18 +3,13 @@ using Core.DTOs.AiService;
 using Core.DTOs.Chatbot;
 using Core.Models;
 using Core.Services.Protos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Mapping
 {
     public class ChatMappingProfile : Profile
     {
         public ChatMappingProfile()
-        {            
+        {
 
             CreateMap<ChatMessageResponse, FinalResponseDto>()
                 .ForMember(dest => dest.Status,
@@ -30,6 +25,15 @@ namespace Core.Mapping
 
             CreateMap<FinalResponseDto, LastResponseDto>()
                 .ForMember(dest => dest.ResponseMessage, opt => opt.MapFrom(src => src.Response.Answer));
+
+
+            CreateMap<FinalResponseDto, ChatMessage>()
+                .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src.Response))
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserRole, opt => opt.Ignore())
+                .ForMember(dest => dest.UserQuestion, opt => opt.Ignore())
+                .ForMember(dest => dest.TimeStamp, opt => opt.Ignore());
 
             //CreateMap<GetMethodDto, ChatMessage>()
             //    .ForMember(dest => dest.UserQuestion, opt => opt.MapFrom(src => src.user_question))
