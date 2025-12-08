@@ -24,7 +24,7 @@ public class DataAssignService(HttpClient httpClient, ILogger<DataAssignService>
         }
          */
         var requestDto = new DataAssignRequestDto { CompanyId = companyId };
-        var response = await httpClient.PostAsJsonAsync("start-pipline", requestDto);
+        var response = await httpClient.PostAsJsonAsync("start-pipeline", requestDto);
         if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
