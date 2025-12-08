@@ -5,8 +5,6 @@ using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
-using Microsoft.Extensions.Options;
-using System.Threading;
 
 namespace Core.Services
 {
@@ -38,7 +36,7 @@ namespace Core.Services
             {
                 return new AiResponseDto
                 {
-                    status = Status.FAILURE,                                            
+                    status = Status.FAILURE,
                 };
             }
         }
@@ -46,14 +44,14 @@ namespace Core.Services
         public async Task<LastResponseDto> GetResponseFromAiService(GetMethodDto dto)
         {
             var aiResponse = await _aiClientService.GetResponseFromAiService(dto.TaskId);
-           
+
             if (aiResponse.Status == Status.SUCCESS)
             {
                 var entity = _mapper.Map<ChatMessage>(aiResponse);
 
                 entity.Id = Guid.NewGuid().ToString();
-                entity.Response.Answer = aiResponse.Response.Answer;
-                entity.Response.Sql_Query = aiResponse.Response.Sql_Query;
+                entity.Response.Answer = aiResponse.Result.Answer;
+                entity.Response.Sql_Query = "this is query";
                 entity.TimeStamp = DateTime.UtcNow;
                 entity.UserQuestion = dto.user_question;
                 entity.UserId = dto.UserID;
@@ -104,7 +102,7 @@ namespace Core.Services
                 return;
             }
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
-        }        
+        }
     }
 }
 

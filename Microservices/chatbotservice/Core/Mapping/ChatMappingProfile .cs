@@ -15,8 +15,8 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Status,
                            opt => opt.MapFrom(src => src.Status))
 
-                .ForPath(dest => dest.Response.Answer, opt => opt.MapFrom(src => src.ResponseDetails.Answer))
-                        .ForPath(dest => dest.Response.Sql_Query, opt => opt.MapFrom(src => src.ResponseDetails.SqlQuery))
+                .ForPath(dest => dest.Result.Answer, opt => opt.MapFrom(src => src.ResponseDetails.Answer))
+                        .ForPath(dest => dest.Result.Sql_Query, opt => opt.MapFrom(src => src.ResponseDetails.SqlQuery))
 
                 .ForMember(dest => dest.TaskId, opt => opt.MapFrom(src => src.TaskId));
 
@@ -24,11 +24,11 @@ namespace Core.Mapping
                 .ReverseMap();
 
             CreateMap<FinalResponseDto, LastResponseDto>()
-                .ForMember(dest => dest.ResponseMessage, opt => opt.MapFrom(src => src.Response.Answer));
+                .ForMember(dest => dest.ResponseMessage, opt => opt.MapFrom(src => src.Result.Answer));
 
 
             CreateMap<FinalResponseDto, ChatMessage>()
-                .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src.Response))
+                .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src.Result))
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.UserRole, opt => opt.Ignore())
