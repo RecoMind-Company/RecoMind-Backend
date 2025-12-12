@@ -93,6 +93,9 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 recomind.com Team";
             await emailSender.SendEmailAsync(user.Email!, subject, body);
         }
+        // FOR ADMIN
+        else
+            await sendEmailService.SendVerificationCodeEmail(user.Email!);
         // Create token and refresh token
         var token = await CreateToken(user);
         var refreshToken = GenerateRefershToken();

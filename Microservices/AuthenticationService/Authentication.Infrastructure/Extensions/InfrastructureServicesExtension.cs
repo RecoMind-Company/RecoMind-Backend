@@ -3,6 +3,7 @@ using Authentication.Core.Models;
 using Authentication.Infrastructure.Context;
 using Authentication.Infrastructure.gRPC;
 using Authentication.Infrastructure.gRPC.TeamGrpc;
+using Authentication.Infrastructure.Repository;
 using Authentication.Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public static class InfrastructureServicesExtension
                     .AddRoles<IdentityRole>()
                     .AddEntityFrameworkStores<AuthenticationDbContext>();
         services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<DataSeeding>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IGrpcInvitationService, GrpcInvitationService>();
