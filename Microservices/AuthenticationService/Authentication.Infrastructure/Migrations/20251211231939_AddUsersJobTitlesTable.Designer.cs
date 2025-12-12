@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Authentication.Infrastructure.Migrations
 {
     [DbContext(typeof(AuthenticationDbContext))]
-    [Migration("20251206142004_addJobTitleColumn")]
-    partial class addJobTitleColumn
+    [Migration("20251211231939_AddUsersJobTitlesTable")]
+    partial class AddUsersJobTitlesTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,9 +53,6 @@ namespace Authentication.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
-
-                    b.Property<string>("JobTitle")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -104,6 +101,27 @@ namespace Authentication.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("UsersAccount", (string)null);
+                });
+
+            modelBuilder.Entity("Authentication.Core.Models.UsersJobTitle", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UsersJobTitles");
                 });
 
             modelBuilder.Entity("Authentication.Core.Models.VerificationCode", b =>
@@ -298,6 +316,17 @@ namespace Authentication.Infrastructure.Migrations
                         });
 
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Authentication.Core.Models.UsersJobTitle", b =>
+                {
+                    b.HasOne("Authentication.Core.Models.AppUser", "User")
+                        .WithOne()
+                        .HasForeignKey("Authentication.Core.Models.UsersJobTitle", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
