@@ -119,8 +119,6 @@ public class GrpcAuthenticationService(IAuthenticationService AuthService, IVeri
         {
             Code = request.Code,
             Email = request.Email,
-            NewPassword = request.NewPassword.NewPassword_,
-            ConfirmNewPassword = request.NewPassword.ConfirmNewPassword
         };
 
         var codeMessage = await verificationService.IsCodeValid(verifyCodeDto.Code, verifyCodeDto.Email);

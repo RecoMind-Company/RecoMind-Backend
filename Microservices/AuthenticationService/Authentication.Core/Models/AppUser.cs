@@ -8,6 +8,6 @@ public class AppUser : IdentityUser
     public string? PhotoUrl { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedOn { get; set; }
-    public List<RefreshToken> RefreshTokens { get; set; }
+    public List<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
 }

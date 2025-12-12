@@ -23,20 +23,39 @@ public interface IAuthenticationService
     Task<AuthenticationDto> GenerateNewRefreshToken(string token);
     Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto);
     Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email);
+    Task<BaseToReturnDto> CreateNewPassword(BasePasswordDto basePasswordDto, string email);
     Task<UserToReturnDto> GetUserById(string id);
     Task<UsersToReturnDto> GetUsersByIds(List<string> ids);
 
 }
 
-public class AuthenticationService(UserManager<AppUser> userManager,
-                                   PasswordHasher<AppUser> passwordHasher,
-                                   IOptions<JwtSettings> jwtOptions,
-                                   IVerificationEmailService sendEmailService,
-                                   IEmailSender emailSender,
-                                   IGrpcInvitationService invitationService,
-                                   IGrpcTeamService grpcTeamService) : IAuthenticationService
+public class AuthenticationService : IAuthenticationService
 {
-    private readonly JwtSettings jwtSettings = jwtOptions.Value;
+    private readonly JwtSettings jwtSettings;
+    private readonly UserManager<AppUser> userManager;
+    private readonly PasswordHasher<AppUser> passwordHasher;
+    private readonly IVerificationEmailService sendEmailService;
+    private readonly IEmailSender emailSender;
+    private readonly IGrpcInvitationService invitationService;
+    private readonly IGrpcTeamService grpcTeamService;
+
+    public AuthenticationService(UserManager<AppUser> userManager,
+                                       PasswordHasher<AppUser> passwordHasher,
+                                       IOptions<JwtSettings> jwtOptions,
+                                       IVerificationEmailService sendEmailService,
+                                       IEmailSender emailSender,
+                                       IGrpcInvitationService invitationService,
+                                       IGrpcTeamService grpcTeamService)
+    {
+        this.userManager = userManager;
+        this.passwordHasher = passwordHasher;
+        this.sendEmailService = sendEmailService;
+        this.emailSender = emailSender;
+        this.invitationService = invitationService;
+        this.grpcTeamService = grpcTeamService;
+        jwtSettings = jwtOptions.Value;
+    }
+
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
     {
         // Check if user exsited
@@ -226,7 +245,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         if (user is null)
             return new BaseToReturnDto { Message = "Email Is NotFound" };
         await sendEmailService.SendVerificationCodeEmail(forgetPasswordDto.Email);
-        return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
+        return new BaseToReturnDto { Success = true, Message = "Email send successfully" };
     }
 
     public async Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email)
@@ -245,6 +264,16 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
     }
 
+    public async Task<BaseToReturnDto> CreateNewPassword(BasePasswordDto basePasswordDto, string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+            return new BaseToReturnDto { Message = "There is no user with this email!" };
+        var HashPassword = passwordHasher.HashPassword(user, basePasswordDto.NewPassword);
+        user.PasswordHash = HashPassword;
+        await userManager.UpdateAsync(user);
+        return new BaseToReturnDto { Success = true, Message = "The password Changed successfully" };
+    }
     private async Task<JwtSecurityToken> CreateToken(AppUser user, string compnayId = null) // null comany id 
     {
         var Claims = new List<Claim>();
@@ -311,6 +340,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         };
         return usersToReturnDto;
     }
+
 }
 
 

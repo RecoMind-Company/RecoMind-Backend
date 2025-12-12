@@ -83,6 +83,21 @@ public class AuthenticationController(IAuthenticationService authenticationServi
             return BadRequest(codeMessage.Message);
         return Ok(codeMessage);
     }
+    // THIS ENDPOINT HAS BEEN CREATED TO COMPLETE THE FORGET PASSWORD PROCCESS, which is :
+    // 1- call forget password endpoint (that will send code to email)
+    // 2 - call verify code endpoint to verify the code
+    // 3 - call create-password endpoint to create the new password
+    [HttpPut("update-password")]
+    public async Task<ActionResult<BaseToReturnDto>> UpdatePassword(BasePasswordDto passwordDto, string email)
+    {
+        var error = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(error);
+        var result = await authenticationService.CreateNewPassword(passwordDto, email);
+        if (!result.Success)
+            return BadRequest(result.Message);
+        return Ok(result);
+    }
     private void SetRefreshTokenInCookies(string refreshToken, DateTime exp)
     {
         var cookiesOptions = new CookieOptions
