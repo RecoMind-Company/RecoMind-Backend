@@ -2,7 +2,6 @@
 using Authentication.Core.Interfaces;
 using Authentication.Core.Models;
 using Authentication.Core.Settings;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -16,14 +15,23 @@ public interface IAccountService
     Task<BaseToReturnDto> DeleteUser(string id);
 }
 
-public class AccountService(UserManager<AppUser> userManager,
-                            IWebHostEnvironment env,
-                            IOptions<PhotoSettings> options,
-                            IGenericRepository<UsersJobTitle> jobTitleRepo,
-                            IUnitOfWork<UsersJobTitle> unitOfWork) : IAccountService
+public class AccountService : IAccountService
 {
-    private readonly PhotoSettings photoSettings = options.Value;
+    private readonly PhotoSettings photoSettings;
+    private readonly UserManager<AppUser> userManager;
+    private readonly IGenericRepository<UsersJobTitle> jobTitleRepo;
+    private readonly IUnitOfWork<UsersJobTitle> unitOfWork;
 
+    public AccountService(UserManager<AppUser> userManager,
+                                IOptions<PhotoSettings> options,
+                                IGenericRepository<UsersJobTitle> jobTitleRepo,
+                                IUnitOfWork<UsersJobTitle> unitOfWork)
+    {
+        this.userManager = userManager;
+        this.jobTitleRepo = jobTitleRepo;
+        this.unitOfWork = unitOfWork;
+        photoSettings = options.Value;
+    }
 
     public async Task<BaseToReturnDto> EditProfile(ProfileDto profile, string email)
     {
@@ -114,8 +122,7 @@ public class AccountService(UserManager<AppUser> userManager,
 
         // Create file name and ensure folder exists
         string fileName = Guid.NewGuid().ToString() + fileExtension;
-        string physicalPathToSave = Path.Combine(env.ContentRootPath, "StaticFiles", "Images");
-
+        string physicalPathToSave = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", "Images");
         try
         {
             if (!Directory.Exists(physicalPathToSave))

@@ -2,7 +2,7 @@
 
 namespace Authentication.Core.DTOs;
 
-public class VerifyCodeDto : BasePasswordDto
+public class VerifyCodeDto
 {
     [EmailAddress]
     public string Email { get; set; }

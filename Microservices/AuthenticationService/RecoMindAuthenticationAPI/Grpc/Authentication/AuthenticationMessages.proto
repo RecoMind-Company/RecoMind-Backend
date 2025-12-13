@@ -57,12 +57,13 @@ message GetUserByIdMessage{
 }
 message UserToReturnMessage{
 	string Id = 1;
-	string Role =2;
+	string name = 2;
 	string email = 3;
+	string jobTitle = 4;
 }
 message GetUsersMessage{
 	repeated string Ids = 1;
 }
 message UsersToReturnMessage{
-	repeated string userNames = 1;
+	repeated UserToReturnMessage users = 1;
 }

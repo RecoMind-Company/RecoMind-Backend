@@ -2,5 +2,5 @@
 
 public class UsersToReturnDto
 {
-    public List<string> UserNames { get; set; } = [];
+    public List<UserToReturnDto> Users { get; set; } = [];
 }
