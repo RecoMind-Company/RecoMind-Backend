@@ -21,7 +21,15 @@ namespace Team.WebApi.Controllers
         }
 
 
+        [HttpGet("for-ai")]
+        public async Task<IActionResult> GetTeamsForAI()
+        {
+            var teams = await _service.GetForAiAsync(_companyId);
+            return Ok(teams);
+        }
+
         [HttpGet("{teamId}")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetById(string teamId)
         {
             var team = await _service.GetByIdAsync(teamId);
@@ -31,21 +39,16 @@ namespace Team.WebApi.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Management")]
         public async Task<IActionResult> GetTeamsForCompany()
         {
             var teams = await _service.GetByCompanyIdAsync(_companyId);
             return Ok(teams);
         }
 
-        [HttpGet("for-ai")]
-        public async Task<IActionResult> GetTeamsForAI()
-        {
-            var teams = await _service.GetForAiAsync(_companyId);
-            return Ok(teams);
-        }
-
 
         [HttpPost]
+        [Authorize(Policy = "Management")]
         public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
         {
             if (!ModelState.IsValid)
@@ -64,6 +67,7 @@ namespace Team.WebApi.Controllers
         }
 
         [HttpPut("{teamId}")]
+        [Authorize(Policy = "Management")]
         public async Task<IActionResult> UpdateTeam(string teamId, [FromBody] UpdateTeamDto dto)
         {
             if (!ModelState.IsValid)
@@ -81,6 +85,7 @@ namespace Team.WebApi.Controllers
         }
 
         [HttpDelete("{teamId}")]
+        [Authorize(Policy = "Management")]
         public async Task<IActionResult> DeleteTeam(string teamId)
         {
             var success = await _service.DeleteTeamAsync(teamId, _companyId);
@@ -90,6 +95,7 @@ namespace Team.WebApi.Controllers
         }
 
         [HttpPost("{teamId}")]
+        [Authorize(Policy = "TeamLeadership")]
         public async Task<IActionResult> AddEmployee(string teamId, [FromBody] AddEmployeeDto emp)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -102,6 +108,7 @@ namespace Team.WebApi.Controllers
 
 
         [HttpDelete("{teamId}/employees/{employeeId}")]
+        [Authorize(Policy = "TeamLeadership")]
         public async Task<IActionResult> RemoveEmployee(string teamId, string employeeId)
         {
             var success = await _service.RemoveEmployeeAsync(teamId, _companyId, employeeId);

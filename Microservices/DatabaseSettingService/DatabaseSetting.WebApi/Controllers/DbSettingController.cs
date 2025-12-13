@@ -29,7 +29,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpGet]
-        [Authorize("ManagerRole")]
+        [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetForCompanyAsync()
         {
             var result = await _service.GetByCompanyIdAsync(_companyId);
@@ -41,7 +41,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize("ManagerRole")]
+        [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _service.GetByIdAsync(id, _companyId);
@@ -53,7 +53,7 @@ namespace DatabaseSetting.WebApi.Controllers
 
 
         [HttpPost]
-        [Authorize("ManagerRole")]
+        [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Create([FromBody] CreateDbSettingDto request)
         {
             if (!ModelState.IsValid)
@@ -67,7 +67,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize("ManagerRole")]
+        [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingDto request)
         {
             if (!ModelState.IsValid)
@@ -82,7 +82,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize("ManagerRole")]
+        [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Delete(string id)
         {
             var success = await _service.DeleteAsync(id, _companyId);

@@ -122,7 +122,8 @@ namespace DatabaseSetting.WebApi
 
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
             authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
-            // [Authorize("ManagerRole")]
+            // [Authorize(Policy = "ManagerRole")]
+
 
 
             var app = builder.Build();

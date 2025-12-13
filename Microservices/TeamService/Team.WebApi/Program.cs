@@ -133,6 +133,15 @@ namespace Team.WebApi
             //});
 
 
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("AllEmployees", p =>  p.RequireRole("admin", "manager", "teamleader", "employee"));
+            authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
+            authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
+
+            // [Authorize("AllEmployees")]
+            // [Authorize(Policy = "TeamLeadership")]
+
+
 
             var app = builder.Build();
 
