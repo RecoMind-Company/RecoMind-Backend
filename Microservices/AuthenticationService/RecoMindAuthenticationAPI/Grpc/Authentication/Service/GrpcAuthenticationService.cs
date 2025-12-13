@@ -126,12 +126,7 @@ public class GrpcAuthenticationService(IAuthenticationService AuthService, IVeri
         var codeMessage = await verificationService.IsCodeValid(verifyCodeDto.Code, verifyCodeDto.Email);
         if (!codeMessage.Success)
             throw new RpcException(new Status(StatusCode.InvalidArgument, codeMessage.Message));
-
-        var response = await AuthService.UpdatePassword(verifyCodeDto);
-        if (!response.Success)
-            throw new RpcException(new Status(StatusCode.NotFound, response.Message));
-
-        return new BaseMessage { Success = response.Success, Message = response.Message };
+        return new BaseMessage { Success = codeMessage.Success, Message = codeMessage.Message };
     }
     public override async Task<UserToReturnMessage> GetUserById(GetUserByIdMessage request, ServerCallContext context)
     {

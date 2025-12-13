@@ -81,11 +81,7 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         var codeMessage = await verificationService.IsCodeValid(verifyDto.Code, verifyDto.Email);
         if (!codeMessage.Success)
             return BadRequest(codeMessage.Message);
-        // Password validation
-        var passwordUpdate = await authenticationService.UpdatePassword(verifyDto);
-        if (!passwordUpdate.Success)
-            return NotFound(passwordUpdate.Message);
-        return Ok(passwordUpdate);
+        return Ok(codeMessage);
     }
     private void SetRefreshTokenInCookies(string refreshToken, DateTime exp)
     {

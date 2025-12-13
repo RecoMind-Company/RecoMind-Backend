@@ -22,7 +22,6 @@ public interface IAuthenticationService
     Task<AuthenticationDto> Login(LoginDto loginDto);
     Task<AuthenticationDto> GenerateNewRefreshToken(string token);
     Task<BaseToReturnDto> ForgetPassword(ForgetPasswordDto forgetPasswordDto);
-    Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto);
     Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email);
     Task<UserToReturnDto> GetUserById(string id);
     Task<UsersToReturnDto> GetUsersByIds(List<string> ids);
@@ -94,6 +93,9 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 recomind.com Team";
             await emailSender.SendEmailAsync(user.Email!, subject, body);
         }
+        // FOR ADMIN
+        else
+            await sendEmailService.SendVerificationCodeEmail(user.Email!);
         // Create token and refresh token
         var token = await CreateToken(user);
         var refreshToken = GenerateRefershToken();
@@ -145,8 +147,8 @@ public class AuthenticationService(UserManager<AppUser> userManager,
                 return userToReturn;
             }
         }
-        //var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
-        var token = await CreateToken(user, compnayId: "fb140d33-7e96-474d-a06d-ab3a6c65d1a9");
+        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
+        var token = await CreateToken(user, userTeam.CompanyId);
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
@@ -227,19 +229,6 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         return new BaseToReturnDto { Success = true, Message = "Email send succssfully" };
     }
 
-    public async Task<BaseToReturnDto> UpdatePassword(VerifyCodeDto dto)
-    {
-        var user = await userManager.FindByEmailAsync(dto.Email);
-        if (user is null)
-            return new BaseToReturnDto { Message = "User is not found" };
-
-        var HashPassword = passwordHasher.HashPassword(user, dto.NewPassword);
-        user.PasswordHash = HashPassword;
-        await userManager.UpdateAsync(user);
-        return new BaseToReturnDto { Success = true, Message = "The password Updated successfully" };
-
-    }
-
     public async Task<BaseToReturnDto> ResetPassword(ResetPasswordDto resetPasswordDto, string email)
     {
         //get user by email
@@ -264,7 +253,7 @@ public class AuthenticationService(UserManager<AppUser> userManager,
         Claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
         Claims.Add(new Claim(ClaimTypes.Name, user.UserName));
         if (compnayId is not null)
-            Claims.Add(new Claim("companyId", compnayId));
+            Claims.Add(new Claim("CompanyId", compnayId));
         var roles = await userManager.GetRolesAsync(user);
         foreach (var role in roles)
             Claims.Add(new(ClaimTypes.Role, role));

@@ -8,7 +8,7 @@ namespace Authentication.Infrastructure.Context;
 public class AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options) : IdentityDbContext<AppUser>(options)
 {
     public DbSet<VerificationCode> VerificationCodes { get; set; }
-
+    public DbSet<UsersJobTitle> UsersJobTitles { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -19,5 +19,9 @@ public class AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> o
         builder.Entity<IdentityUserLogin<string>>().ToTable("UserLogin");
         builder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaim");
         builder.Entity<IdentityUserToken<string>>().ToTable("UserToken");
+        builder.Entity<UsersJobTitle>()
+            .HasOne(ujt => ujt.User)
+            .WithOne()
+            .HasForeignKey<UsersJobTitle>(ujt => ujt.UserId);
     }
 }
