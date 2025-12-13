@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "TeamMessages.proto";
+import "teamMessages.proto";
 
 option csharp_namespace = "Team.WebApi.Protos";
 

@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Protobuf Include="Protos\TeamMessages.proto" GrpcServices="None" >
+	  <Protobuf Include="Protos\teamMessages.proto" GrpcServices="None" >
 		  <ProtoRoot>Protos</ProtoRoot>
 	  </Protobuf>
     <Protobuf Include="Protos\TeamService.proto" GrpcServices="Server" >
