@@ -4,6 +4,7 @@ using Core.Mapping;
 using Core.Service;
 using Core.Service.Interface;
 using Infrastructure.Data;
+using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -28,31 +29,31 @@ namespace WebApi
                          sqlOptions.MigrationsAssembly(typeof(SubscriptionDbContext).Assembly.FullName)
                          ));
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    // اقرأ من environment أولاً (أولوية أعلى)
+            //    var httpPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+            //        "8001"
+            //    );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+            //    var grpcPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+            //        "5001"
+            //    );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            //});
 
             builder.Services.AddGrpc(options =>
             {
                 options.Interceptors.Add<GrpcExceptionHandler>();
-            });
+            });            
 
             builder.Services.AddSwaggerGen(cfg =>
             {
@@ -65,15 +66,15 @@ namespace WebApi
                     In = ParameterLocation.Header,
                 });
                 cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-        new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-            },
-            []
-        }
-    });
+                {
+                     {
+                         new OpenApiSecurityScheme
+                         {
+                                 Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                         },
+                        []
+                     }
+                 });
             });
 
             builder.Services.AddAuthentication(config =>
@@ -107,9 +108,10 @@ namespace WebApi
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-            builder.Services.AddScoped(typeof(ISubscriptionService), typeof(SubscriptionService));
+            builder.Services.AddScoped(typeof(ISubscriptionCompanyService), typeof(SubscriptionCompanyService));
+            builder.Services.AddScoped(typeof(ISubscriptionTypeService), typeof(SubscriptionTypeSevice));
 
-            builder.Services.AddAutoMapper(typeof(SubscriptionMapping));
+            builder.Services.AddAutoMapper(typeof(SubscriptionCompanyMapping));
 
             builder.Services.AddCors(options =>
             {

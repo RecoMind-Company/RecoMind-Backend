@@ -75,10 +75,11 @@ message CompanyResponse {
     string id = 1;
     string name = 2;
     string industry = 3;
-    string country = 4 ;
+    optional string country = 4 ;
     google.protobuf.Timestamp createdAt = 5;
     string adminId = 6;
-    string subscriptionId = 7;
+    optional string SubscriptionId = 7;
+    optional string Description = 8;
 }
 
 message GetAllCompaniesResponse {

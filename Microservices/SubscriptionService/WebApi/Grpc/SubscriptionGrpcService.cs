@@ -10,9 +10,9 @@ namespace WebApi.Grpc
 {
     public class SubscriptionGrpcService : subscriptionService.subscriptionServiceBase
     {
-        private readonly ISubscriptionService _service;
+        private readonly ISubscriptionCompanyService _service;
         private readonly IMapper _mapper;
-        public SubscriptionGrpcService(ISubscriptionService service , IMapper mapper)
+        public SubscriptionGrpcService(ISubscriptionCompanyService service , IMapper mapper)
         {
             _service = service;
             _mapper = mapper;
@@ -22,7 +22,7 @@ namespace WebApi.Grpc
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var dto = new CreateSubscriptionDto();
+            var dto = new CreateSubscriptionCompanyDto();
             _mapper.Map(request, dto);
 
             await _service.CreateSubscription(dto);
@@ -61,7 +61,7 @@ namespace WebApi.Grpc
 
             if (item == null) throw new KeyNotFoundException($"Subscription with Id {request.Id} not found.");
 
-            var dto = new CreateSubscriptionDto();
+            var dto = new CreateSubscriptionCompanyDto();
             _mapper.Map(request, dto);
             var updatedItem = await _service.UpdateSubscription(request.Id, dto);
             return _mapper.Map(updatedItem, new subscriptionResponse());

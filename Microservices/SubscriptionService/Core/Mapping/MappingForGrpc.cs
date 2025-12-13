@@ -9,22 +9,28 @@ namespace Core.Mapping
     {
         public MappingForGrpc()
         {
-            CreateMap<createSubscriptionRequest, CreateSubscriptionDto>()
-                 .ReverseMap();
+            CreateMap<createSubscriptionRequest, CreateSubscriptionCompanyDto>()
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.PlaneName))
+                .ForMember(dest => dest.BillingCycle, opt => opt.MapFrom(src => src.BillingCycle))
+                .ReverseMap();
 
-            CreateMap<updateSubscriptionRequest, UpdateSubscriptionDto>()
-                 .ReverseMap();
+            CreateMap<updateSubscriptionRequest, UpdateSubscriptionCompanyDto>()
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.PlaneName))
+                .ForMember(dest => dest.BillingCycle, opt => opt.MapFrom(src => src.BillingCycle))
+                .ReverseMap();
 
-            CreateMap<GetSubscriptionDto, subscriptionResponse>()
+            CreateMap<GetSubscriptionCompanyDto, subscriptionResponse>()
                  .ForMember(dest => dest.StartDate,
                   opt => opt.MapFrom(src => Timestamp.FromDateTime(src.StartDate.ToUniversalTime())))
 
                  .ForMember(dest => dest.EndDate,
-                  opt => opt.MapFrom(src => Timestamp.FromDateTime(src.EndDate.ToUniversalTime())))
+                  opt => opt.MapFrom(src => Timestamp.FromDateTime(src.EndDate.ToUniversalTime())))                 
+
+                 .ForMember(dest => dest.BillingCycle, opt => opt.MapFrom(src => src.BillingCycle))
 
                  .ReverseMap();
 
-            CreateMap<deleteSubscriptionResponse, DeleteSubscriptionDto>()
+            CreateMap<deleteSubscriptionResponse, DeleteSubscriptionCompanyDto>()
                 .ForMember(dest => dest.Message, opt => opt.MapFrom(src => src.Msg))
                 .ReverseMap();
         }

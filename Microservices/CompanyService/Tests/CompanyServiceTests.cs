@@ -43,7 +43,7 @@ namespace Tests
                 .ReturnsAsync(companyModel);
 
             // Act
-            var result = await _companyService.CreateCompanyAsync(createDTO);
+            var result = await _companyService.CreateCompanyAsync(createDTO,"1");
 
             // Assert
             Assert.NotNull(result);
@@ -58,7 +58,7 @@ namespace Tests
         public async Task CreateCompanyAsync_WhenInputModelIsNull_ShouldThrowArgumentNullException()
         {            
             // Act And Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _companyService.CreateCompanyAsync(null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _companyService.CreateCompanyAsync(null,"1"));
 
             // Verify no calls were made to dependencies
             _mockMapper.Verify(m => m.Map<Company>(It.IsAny<CreateCompanyDTO>()), Times.Never);
@@ -164,9 +164,10 @@ namespace Tests
         {
             // Arrange
             var companyId = "123";
-            var existingCompany = new Company { Id = companyId, Name = "Old Name" };
+            var AdminId = "123";
+            var existingCompany = new Company { Id = companyId, Name = "Old Name" ,AdminId = AdminId };
             var createDto = new CreateCompanyDTO { Name = "New Name" };
-            var updatedEntity = new Company { Id = companyId, Name = "New Name" };
+            var updatedEntity = new Company { Id = companyId, Name = "New Name" , AdminId = AdminId};
             var expectedDto = new UpdateCompanyDTO { Id = companyId, Name = "New Name" };
 
             _mockCompanyUnitOfWork.Setup(uow => uow.Entity.GetByIdNoTrackingAsync(companyId))
@@ -178,12 +179,12 @@ namespace Tests
                 .ReturnsAsync(updatedEntity);
 
             // Act
-            var result = await _companyService.UpdateCompanyAsync(companyId, createDto);
+            var result = await _companyService.UpdateCompanyAsync(companyId,AdminId, createDto);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(expectedDto.Id, result.Id);
-            Assert.Equal(expectedDto.Name, result.Name);
+            Assert.Equal(expectedDto.Name, result.Name);            
             _mockCompanyUnitOfWork.Verify(uow => uow.Entity.UpdateAsync(updatedEntity), Times.Once);
             _mockCompanyUnitOfWork.Verify(uow => uow.Save(), Times.Once);
         }
@@ -200,7 +201,7 @@ namespace Tests
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-                _companyService.UpdateCompanyAsync(companyId, createDto));
+                _companyService.UpdateCompanyAsync(companyId, "1", createDto));
 
             Assert.Contains(companyId, exception.Message);
         }
@@ -213,7 +214,7 @@ namespace Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() =>
-                _companyService.UpdateCompanyAsync(null, createDto));
+                _companyService.UpdateCompanyAsync(null, "1", createDto));
         }
 
         [Fact]

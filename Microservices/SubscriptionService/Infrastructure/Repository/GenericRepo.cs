@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,7 +41,7 @@ namespace Infrastructure.Repository
         {
             return await Entity.AsNoTracking()
                     .FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
-        }
+        }        
 
         public T Update(T entity)
         {
@@ -52,6 +53,11 @@ namespace Infrastructure.Repository
         {
             Entity.Remove(entity);
             return entity;
+        }
+
+        public async Task<T?> Find(Expression<Func<T, bool>> predicate)
+        {
+            return await Entity.FirstOrDefaultAsync(predicate);
         }
     }
 }

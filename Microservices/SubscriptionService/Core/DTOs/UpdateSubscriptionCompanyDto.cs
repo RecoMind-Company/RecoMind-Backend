@@ -4,12 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Consts
+namespace Core.DTOs
 {
-    public enum PlanType
+    public class UpdateSubscriptionCompanyDto : CreateSubscriptionCompanyDto
     {
-        Pro = 1,
-        Enterprise = 2,
-        Free = 3
+        public string Id { get; set; }
     }
 }
