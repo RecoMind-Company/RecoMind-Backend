@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs
+namespace Core.DTOs.SubscriptionTypeDto
 {
-    public class CreateSubscriptionDto
+    public class DeleteDto
     {
         public string PlanName { get; set; }
-        public string BillingCycle { get; set; }
+        public string Message { get; set; }
     }
 }

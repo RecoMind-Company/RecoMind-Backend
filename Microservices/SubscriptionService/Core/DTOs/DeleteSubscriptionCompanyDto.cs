@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs
 {
-    public class DeleteSubscriptionDto
+    public class DeleteSubscriptionCompanyDto
     {
         public string Id { get; set; }
         public string Message{ get; set; } = "Subscription Deleted Successfully.";

@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs
 {
-    public class UpdateSubscriptionDto : CreateSubscriptionDto
+    public class CreateSubscriptionCompanyDto
     {
-        public string Id { get; set; }  
+        public string PlanName { get; set; }
+        public string BillingCycle { get; set; }
     }
 }

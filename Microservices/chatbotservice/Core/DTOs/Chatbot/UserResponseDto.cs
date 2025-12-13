@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Chatbot
 {
-    public class GetMethodDto 
+    public class UserResponseDto
     {
-        public string TaskId { get; set; }
-        public string user_question { get; set; }
+        public string Response { get; set; }
+        public string Status { get; set; }
     }
 }

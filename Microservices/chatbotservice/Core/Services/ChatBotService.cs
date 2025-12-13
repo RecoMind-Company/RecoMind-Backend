@@ -5,6 +5,7 @@ using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
+using System.Security.Claims;
 
 namespace Core.Services
 {
@@ -13,65 +14,56 @@ namespace Core.Services
         private readonly IUnitOfWork<ChatMessage> _unitOfWork;
         private readonly IAiClientService _aiClientService;
         private readonly IMapper _mapper;
+        private readonly ITeamService _teamService;
 
         public ChatBotService(IUnitOfWork<ChatMessage> unitOfWork,
             IAiClientService aiClientService,
-            IMapper mapper)
+            IMapper mapper,
+            ITeamService teamService)
         {
             _aiClientService = aiClientService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _teamService = teamService;
         }
 
-        public async Task<AiResponseDto> SendQuryToAiService(AiRequestDto requestDto)
-        {
-            AiResponseDto postResponse;
-            try
-            {
-                //1.Call Post Method
-                postResponse = await _aiClientService.SentRequestToAiService(requestDto);
-                return postResponse;
-            }
-            catch (Exception ex)
-            {
-                return new AiResponseDto
-                {
-                    status = Status.FAILURE,
-                };
-            }
-        }
+        //public async Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto)
+        //{
+        //    //// call team service to get team name and company id
+        //    //var teaminfo = await _teamService.GetTeamByUserId(requestDto.UserID);
 
-        public async Task<LastResponseDto> GetResponseFromAiService(GetMethodDto dto)
+        //    //// create AiRequestDto to send to Ai service
+        //    //AiRequestDto aiRequestDto = new AiRequestDto
+        //    //{
+        //    //    company_id = teaminfo.CompanyId,
+        //    //    team_name = teaminfo.TeamName,
+        //    //    user_question = requestDto.user_question,
+        //    //};
+        //    ////1.Call Post Method
+        //    //AiResponseDto postResponse;
+        //    //try
+        //    //{
+        //    //    postResponse = await _aiClientService.SentRequestToAiService(aiRequestDto);
+        //    //    return postResponse;
+        //    //}
+        //    //catch (Exception ex)
+        //    //{
+        //    //    return new AiResponseDto
+        //    //    {
+        //    //        status = Status.FAILURE,
+        //    //    };
+        //    //}
+        //    //return new AiResponseDto
+        //    //{
+        //    //    status = Status.SUCCESS,
+        //    //};
+        //}
+
+        public async Task<FinalResponseDto> GetResponseFromAiService(GetMethodDto dto)
         {
             var aiResponse = await _aiClientService.GetResponseFromAiService(dto.TaskId);
 
-            if (aiResponse.Status == Status.SUCCESS)
-            {
-                var entity = _mapper.Map<ChatMessage>(aiResponse);
-
-                entity.Id = Guid.NewGuid().ToString();
-                entity.Response.Answer = aiResponse.Result.Answer;
-                entity.Response.Sql_Query = "this is query";
-                entity.TimeStamp = DateTime.UtcNow;
-                entity.UserQuestion = dto.user_question;
-                entity.UserId = dto.UserID;
-                entity.UserRole = dto.UserRole;
-
-                await _unitOfWork.Entity.AddAsync(entity);
-                await _unitOfWork.Save();
-
-                // 5. Return DTO
-                var aiResponseDto = _mapper.Map<LastResponseDto>(aiResponse);
-                return aiResponseDto;
-            }
-            else
-            {
-                return new LastResponseDto
-                {
-                    status = aiResponse.Status,
-                    ResponseMessage = " Pleas Try Again ",
-                };
-            }
+            return aiResponse;
         }
 
         public async Task<IEnumerable<GetHistoryDto>> GetHistory(string userId)
@@ -102,6 +94,13 @@ namespace Core.Services
                 return;
             }
             throw new KeyNotFoundException($"User With Id : {userId} Has No Operations Or History ");
+        }
+
+        public async Task SaveToDatabase(SaveDto model)
+        {
+            var charmessage = _mapper.Map<ChatMessage>(model);
+            await _unitOfWork.Entity.AddAsync(charmessage);
+            await _unitOfWork.Save();
         }
     }
 }

@@ -32,6 +32,7 @@ namespace Campany.API
 
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(unitOfWork<>));
             builder.Services.AddScoped(typeof(ICompanyService), typeof(Core.Service.CompanyService));
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddAutoMapper(typeof(CopmanyMapping), typeof(MappingForRpc));
 
@@ -50,11 +51,6 @@ namespace Campany.API
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
                 o.Address = new Uri("http://subscriptionservice:5004");              // Subscription service address
-            });
-
-            builder.Services.AddGrpcClient<RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient>(o =>
-            {
-                o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
             });
 
             // Configure Kestrel to listen on a specific port for gRPC

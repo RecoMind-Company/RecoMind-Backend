@@ -1,8 +1,6 @@
 ﻿using Core.DTOs.AiService;
 using Core.Models;
 using Core.Services.Interface;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Http;
@@ -58,16 +56,8 @@ namespace Core.Services
         }
 
         public async Task<AiResponseDto> SentRequestToAiService(AiRequestDto dto)
-        {            
-            var requestDto = new AiRequestDto
-            {
-                company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",
-                team_name = "Sales",
-                user_question = dto.user_question
-            };
-
-            // تحويل إلى JSON
-            var response = await _http.PostAsJsonAsync(_postEndPoint, requestDto);
+        {                                  
+            var response = await _http.PostAsJsonAsync(_postEndPoint, dto);
 
             response.EnsureSuccessStatusCode();
 
@@ -75,7 +65,7 @@ namespace Core.Services
 
             analysisResponse.user_question = dto.user_question;
 
-            return analysisResponse!;
+            return analysisResponse;
         }
     }
 }

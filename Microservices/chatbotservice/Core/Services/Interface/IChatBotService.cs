@@ -10,10 +10,11 @@ namespace Core.Services.Interface
 {
     public interface IChatBotService
     {
-        public Task<AiResponseDto> SendQuryToAiService(AiRequestDto requestDto);
-        public Task<LastResponseDto> GetResponseFromAiService(GetMethodDto dto);
+        public Task<FinalResponseDto> GetResponseFromAiService(GetMethodDto dto);
         public Task<IEnumerable<GetHistoryDto>> GetHistory(string userId);
         public Task DeleteHistory(string userId);
+       // public Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto);
+        public Task SaveToDatabase(SaveDto model);
 
         //public Task<string> DeleteQuery(string queryId);
         //public Task<ChatMessageResponseDto> GetChatMessageById( string queryId);

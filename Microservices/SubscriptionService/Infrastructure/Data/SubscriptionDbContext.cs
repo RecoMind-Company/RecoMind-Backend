@@ -14,7 +14,8 @@ namespace Infrastructure.Data
         public SubscriptionDbContext(DbContextOptions<SubscriptionDbContext> dbContextOptions) 
             : base(dbContextOptions){}
 
-        public DbSet<Subscription> Subscriptions { get; set; }
+        public DbSet<SubscriptionCompany> Subscriptions { get; set; }
+        public DbSet<SubscriptionType> subscriptionTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) 
         {

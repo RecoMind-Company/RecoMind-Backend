@@ -16,13 +16,14 @@ namespace Core.Service
             _CompanyUnitOfWork = CopmanyUnitOfWork;
             _mapper = mapper;
         }
-        public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO)
+        public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO , string adminId)
         {
             if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
 
             var entity = _mapper.Map<Models.Company>(createCompanyDTO);
             entity.Id = Guid.NewGuid().ToString();
             entity.CreatedAt = DateTime.UtcNow;
+            entity.AdminId = adminId;
             var result = await _CompanyUnitOfWork.Entity.AddAsync(entity);
             _CompanyUnitOfWork.Save();
 
@@ -54,7 +55,7 @@ namespace Core.Service
 
             return _mapper.Map<GetCompanyDTO>(item);
         }
-        public async Task<UpdateCompanyDTO> UpdateCompanyAsync(string companyId, CreateCompanyDTO companyDTO)
+        public async Task<UpdateCompanyDTO> UpdateCompanyAsync(string companyId,string AdminId ,CreateCompanyDTO companyDTO)
         {
             if (string.IsNullOrWhiteSpace(companyId))
                 throw new ArgumentException("Company ID cannot be null or empty.", nameof(companyId));
@@ -63,8 +64,13 @@ namespace Core.Service
             if (existingCompany == null)
                 throw new KeyNotFoundException($"Company with ID '{companyId}' was not found.");
 
+            if (existingCompany.AdminId != AdminId)
+                throw new UnauthorizedAccessException("You do not have permission to update this company.");
+
             var entity = _mapper.Map<Models.Company>(companyDTO);
             entity.Id = companyId;       // Preserve ID
+            entity.AdminId = existingCompany.AdminId; // Preserve AdminId
+            entity.CreatedAt = existingCompany.CreatedAt; // Preserve CreatedAt
 
             await _CompanyUnitOfWork.Entity.UpdateAsync(entity);
             _CompanyUnitOfWork.Save();

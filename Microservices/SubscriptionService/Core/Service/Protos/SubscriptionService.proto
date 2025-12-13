@@ -42,13 +42,12 @@ message updateSubscriptionRequest {
 }
 
 message subscriptionResponse {
-    string id = 1;
-    string planeName = 2;
-    string billingCycle = 3;
-    string Price = 4;
-    google.protobuf.Timestamp startDate = 5;
-    google.protobuf.Timestamp endDate = 6;
-    bool isActive = 7;
+    string id = 1;    
+    string billingCycle = 2;
+    string Price = 3;
+    google.protobuf.Timestamp startDate = 4;
+    google.protobuf.Timestamp endDate = 5;
+    bool isActive = 6;
 }
 
 message getAllSubscriptionResponse {

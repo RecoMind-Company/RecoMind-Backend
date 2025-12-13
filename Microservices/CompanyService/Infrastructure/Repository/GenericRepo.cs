@@ -25,7 +25,7 @@ namespace Infrastructure.Repository
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.AsNoTracking().ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync() ?? new List<T>();
         }
 
         public async Task<T?> GetByIdAsync(string id)
