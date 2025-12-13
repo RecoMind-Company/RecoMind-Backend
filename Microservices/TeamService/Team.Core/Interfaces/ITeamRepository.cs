@@ -11,6 +11,7 @@ namespace Team.Core.Interfaces
     {
         Task<List<TeamModel>> GetByCompanyIdAsync(string companyId);
         Task<TeamModel?> GetByIdAsync(string teamId);
+        Task<TeamModel?> GetTeamByEmployeeIdAsync(string employeeId);
         Task CreateAsync(TeamModel team);
         Task UpdateAsync(TeamModel team);
         Task<bool> DeleteAsync(string teamId);

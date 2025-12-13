@@ -20,6 +20,14 @@ namespace Team.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<TeamModel?> GetTeamByEmployeeIdAsync(string employeeId)
+        {
+            return await _context.Teams
+                .Include(t => t.TeamEmployees)
+                .FirstOrDefaultAsync(t =>
+                    t.TeamEmployees.Any(e => e.EmployeeId == employeeId));
+        }
+
         public async Task<List<TeamModel>> GetByCompanyIdAsync(string companyId)
         {
             return await _context.Teams

@@ -16,6 +16,21 @@ namespace Team.Core.Services
             _mapper = mapper;
         }
 
+        public async Task<UserTeamInfoDto?> GetUserTeamInfoAsync(string userId)
+        {
+            var team = await _repo.GetTeamByEmployeeIdAsync(userId);
+
+            if (team == null)
+                return null;
+
+            return new UserTeamInfoDto
+            {
+                CompanyId = team.CompanyId,
+                TeamId = team.Id,
+                TeamName = team.Name
+            };
+        }
+
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
@@ -27,7 +42,6 @@ namespace Team.Core.Services
             var teams = await _repo.GetByCompanyIdAsync(companyId);
             return _mapper.Map<List<TeamResponseDto>>(teams);
         }
-
         public async Task<TeamResponseDto?> GetByIdAsync(string teamId)
         {
             var team = await _repo.GetByIdAsync(teamId);

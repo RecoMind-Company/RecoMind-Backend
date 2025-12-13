@@ -13,6 +13,8 @@ namespace Team.Core.Interfaces
         Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId);
         Task<TeamResponseDto?> GetByIdAsync(string teamId);
         Task<List<TeamResponseDto>> GetByCompanyIdAsync(string companyId);
+        Task<UserTeamInfoDto> GetUserTeamInfoAsync(string userId);
+
         Task<TeamResponseDto> CreateTeamAsync(string companyId, CreateTeamDto dto);
         Task<TeamResponseDto> UpdateTeamAsync(string teamId, string companyId, UpdateTeamDto dto);
         Task<bool> DeleteTeamAsync(string teamId, string companyId);

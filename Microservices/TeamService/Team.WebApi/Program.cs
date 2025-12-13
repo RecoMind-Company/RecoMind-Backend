@@ -7,11 +7,8 @@ using System.Text;
 using Team.Core.Interfaces;
 using Team.Core.Mapper;
 using Team.Infrastructure.Data;
-using Team.Infrastructure.Grpc;
 using Team.Infrastructure.Repositories;
-using Team.WebApi.AuthGrpc;
 using Team.WebApi.GrpcServices;
-
 namespace Team.WebApi
 {
     public class Program
@@ -99,39 +96,41 @@ namespace Team.WebApi
                 };
             });
 
-            //builder.WebHost.ConfigureKestrel(options =>
-            //{
-            //    // اقرأ من environment أولاً (أولوية أعلى)
-            //    var httpPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-            //        "8001"
-            //    );
-
-            //    var grpcPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-            //        "5001"
-            //    );
-
-            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            //});
-
-            builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
+            builder.WebHost.ConfigureKestrel(options =>
             {
-                c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
-            }).ConfigurePrimaryHttpMessageHandler(() =>
-            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
 
-                return new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                };
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
+
+
+
+            //builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
+            //{
+            //    c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
+            //}).ConfigurePrimaryHttpMessageHandler(() =>
+            //{
+
+
+            //    return new HttpClientHandler
+            //    {
+            //        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            //    };
+            //});
 
 
 
@@ -149,7 +148,7 @@ namespace Team.WebApi
 
             app.UseCors("OpenCors");
 
-            //app.MapGrpcService<TeamGrpcServiceImpl>();
+            app.MapGrpcService<TeamGrpcServiceImpl>();
 
             app.MapControllers();
 
