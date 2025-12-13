@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Net.Mail;
 using System.Security.Claims;
 
@@ -23,6 +24,8 @@ public class AuthenticationServiceTests
     private readonly Mock<IEmailSender> _emailSenderMock;
     private readonly Mock<IGrpcInvitationService> _grpcInvitationServiceMock;
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
+    private readonly Mock<IGenericRepository<UsersJobTitle>> _jobTitleRepositoryMock;
+    private readonly Mock<IUnitOfWork<UsersJobTitle>> _jobTitleUnitOfWorkMock;
     private readonly Core.Services.AuthenticationService _sut;
     public AuthenticationServiceTests()
     {
@@ -37,10 +40,14 @@ public class AuthenticationServiceTests
         _emailSenderMock = new Mock<IEmailSender>();
         _grpcInvitationServiceMock = new Mock<IGrpcInvitationService>();
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
+        _jobTitleRepositoryMock = new Mock<IGenericRepository<UsersJobTitle>>();
+        _jobTitleUnitOfWorkMock = new Mock<IUnitOfWork<UsersJobTitle>>();
         _sut = new Core.Services.AuthenticationService(_userManagerMock.Object, _passwordHasher, _jwtOptions.Object,
                                                        _verficationEmailServiceMock.Object, _emailSenderMock.Object,
                                                        _grpcInvitationServiceMock.Object,
-                                                       _grpcTeamServiceMock.Object);
+                                                       _grpcTeamServiceMock.Object,
+                                                       _jobTitleRepositoryMock.Object,
+                                                       _jobTitleUnitOfWorkMock.Object);
     }
     [Fact]
     public async Task Register_WhenUserIsExist_ShouldReturnFalseWithMessage()
@@ -353,21 +360,27 @@ public class AuthenticationServiceTests
         result.Should().BeNull();
     }
     [Fact]
-    public async Task GetuserById_WhenUserIsExist_ReturnUser()
+    public async Task GetuserById_WhenUserIsExist_ReturnUserWithJobTitle()
     {
-        // arrange
         var id = "testUserId";
-        var user = new AppUser { Id = "Id1", Email = "test@gmail.com", UserName = "test", FullName = "fulltest" };
-        var roles = new List<string> { "admin" };
+        var user = new AppUser { Id = id, Email = "test@gmail.com", UserName = "test", FullName = "fulltest" };
+        var jobTitleEntity = new UsersJobTitle { UserId = id, JobTitle = "Software Developer" };
+
         _userManagerMock.Setup(um => um.FindByIdAsync(id)).ReturnsAsync(user);
-        _userManagerMock.Setup(um => um.GetRolesAsync(user)).ReturnsAsync(roles);
-        // act
+
+        _jobTitleRepositoryMock.Setup(repo =>
+            repo.Find(It.IsAny<Expression<Func<UsersJobTitle, bool>>>()))
+            .ReturnsAsync(jobTitleEntity);
+
         var result = await _sut.GetUserById(id);
-        // assert
-        _userManagerMock.Verify(um => um.FindByIdAsync(It.IsAny<string>()), Times.Once);
-        _userManagerMock.Verify(um => um.GetRolesAsync(It.IsAny<AppUser>()), Times.Once);
-        result.Email.Should().NotBeNull();
-        result.Id.Should().NotBeNull();
-        result.Role.Should().NotBeNull();
+
+        _userManagerMock.Verify(um => um.FindByIdAsync(id), Times.Once);
+        _jobTitleRepositoryMock.Verify(repo =>
+            repo.Find(It.IsAny<Expression<Func<UsersJobTitle, bool>>>()), Times.Once);
+
+        result.Should().NotBeNull();
+        result.Id.Should().Be(id);
+        result.Name.Should().Be(user.FullName);
+        result.JobTitle.Should().Be(jobTitleEntity.JobTitle);
     }
 }

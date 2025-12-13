@@ -38,6 +38,8 @@ public class AuthenticationService : IAuthenticationService
     private readonly IEmailSender emailSender;
     private readonly IGrpcInvitationService invitationService;
     private readonly IGrpcTeamService grpcTeamService;
+    private readonly IGenericRepository<UsersJobTitle> jobTitleRepo;
+    private readonly IUnitOfWork<UsersJobTitle> jobTitleUow;
 
     public AuthenticationService(UserManager<AppUser> userManager,
                                        PasswordHasher<AppUser> passwordHasher,
@@ -45,7 +47,9 @@ public class AuthenticationService : IAuthenticationService
                                        IVerificationEmailService sendEmailService,
                                        IEmailSender emailSender,
                                        IGrpcInvitationService invitationService,
-                                       IGrpcTeamService grpcTeamService)
+                                       IGrpcTeamService grpcTeamService,
+                                       IGenericRepository<UsersJobTitle> jobTitleRepo,
+                                       IUnitOfWork<UsersJobTitle> jobTitleUow)
     {
         this.userManager = userManager;
         this.passwordHasher = passwordHasher;
@@ -54,6 +58,8 @@ public class AuthenticationService : IAuthenticationService
         this.invitationService = invitationService;
         this.grpcTeamService = grpcTeamService;
         jwtSettings = jwtOptions.Value;
+        this.jobTitleRepo = jobTitleRepo;
+        this.jobTitleUow = jobTitleUow;
     }
 
     public async Task<AuthenticationDto> Register(RegisterDto registerDto)
@@ -316,13 +322,15 @@ public class AuthenticationService : IAuthenticationService
     public async Task<UserToReturnDto> GetUserById(string id)
     {
         var user = await userManager.FindByIdAsync(id);
+        var jobTitle = await jobTitleRepo.Find(u => u.UserId == id);
         if (user is null)
             return null;
         var userToReturn = new UserToReturnDto
         {
             Email = user.Email!,
             Id = user.Id,
-            Role = (await userManager.GetRolesAsync(user)).FirstOrDefault()!
+            Name = user.FullName,
+            JobTitle = jobTitle.JobTitle
         };
         return userToReturn;
 
@@ -331,12 +339,24 @@ public class AuthenticationService : IAuthenticationService
     public async Task<UsersToReturnDto> GetUsersByIds(List<string> ids)
     {
         var userNamesList = await userManager.Users
-             .Where(u => ids.Contains(u.Id))
-             .Select(u => u.UserName)
-             .ToListAsync();
+            .Where(u => ids.Contains(u.Id))
+            .Join(
+                jobTitleRepo.Entities,
+                user => user.Id,
+                jobTitle => jobTitle.UserId,
+                (user, jobTitle) => new UserToReturnDto
+                {
+                    Id = user.Id,
+                    Name = user.FullName,
+                    Email = user.Email,
+                    JobTitle = jobTitle.JobTitle
+                }
+            )
+            .ToListAsync();
+
         var usersToReturnDto = new UsersToReturnDto
         {
-            UserNames = userNamesList
+            Users = userNamesList
         };
         return usersToReturnDto;
     }

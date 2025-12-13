@@ -4,6 +4,7 @@ namespace Authentication.Core.Interfaces;
 
 public interface IGenericRepository<T> where T : class
 {
+    IQueryable<T> Entities { get; }
     Task<IEnumerable<T>> GetAllAsync();
     Task<T> GetAsync(int id);
     Task<T> AddAsync(T entity);

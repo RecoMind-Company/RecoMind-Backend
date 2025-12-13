@@ -12,4 +12,5 @@ service AuthenticationService{
 	rpc VerifyCode(VerifyCodeMessage) returns (BaseMessage);
 	rpc GetUserById(GetUserByIdMessage) returns (UserToReturnMessage);
 	rpc GetUsers(GetUsersMessage) returns (UsersToReturnMessage);
+
 }

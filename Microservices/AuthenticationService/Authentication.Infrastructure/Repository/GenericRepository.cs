@@ -8,6 +8,7 @@ namespace Authentication.Infrastructure.Repository;
 public class GenericRepository<T>(AuthenticationDbContext context) : IGenericRepository<T> where T : class
 {
     private DbSet<T> _dbSet = context.Set<T>();
+    public IQueryable<T> Entities => _dbSet;
     public async Task<IEnumerable<T>> GetAllAsync()
     {
         return await _dbSet.ToListAsync();

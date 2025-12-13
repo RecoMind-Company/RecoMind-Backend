@@ -2,7 +2,9 @@
 
 public class UserToReturnDto
 {
-    public string Id { get; set; } = default!;
-    public string Role { get; set; } = default!;
-    public string Email { get; set; } = default!;
+    public string? Id { get; set; }
+    public string? Name { get; set; }
+    public string? JobTitle { get; set; }
+    public string? Email { get; set; }
+
 }
