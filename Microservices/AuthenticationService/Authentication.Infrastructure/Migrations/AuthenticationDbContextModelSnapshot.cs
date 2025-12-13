@@ -100,6 +100,27 @@ namespace Authentication.Infrastructure.Migrations
                     b.ToTable("UsersAccount", (string)null);
                 });
 
+            modelBuilder.Entity("Authentication.Core.Models.UsersJobTitle", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UsersJobTitles");
+                });
+
             modelBuilder.Entity("Authentication.Core.Models.VerificationCode", b =>
                 {
                     b.Property<int>("Id")
@@ -121,7 +142,7 @@ namespace Authentication.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("VerificationCodes", (string)null);
+                    b.ToTable("VerificationCodes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -259,7 +280,7 @@ namespace Authentication.Infrastructure.Migrations
 
             modelBuilder.Entity("Authentication.Core.Models.AppUser", b =>
                 {
-                    b.OwnsMany("Authentication.Core.Models.AppUser.RefreshTokens#Authentication.Core.Models.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("Authentication.Core.Models.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("AppUserId")
                                 .HasColumnType("nvarchar(450)");
@@ -285,13 +306,24 @@ namespace Authentication.Infrastructure.Migrations
 
                             b1.HasKey("AppUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("AppUserId");
                         });
 
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("Authentication.Core.Models.UsersJobTitle", b =>
+                {
+                    b.HasOne("Authentication.Core.Models.AppUser", "User")
+                        .WithOne()
+                        .HasForeignKey("Authentication.Core.Models.UsersJobTitle", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
