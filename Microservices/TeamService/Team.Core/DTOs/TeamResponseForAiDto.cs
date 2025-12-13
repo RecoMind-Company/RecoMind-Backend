@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Team.Core.DTOs
 {
-    public class UsersToReturnDto
+    public class TeamResponseForAiDto
     {
-        public List<string> Usernames { get; set; } = new List<string>();
-        public int EmpCount => Usernames.Count;
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 }

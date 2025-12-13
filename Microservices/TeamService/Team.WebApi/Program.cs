@@ -7,11 +7,8 @@ using System.Text;
 using Team.Core.Interfaces;
 using Team.Core.Mapper;
 using Team.Infrastructure.Data;
-using Team.Infrastructure.Grpc;
 using Team.Infrastructure.Repositories;
-using Team.WebApi.AuthGrpc;
 using Team.WebApi.GrpcServices;
-
 namespace Team.WebApi
 {
     public class Program
@@ -50,7 +47,7 @@ namespace Team.WebApi
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
-            builder.Services.AddScoped<IGrpcAuthService, GrpcAuthService>();
+            //builder.Services.AddScoped<IGrpcAuthService, GrpcAuthService>();
             builder.Services.AddGrpc();
 
 
@@ -120,18 +117,29 @@ namespace Team.WebApi
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
-            builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
-            {
-                c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
-            }).ConfigurePrimaryHttpMessageHandler(() =>
-            {
 
 
-                return new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                };
-            });
+            //builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
+            //{
+            //    c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
+            //}).ConfigurePrimaryHttpMessageHandler(() =>
+            //{
+
+
+            //    return new HttpClientHandler
+            //    {
+            //        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            //    };
+            //});
+
+
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("AllEmployees", p =>  p.RequireRole("admin", "manager", "teamleader", "employee"));
+            authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
+            authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
+
+            // [Authorize("AllEmployees")]
+            // [Authorize(Policy = "TeamLeadership")]
 
 
 

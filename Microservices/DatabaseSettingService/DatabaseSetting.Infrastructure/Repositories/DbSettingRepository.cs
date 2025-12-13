@@ -19,17 +19,18 @@ namespace DatabaseSetting.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<DbSettingModel>> GetAllByCompanyIdAsync(string companyId)
+        public async Task<DbSettingModel?> GetByCompanyIdAsync(string companyId)
         {
             return await _context.DbSettings
-                .Where(ds => ds.CompanyId == companyId)
-                .ToListAsync();
+                 .AsNoTracking()
+                 .FirstOrDefaultAsync(x => x.CompanyId == companyId);
         }
 
-        public async Task<DbSettingModel?> GetByIdAsync(string id, string companyId)
+        public async Task<DbSettingModel?> GetByIdAsync(string id)
         {
             return await _context.DbSettings
-                   .FirstOrDefaultAsync(x => x.Id == id && x.CompanyId == companyId);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<DbSettingModel> CreateAsync(DbSettingModel model)
@@ -40,25 +41,19 @@ namespace DatabaseSetting.Infrastructure.Repositories
             return model;
         }
 
-        public async Task<bool> DeleteAsync(string id, string companyId)
-        {
-            var entity = await GetByIdAsync(id, companyId);
-
-            if (entity == null)
-                return false;
-
-            _context.DbSettings.Remove(entity);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
         public async Task<DbSettingModel> UpdateAsync(DbSettingModel model)
         {
             _context.DbSettings.Update(model);
             await _context.SaveChangesAsync();
 
             return model;
+        }
+
+        public async Task<bool> DeleteAsync(DbSettingModel model)
+        {
+            _context.DbSettings.Remove(model);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
     }

@@ -16,10 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="AuthGrpc\AuthenticationMessages.proto" />
-    <None Remove="AuthGrpc\AuthenticationService.proto" />
-    <None Remove="Protos\team.proto" />
-    <None Remove="Protos\teamMessages.proto" />
+    <None Remove="Protos\TeamMessages.proto" />
+    <None Remove="Protos\TeamService.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,19 +50,15 @@
     <ProjectReference Include="..\Team.Core\Team.Core.csproj" />
     <ProjectReference Include="..\Team.Infrastructure\Team.Infrastructure.csproj" />
   </ItemGroup>
-	
-    <ItemGroup>
-		<Protobuf Include="AuthGrpc\AuthenticationMessages.proto" GrpcServices="None">
-			<ProtoRoot>AuthGrpc</ProtoRoot>
-		</Protobuf>
-		<Protobuf Include="AuthGrpc\AuthenticationService.proto" GrpcServices="Client">
-			<ProtoRoot>AuthGrpc</ProtoRoot>
-		</Protobuf>
-		<Protobuf Include="Protos\team.proto" GrpcServices="Server" >
-			<ProtoRoot>Protos</ProtoRoot>
-		</Protobuf>
-		<Protobuf Include="Protos\teamMessages.proto" GrpcServices="None">
-			<ProtoRoot>Protos</ProtoRoot>
-		</Protobuf>
-	</ItemGroup>
+
+  <ItemGroup>
+	  <Protobuf Include="Protos\TeamMessages.proto" GrpcServices="None" >
+		  <ProtoRoot>Protos</ProtoRoot>
+	  </Protobuf>
+    <Protobuf Include="Protos\TeamService.proto" GrpcServices="Server" >
+		<ProtoRoot>Protos</ProtoRoot>
+	</Protobuf>
+  </ItemGroup>
+
+
 </Project>

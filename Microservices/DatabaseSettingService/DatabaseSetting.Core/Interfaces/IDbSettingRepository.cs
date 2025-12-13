@@ -9,10 +9,10 @@ namespace DatabaseSetting.Core.Interfaces
 {
     public interface IDbSettingRepository
     {
-        Task<IEnumerable<DbSettingModel>> GetAllByCompanyIdAsync(string companyId);
-        Task<DbSettingModel> GetByIdAsync(string Id, string companyId);
+        Task<DbSettingModel> GetByCompanyIdAsync(string companyId);
+        Task<DbSettingModel> GetByIdAsync(string Id);
         Task<DbSettingModel> CreateAsync(DbSettingModel model);
         Task<DbSettingModel> UpdateAsync(DbSettingModel model);
-        Task<bool> DeleteAsync(string id, string companyId);
+        Task<bool> DeleteAsync(DbSettingModel model);
     }
 }
