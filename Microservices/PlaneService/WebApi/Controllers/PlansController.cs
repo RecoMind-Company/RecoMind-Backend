@@ -19,7 +19,7 @@ namespace WebApi.Controllers
             _teamGrpcServiceClient = teamGrpcServiceClient;
         }
 
-        [HttpGet("{planId}")]
+        [HttpGet("GetById/{planId}")]
         public async Task<IActionResult> GetPlan(string planId)
         {
             var plan = await _planService.GetPlan(planId);
@@ -33,7 +33,7 @@ namespace WebApi.Controllers
             return Ok(plans);
         }
 
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<IActionResult> CreatePlan([FromBody] CreatePlanDto planDto)
         {
             if (!ModelState.IsValid)
@@ -54,7 +54,7 @@ namespace WebApi.Controllers
             return CreatedAtAction(nameof(GetPlan), new { planId = createdPlan.Id }, createdPlan);
         }
 
-        [HttpPut]
+        [HttpPut("Update")]
         public async Task<IActionResult> UpdatePlan([FromQuery] string PlanId, [FromBody] CreatePlanDto planDto)
         {
             if (!ModelState.IsValid)
@@ -75,13 +75,15 @@ namespace WebApi.Controllers
             return Ok(updatedPlan);
         }
 
-        [HttpDelete("{planId}")]
+        [HttpDelete("Delete/{planId}")]
         public async Task<IActionResult> DeletePlan(string planId)
         {
             var deleteResult = await _planService.DeletePlan(planId);
             return Ok(deleteResult);
         }
-        [HttpGet]
+
+        // for testing purpose
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllPlans()
         {
             var plans = await _planService.GetAllPlans();
