@@ -1,25 +1,16 @@
-using Core.DTOs.AiService;
 using Core.Interfaces;
-using Core.Mapping;
 using Core.Models;
 using Core.Services;
 using Core.Services.Interface;
 using Infrastructure.Data;
+using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Server.Kestrel.Core;  // ✅ أضف هذا السطر
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
-using Team.Grpc;
-using WebApi.Grpc;
-using WebApi.Grpc.ConnectedService;
+using Team.WebApi.Protos;
 
 namespace WebApi
 {
@@ -58,26 +49,26 @@ namespace WebApi
                 }
             });
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    // اقرأ من environment أولاً (أولوية أعلى)
+            //    var httpPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+            //        "8001"
+            //    );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+            //    var grpcPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+            //        "5001"
+            //    );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            //});
 
             builder.Services.AddSwaggerGen(cfg =>
             {
@@ -122,11 +113,7 @@ namespace WebApi
                 };
             });
 
-            builder.Services.AddGrpc();
-            builder.Services.AddGrpcClient<RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService.AuthenticationServiceClient>(o =>
-            {
-                o.Address = new Uri("http://authenticationservice:5011");            // AuthenticationService service address
-            });
+            builder.Services.AddGrpc();           
 
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
             {
@@ -139,7 +126,7 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
-            builder.Services.AddScoped(typeof(AuthService));
+            builder.Services.AddScoped(typeof(ITeamService), typeof(TeamService));
 
             builder.Services.AddCors(options =>
             {
@@ -170,7 +157,6 @@ namespace WebApi
 
             app.UseAuthorization();
             app.UseCors("OpenCors");
-            app.MapGrpcService<GrpcChatbotServiceImpl>();
             app.MapControllers();
 
             app.Run();

@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Grpc\team.proto" />
+    <None Remove="Grpc\teamMessages.proto" />
+    <None Remove="Grpc\TeamService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
@@ -17,6 +29,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Protobuf Include="Grpc\team.proto" GrpcServices="Client" >
+		  <ProtoRoot>Grpc</ProtoRoot>
+	  </Protobuf>
+		
+    <Protobuf Include="Grpc\teamMessages.proto" GrpcServices="None" >
+		<ProtoRoot>Grpc</ProtoRoot>
+    </Protobuf>		
   </ItemGroup>
 
 </Project>

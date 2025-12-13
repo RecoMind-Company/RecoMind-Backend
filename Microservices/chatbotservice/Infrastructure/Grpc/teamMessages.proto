@@ -1,15 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "Team.Grpc";
-
-service TeamGrpcService {
-  rpc GetTeamById (GetTeamRequest) returns (TeamResponse);
-  rpc GetTeamsByCompanyId (GetCompanyTeamsRequest) returns (TeamsListResponse);
-  rpc GetTeamEmployees (GetTeamRequest) returns (EmployeesResponse);
-  rpc GetTeamLeader (GetTeamRequest) returns (LeaderResponse);
-
-  rpc GetTeamBasicInfo (GetTeamByIdRequest) returns (TeamBasicInfoResponse);
-}
+option csharp_namespace = "Team.WebApi.Protos";
 
 message GetTeamRequest {
   string teamId = 1;

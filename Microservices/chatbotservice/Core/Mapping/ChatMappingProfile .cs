@@ -21,11 +21,7 @@ namespace Core.Mapping
                 .ForMember(dest => dest.TaskId, opt => opt.MapFrom(src => src.TaskId));
 
             CreateMap<HistoryEntry, GetHistoryDto>()
-                .ReverseMap();
-
-            CreateMap<FinalResponseDto, LastResponseDto>()
-                .ForMember(dest => dest.ResponseMessage, opt => opt.MapFrom(src => src.Result.Answer));
-
+                .ReverseMap();            
 
             CreateMap<FinalResponseDto, ChatMessage>()
                 .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src.Result))
@@ -34,12 +30,14 @@ namespace Core.Mapping
                 .ForMember(dest => dest.UserRole, opt => opt.Ignore())
                 .ForMember(dest => dest.UserQuestion, opt => opt.Ignore())
                 .ForMember(dest => dest.TimeStamp, opt => opt.Ignore());
+                       
+            CreateMap<ChatMessage,SaveDto>()
+                .ForMember(dest => dest.Result.Answer, opt => opt.MapFrom(src => src.Response.Answer))
+                .ForMember(dest => dest.Result.Sql_Query, opt => opt.MapFrom(src => src.Response.Sql_Query))
+                .ForMember(dest => dest.TaskId, opt => opt.Ignore())
+                .ForMember(opt=> opt.Status,  act => act.Ignore())
+                .ReverseMap();
 
-            //CreateMap<GetMethodDto, ChatMessage>()
-            //    .ForMember(dest => dest.UserQuestion, opt => opt.MapFrom(src => src.user_question))
-            //    .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserID))
-            //    .ForMember(dest => dest.UserRole, opt => opt.MapFrom(src => src.UserRole));                
         }
     }
-
 }

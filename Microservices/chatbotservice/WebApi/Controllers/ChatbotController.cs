@@ -1,14 +1,10 @@
-﻿using Core.DTOs.AiService;
+﻿using Core.Const;
+using Core.DTOs.AiService;
 using Core.DTOs.Chatbot;
 using Core.Services.Interface;
-using Grpc.Core;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Migrations.Operations.Builders;
-using RecoMindAuthenticationAPI.Grpc.Authentication;
-using WebApi.Grpc.ConnectedService;
-using static RecoMindAuthenticationAPI.Grpc.Authentication.AuthenticationService;
-using static System.Net.WebRequestMethods;
+using System.Security.Claims;
+
 
 namespace WebApi.Controllers
 {
@@ -17,58 +13,75 @@ namespace WebApi.Controllers
     public class ChatbotController : ControllerBase
     {
         private readonly IChatBotService _chatBotService;
-        private readonly AuthService _authService;
-        //private readonly TeamService _teamService;
-        public ChatbotController(IChatBotService chatBotService, AuthService authService)// ,TeamService teamService)
+       
+        public ChatbotController(IChatBotService chatBotService)
         {
-            _chatBotService = chatBotService;
-            _authService = authService;
-            //_teamService = teamService;
-    
-           
-            
+            _chatBotService = chatBotService;            
         }
 
-        [HttpPost("CreateQuery")]
-        public async Task<IActionResult> CreateQuery(CreateChatRequestDto createChatRequestDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+        //[HttpPost("CreateQuery")]
+        //public async Task<IActionResult> CreateQuery([FromBody]string Question)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);            
 
-            //if (!(await _authService.CheckValidUser(createChatRequestDto)))//&& !(await _teamService.CheckValidTeam(createChatRequestDto.UserID))))
-            //    return BadRequest("Request body Has Invalid Data ");
-
-
-            try
-            {
-                //var team = await _teamService.GetTeamByUserId(createChatRequestDto.UserID);
-
-                var Dto = new AiRequestDto
-                {
-                    company_id = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9", //team.CompanyId,
-                    team_name = "Sales", //team.TeamName,
-                    user_question = createChatRequestDto.user_question
-                };
-                var result = await _chatBotService.SendQuryToAiService(Dto);
-                return Ok(result);
-            }
-            catch (KeyNotFoundException knfEx)
-            {
-                return NotFound(knfEx.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {           
+        //        var dto = new CreateChatRequestDto
+        //        {                    
+        //            user_question = Question,
+        //            UserID = User.FindFirstValue(ClaimTypes.NameIdentifier)??string.Empty,
+        //            UserRole = User.FindFirstValue(ClaimTypes.Role)?? string.Empty,
+        //        };
+        //        var result = await _chatBotService.HandelRequestBeforeBassingItToAiService(dto);
+        //        return Ok(result);
+        //    }
+        //    catch (KeyNotFoundException knfEx)
+        //    {
+        //        return NotFound(knfEx.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpPost("ChatbotResponse")]
-        public async Task<IActionResult> GetResult(GetMethodDto dto)
+        public async Task<IActionResult> GetResult([FromBody] GetMethodDto dto )
         {
             try 
-            {
+            {                
                 var result = await _chatBotService.GetResponseFromAiService(dto);
-                return Ok(result);
+
+                if (result.Status == Status.SUCCESS) // Save to DB
+                {
+                    var model = new SaveDto
+                    {
+                        UserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                        UserRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty,
+                        UserQuestion = dto.user_question,
+                        TaskId = dto.TaskId,
+                        Result = new ResponseMessage
+                        {
+                            Answer = result.Result.Answer,
+                            Sql_Query = result.Result.Sql_Query
+                        }
+                    };
+
+                    await _chatBotService.SaveToDatabase(model);
+                }  
+                else if (result.Status == Status.FAILURE)
+                {
+                    return BadRequest("Failed to get response from AI service.");
+                }
+
+                var res = new UserResponseDto
+                {
+                    Status = result.Status,
+                    Response= result.Result.Answer,
+                };
+
+                return Ok(res);
             }
             catch (Exception ex)
             {

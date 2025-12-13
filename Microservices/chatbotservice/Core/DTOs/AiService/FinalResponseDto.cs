@@ -17,7 +17,7 @@ namespace Core.DTOs.AiService
         [JsonPropertyName("status")]
         public string Status { get; set; }
         [JsonPropertyName("result")]
-        public ResponseMessage Result { get; set; }
+        public ResponseMessage Result { get; set; } = new ResponseMessage();
     }
 
     public class ResponseMessage
