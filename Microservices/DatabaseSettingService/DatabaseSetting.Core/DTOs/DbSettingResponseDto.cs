@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseSetting.Core.DTOs
 {
-    public class DbSettingResponse
+    public class DbSettingResponseDto
     {
         public string Id { get; set; }
         public string CompanyId { get; set; }

@@ -11,6 +11,7 @@ namespace Team.Core.DTOs
     {
         [Required]
         public string Name { get; set; }
+
         [Required]
         public string TeamLeadId { get; set; }
     }

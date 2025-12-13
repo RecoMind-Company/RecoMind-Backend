@@ -13,11 +13,9 @@ namespace Team.Core.Models
         [Key]
         public string Id { get; set; }
 
-        [ForeignKey("TeamId")]
-        public TeamModel Team { get; set; }
+        [ForeignKey("Team")]
         public string TeamId { get; set; }
-
+        public TeamModel Team { get; set; }
         public string EmployeeId { get; set; }
-        public DateTime AddedAt { get; set; }
     }
 }

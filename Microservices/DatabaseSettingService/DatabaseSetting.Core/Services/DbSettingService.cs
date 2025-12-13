@@ -1,4 +1,5 @@
-﻿using DatabaseSetting.Core.DTOs;
+﻿using AutoMapper;
+using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Entities;
 using DatabaseSetting.Core.Interfaces;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -16,141 +17,85 @@ namespace DatabaseSetting.Core.Services
     public class DbSettingService : IDbSettingService
     {
         private readonly IDbSettingRepository _repository;
-        private readonly IEncryptionService _encryptionService;
-        public DbSettingService(IDbSettingRepository repository, IEncryptionService encryptionService)
+        private readonly IEncryptionService _encryp;
+        private readonly IMapper _mapper;
+
+        public DbSettingService(IDbSettingRepository repository, IEncryptionService encryptionService, IMapper mapper)
         {
             _repository = repository;
-            _encryptionService = encryptionService;
+            _encryp = encryptionService;
+            _mapper = mapper;
         }
 
 
-        public async Task<IEnumerable<DbSettingResponseForAi>> GetAllByCompanyIdForAiAsync(string companyId)
+        public async Task<DbSettingResponseForAiDto?> GetByCompanyIdForAiAsync(string companyId)
         {
-            var entities = await _repository.GetAllByCompanyIdAsync(companyId);
+            var entity = await _repository.GetByCompanyIdAsync(companyId);
+            if (entity == null)
+                return null;
 
-            if (entities == null || !entities.Any())
-                return new List<DbSettingResponseForAi>();
+            var response = _mapper.Map<DbSettingResponseForAiDto>(entity);
+            response.Password = _encryp.Decrypt(entity.Password);
 
-            return entities.Select(entity => new DbSettingResponseForAi
-            {
-                Id = entity.Id,
-                CompanyId = entity.CompanyId,
-                Server = entity.Server,
-                DbName = entity.DbName,
-                User = entity.User,
-                Password = entity.Password
-            });
+            return response;
         }
 
-        public async Task<IEnumerable<DbSettingResponse>> GetAllByCompanyIdAsync(string companyId)
+        public async Task<DbSettingResponseDto?> GetByCompanyIdAsync(string companyId)
         {
-            var entities = await _repository.GetAllByCompanyIdAsync(companyId);
+            var entity = await _repository.GetByCompanyIdAsync(companyId);
+            if (entity == null)
+                return null;
 
-            if (entities == null || !entities.Any())
-                return new List<DbSettingResponse>();
-
-            return entities.Select(entity => new DbSettingResponse
-            {
-                Id = entity.Id,
-                CompanyId = entity.CompanyId,
-                DbType = entity.DbType,
-                Name = entity.Name,
-                CreatedAt = entity.CreatedAt
-            });
+            return _mapper.Map<DbSettingResponseDto>(entity);
         }
         
-
-
-        public async Task<DbSettingResponse?> GetByIdAsync(string id, string companyId)
+        public async Task<DbSettingResponseDto?> GetByIdAsync(string id, string companyId)
         {
-            var entity = await _repository.GetByIdAsync(id, companyId);
-
-            if (entity == null)
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null || entity.CompanyId != companyId) 
                 return null;
 
-            return MapToResponse(entity);
-        }
-
-        public async Task<DbSettingModel> GetConnectionByIdAsync(string id, string companyId)
-        {
-            var entity = await _repository.GetByIdAsync(id, companyId);
-
-            if (entity == null)
-                return null;
-
-            entity.ConnectionString = entity.ConnectionString;
-
-            return entity;
+            return _mapper.Map<DbSettingResponseDto>(entity);
         }
 
 
-        public async Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request, string companyId)
+        public async Task<DbSettingResponseDto> CreateAsync(CreateDbSettingDto request, string companyId)
         {
-            var model = new DbSettingModel
-            {
-                Id = Guid.NewGuid().ToString(),
-                CompanyId = companyId,
-                Name = request.Name,
-                DbType = request.DbType,
+            var model = _mapper.Map<DbSettingModel>(request);
 
-                Server = request.Server,
-                DbName = request.DbName,
-                User = request.User,
-                Password = request.Password,
-
-                ConnectionString = $"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};",
-
-                CreatedAt = DateTime.UtcNow
-            };
+            model.Id = Guid.NewGuid().ToString();
+            model.CompanyId = companyId;
+            model.CreatedAt = DateTime.UtcNow;
+            model.UpdatedAt = DateTime.UtcNow;
+            model.Password = _encryp.Encrypt(request.Password);
 
             var saved = await _repository.CreateAsync(model);
-
-            return new DbSettingResponse
-            {
-                Id = saved.Id,
-                CompanyId = saved.CompanyId,
-                DbType = saved.DbType,
-                Name = saved.Name,
-                CreatedAt = saved.CreatedAt
-            };
+            return _mapper.Map<DbSettingResponseDto>(saved);
         }
 
-        public async Task<DbSettingResponse?> UpdateAsync(string id, string companyId, UpdateDbSettingModel request)
+        public async Task<DbSettingResponseDto?> UpdateAsync(string id, string companyId, UpdateDbSettingDto request)
         {
-            var entity = await _repository.GetByIdAsync(id, companyId);
-
-            if (entity == null)
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null || entity.CompanyId != companyId)
                 return null;
 
-            entity.Name = request.Name;
-            entity.DbType = request.DbType;
+            _mapper.Map(request, entity);
 
-            entity.Server = request.Server;
-            entity.DbName = request.DbName;
-            entity.User = request.User;
-            entity.Password = request.Password;
+            if (!string.IsNullOrEmpty(request.Password))
+                entity.Password = _encryp.Encrypt(request.Password);
 
-            entity.ConnectionString = $"Server={request.Server};Database={request.DbName};User Id={request.User};Password={request.Password};";
-
-            var updated = await _repository.UpdateAsync(entity);
-
-            return MapToResponse(updated);
+            entity.UpdatedAt = DateTime.UtcNow;
+            var saved = await _repository.UpdateAsync(entity);
+            return _mapper.Map<DbSettingResponseDto>(saved);
         }
-
 
         public async Task<bool> DeleteAsync(string id, string companyId)
         {
-            return await _repository.DeleteAsync(id, companyId);
+            var entity = await _repository.GetByIdAsync(id);
+            if (entity == null || entity.CompanyId != companyId)
+                return false;
+
+            return await _repository.DeleteAsync(entity);
         }
-
-
-        private DbSettingResponse MapToResponse(DbSettingModel entity) => new DbSettingResponse
-        {
-            Id = entity.Id,
-            CompanyId = entity.CompanyId,
-            DbType = entity.DbType,
-            Name = entity.Name,
-            CreatedAt = entity.CreatedAt,
-        };
     }
 }

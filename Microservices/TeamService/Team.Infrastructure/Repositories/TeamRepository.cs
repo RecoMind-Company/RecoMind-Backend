@@ -1,143 +1,94 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Team.Core.Models;
 using Team.Core.Interfaces;
+using Team.Core.Models;
 using Team.Infrastructure.Data;
 
 namespace Team.Infrastructure.Repositories
 {
-
     public class TeamRepository : ITeamRepository
     {
         private readonly TeamDbContext _context;
+
         public TeamRepository(TeamDbContext context)
         {
             _context = context;
         }
 
-
-        // READ: By Id
-        public async Task<TeamModel?> GetByIdAsync(string teamId)
-        {
-            return await _context.Teams
-                .AsNoTracking()
-                .Include(t => t.TeamEmployees)
-                .FirstOrDefaultAsync(t => t.Id == teamId && !t.IsDeleted);
-        }
-
-        // READ: By Company
         public async Task<List<TeamModel>> GetByCompanyIdAsync(string companyId)
         {
             return await _context.Teams
                 .AsNoTracking()
-                .Where(t => t.CompanyId == companyId && !t.IsDeleted)
+                .Where(t => t.CompanyId == companyId)
                 .Include(t => t.TeamEmployees)
                 .ToListAsync();
         }
 
-        // CREATE
+        public async Task<TeamModel?> GetByIdAsync(string teamId)
+        {
+            return await _context.Teams
+                .Include(t => t.TeamEmployees)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+        }
+
         public async Task CreateAsync(TeamModel team)
         {
             await _context.Teams.AddAsync(team);
             await _context.SaveChangesAsync();
         }
 
-        // UPDATE
         public async Task UpdateAsync(TeamModel team)
         {
-            var existing = await _context.Teams.FirstOrDefaultAsync(t => t.Id == team.Id);
-
-            if (existing == null) return;
-
-            existing.Name = team.Name;
-            existing.TeamLeadId = team.TeamLeadId;
-            existing.UpdatedAt = DateTime.UtcNow;
-
+            _context.Teams.Update(team);
             await _context.SaveChangesAsync();
         }
 
-        // SOFT DELETE
-        public async Task DeleteAsync(string teamId)
+        public async Task<bool> DeleteAsync(string teamId)
         {
-            var team = await _context.Teams.FirstOrDefaultAsync(t => t.Id == teamId);
+            var team = await _context.Teams.FindAsync(teamId);
+            if (team is null) return false;
 
-            if (team == null) return;
-
-            team.IsDeleted = true;
-            team.UpdatedAt = DateTime.UtcNow;
-
+            _context.Teams.Remove(team);
             await _context.SaveChangesAsync();
+            return true;
         }
 
-        // CHECK NAME EXISTS
         public async Task<bool> ExistsByNameAsync(string companyId, string name)
         {
             return await _context.Teams
-                .AnyAsync(t => t.CompanyId == companyId &&
-                    t.Name.ToLower() == name.ToLower() &&
-                    !t.IsDeleted);
+                .AnyAsync(t => t.CompanyId == companyId && t.Name == name);
         }
 
-
-        // EMPLOYEE: Add
-        public async Task<bool> AddEmployeeAsync(string teamId, string employeeId)
+        public async Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId)
         {
-            bool exists = await _context.TeamEmployees
-                .AnyAsync(te => te.TeamId == teamId && te.EmployeeId == employeeId);
-
-            if (exists) return false;
-
-            var entry = new TeamEmployee
+            var relation = new TeamEmployee
             {
                 Id = Guid.NewGuid().ToString(),
                 TeamId = teamId,
-                EmployeeId = employeeId,
-                AddedAt = DateTime.UtcNow
+                EmployeeId = employeeId
             };
 
-            await _context.TeamEmployees.AddAsync(entry);
+            await _context.TeamEmployees.AddAsync(relation);
             await _context.SaveChangesAsync();
-
             return true;
         }
 
-        // EMPLOYEE: Remove
-        public async Task<bool> RemoveEmployeeAsync(string teamId, string employeeId)
+        public async Task<bool> RemoveEmployeeFromTeamAsync(string teamId, string employeeId)
         {
-            var te = await _context.TeamEmployees
-                .FirstOrDefaultAsync(te => te.TeamId == teamId && te.EmployeeId == employeeId);
+            var relation = await _context.TeamEmployees
+                .FirstOrDefaultAsync(x => x.TeamId == teamId && x.EmployeeId == employeeId);
 
-            if (te == null) return false;
+            if (relation == null) return false;
 
-            _context.TeamEmployees.Remove(te);
+            _context.TeamEmployees.Remove(relation);
             await _context.SaveChangesAsync();
-
             return true;
         }
-
-
-        // EMPLOYEE LIST
-        public async Task<List<string>> GetTeamEmployeesAsync(string teamId)
-        {
-            return await _context.TeamEmployees
-                .Where(e => e.TeamId == teamId)
-                .Select(e => e.EmployeeId)
-                .ToListAsync();
-        }
-
-        // GET BY TEAM LEADER
-        public async Task<TeamModel?> GetTeamByLeaderIdAsync(string leaderId)
-        {
-            return await _context.Teams
-                .AsNoTracking()
-                .Where(t => t.TeamLeadId == leaderId && !t.IsDeleted)
-                .Include(t => t.TeamEmployees)
-                .FirstOrDefaultAsync();
-        }
-
     }
+
 }

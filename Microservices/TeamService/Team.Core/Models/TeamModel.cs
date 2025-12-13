@@ -6,16 +6,12 @@ namespace Team.Core.Models
     {
         [Key]
         public string Id { get; set; }
-
         public string Name { get; set; }
-        public string CompanyId { get; set; }
-        public string TeamLeadId { get; set; }
-
-        public bool IsDeleted { get; set; }
-
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public ICollection<TeamEmployee> TeamEmployees { get; set; } = new List<TeamEmployee>();
+        public string CompanyId { get; set; }
+        public string TeamLeadId { get; set; }
+        public List<TeamEmployee> TeamEmployees { get; set; } = new();
     }
 }

@@ -2,6 +2,7 @@
 using DatabaseSetting.WebApi.GrpcServices;
 using Grpc.Core;
 using DbSetting.Grpc;
+using AutoMapper;
 
 
 namespace DatabaseSetting.WebApi.GrpcServices
@@ -9,7 +10,6 @@ namespace DatabaseSetting.WebApi.GrpcServices
     public class DbSettingGrpcServiceImpl : DbSettingGrpcService.DbSettingGrpcServiceBase
     {
         private readonly IDbSettingService _service;
-
         public DbSettingGrpcServiceImpl(IDbSettingService service)
         {
             _service = service;
@@ -28,43 +28,25 @@ namespace DatabaseSetting.WebApi.GrpcServices
                 CompanyId = result.CompanyId,
                 Name = result.Name,
                 DbType = result.DbType,
-                CreatedAt = result.CreatedAt.ToString("O")
+                CreatedAt = result.CreatedAt.ToString("o") // ISO 8601
             };
         }
 
-        public override async Task<DbSettingListResponse> GetAllByCompanyId(GetAllByCompanyIdRequest request, ServerCallContext context)
+        public override async Task<DbSettingResponse> GetByCompanyId(GetByCompanyIdRequest request, ServerCallContext context)
         {
-            var list = await _service.GetAllByCompanyIdAsync(request.CompanyId);
-            var response = new DbSettingListResponse();
+            var result = await _service.GetByCompanyIdAsync(request.CompanyId);
 
-            foreach (var item in list)
+            if (result == null)
+                throw new RpcException(new Status(StatusCode.NotFound, "DbSetting not found"));
+
+            return new DbSettingResponse
             {
-                response.Items.Add(new DbSettingResponse
-                {
-                    Id = item.Id,
-                    CompanyId = item.CompanyId,
-                    Name = item.Name,
-                    DbType = item.DbType,
-                    CreatedAt = item.CreatedAt.ToString("O")
-                });
-            }
-
-            return response;
-        }
-
-        public override async Task<DbSettingConnectionResponse> GetConnectionById(GetByIdRequest request, ServerCallContext context)
-        {
-            var entity = await _service.GetConnectionByIdAsync(request.Id, request.CompanyId);
-
-            if (entity == null)
-                throw new RpcException(new Status(StatusCode.NotFound, "Connection not found"));
-
-            return new DbSettingConnectionResponse
-            {
-                Id = entity.Id,
-                ConnectionString = entity.ConnectionString
+                Id = result.Id,
+                CompanyId = result.CompanyId,
+                Name = result.Name,
+                DbType = result.DbType,
+                CreatedAt = result.CreatedAt.ToString("o")
             };
         }
     }
-
 }

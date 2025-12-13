@@ -22,7 +22,7 @@ namespace DatabaseSetting.WebApi
             // Database Connection String
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("ProdcutionConnection_DbSetting"), // "DefaultConnection"),
+                    builder.Configuration.GetConnectionString("ProdcutionConnection_DbSetting"),
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,
                         maxRetryDelay: TimeSpan.FromSeconds(10),
@@ -37,6 +37,7 @@ namespace DatabaseSetting.WebApi
             builder.Services.AddScoped<IDbSettingRepository, DbSettingRepository>();
             builder.Services.AddScoped<IDbSettingService, DbSettingService>();
             builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+            builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddGrpc();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -118,10 +119,16 @@ namespace DatabaseSetting.WebApi
                 });
             });
 
+
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
+            // [Authorize("ManagerRole")]
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-           
+            
                 app.UseSwagger();
                 app.UseSwaggerUI();
             
