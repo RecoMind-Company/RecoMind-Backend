@@ -2,18 +2,8 @@ syntax = "proto3";
 
 option csharp_namespace = "Team.WebApi.Protos";
 
-message GetTeamRequest {
-  string teamId = 1;
-  string companyId = 2;
-}
-
 message GetTeamByIdRequest {
   string teamId = 1;
-}
-
-message TeamBasicInfoResponse {
-  string name = 1;
-  string companyId = 2;
 }
 
 message GetCompanyTeamsRequest {
@@ -23,19 +13,21 @@ message GetCompanyTeamsRequest {
 message TeamResponse {
   string id = 1;
   string name = 2;
-  string companyId = 3;
-  string teamLeadId = 4;
-  repeated string employees = 5;
+  string teamLeadId = 3;
+  repeated string employees = 4;
+  string companyId = 5;
 }
 
 message TeamsListResponse {
   repeated TeamResponse teams = 1;
 }
 
-message EmployeesResponse {
-  repeated string employeeIds = 1;
+message GetUserTeamInfoRequest {
+  string userId = 1;
 }
 
-message LeaderResponse {
-  string leaderId = 1;
+message UserTeamInfoResponse {
+  string companyId = 1;
+  string teamId = 2;
+  string teamName = 3;
 }

@@ -13,9 +13,15 @@ namespace Team.WebApi.GrpcServices
             _teamService = teamService;
         }
 
-        public override async Task<TeamResponse> GetTeamById(GetTeamRequest request, ServerCallContext context)
+        public override async Task<TeamResponse> GetTeamById(
+            GetTeamByIdRequest request,
+            ServerCallContext context)
         {
-            var team = await _teamService.GetTeamAsync(request.TeamId, request.CompanyId);
+            var team = await _teamService.GetByIdAsync(request.TeamId);
+
+            if (team == null)
+                throw new RpcException(
+                    new Status(StatusCode.NotFound, "Team not found"));
 
             return new TeamResponse
             {
@@ -27,57 +33,43 @@ namespace Team.WebApi.GrpcServices
             };
         }
 
-        public override async Task<TeamBasicInfoResponse> GetTeamBasicInfo(GetTeamByIdRequest request, ServerCallContext context)
+        public override async Task<TeamsListResponse> GetTeamsByCompanyId(
+            GetCompanyTeamsRequest request,
+            ServerCallContext context)
         {
-            var team = await _teamService.InternalGetTeamAsync(request.TeamId);
-
-            if (team == null)
-                throw new RpcException(new Status(StatusCode.NotFound, "Team not found"));
-
-            return new TeamBasicInfoResponse
-            {
-                Name = team.Name,
-                CompanyId = team.CompanyId
-            };
-        }
-
-
-        public override async Task<TeamsListResponse> GetTeamsByCompanyId(GetCompanyTeamsRequest request, ServerCallContext context)
-        {
-            var teams = await _teamService.GetTeamsForCompanyAsync(request.CompanyId);
+            var teams = await _teamService.GetByCompanyIdAsync(request.CompanyId);
 
             var response = new TeamsListResponse();
-            foreach (var t in teams)
+            foreach (var team in teams)
             {
                 response.Teams.Add(new TeamResponse
                 {
-                    Id = t.Id,
-                    Name = t.Name,
-                    CompanyId = t.CompanyId,
-                    TeamLeadId = t.TeamLeadId,
-                    Employees = { t.Employees }
+                    Id = team.Id,
+                    Name = team.Name,
+                    CompanyId = team.CompanyId,
+                    TeamLeadId = team.TeamLeadId,
+                    Employees = { team.Employees }
                 });
             }
+
             return response;
         }
 
-        public override async Task<EmployeesResponse> GetTeamEmployees(GetTeamRequest request, ServerCallContext context)
+        public override async Task<UserTeamInfoResponse> GetUserTeamInfo(
+            GetUserTeamInfoRequest request,
+            ServerCallContext context)
         {
-            var team = await _teamService.GetTeamAsync(request.TeamId, request.CompanyId);
+            var info = await _teamService.GetUserTeamInfoAsync(request.UserId);
 
-            return new EmployeesResponse
+            if (info == null)
+                throw new RpcException(
+                    new Status(StatusCode.NotFound, "User team info not found"));
+
+            return new UserTeamInfoResponse
             {
-                EmployeeIds = { team.Employees }
-            };
-        }
-
-        public override async Task<LeaderResponse> GetTeamLeader(GetTeamRequest request, ServerCallContext context)
-        {
-            var team = await _teamService.GetTeamAsync(request.TeamId, request.CompanyId);
-
-            return new LeaderResponse
-            {
-                LeaderId = team.TeamLeadId
+                CompanyId = info.CompanyId,
+                TeamId = info.TeamId,
+                TeamName = info.TeamName
             };
         }
     }

@@ -9,21 +9,17 @@ namespace Team.Core.Interfaces
 {
     public interface ITeamRepository
     {
-        // Create, Read, Update, Delete methods for Team entities can be defined here
-
-        Task<TeamModel?> GetByIdAsync(string teamId);
         Task<List<TeamModel>> GetByCompanyIdAsync(string companyId);
+        Task<TeamModel?> GetByIdAsync(string teamId);
+        Task<TeamModel?> GetTeamByEmployeeIdAsync(string employeeId);
         Task CreateAsync(TeamModel team);
         Task UpdateAsync(TeamModel team);
-        Task DeleteAsync(string teamId);
+        Task<bool> DeleteAsync(string teamId);
+
         Task<bool> ExistsByNameAsync(string companyId, string name);
 
-        // Employees
-        Task<bool> AddEmployeeAsync(string teamId, string employeeId);
-        Task<bool> RemoveEmployeeAsync(string teamId, string employeeId);
-        Task<List<string>>GetTeamEmployeesAsync(string teamId);
-        Task<TeamModel?> GetTeamByLeaderIdAsync(string teamLeadId);
-
+        Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId);
+        Task<bool> RemoveEmployeeFromTeamAsync(string teamId, string employeeId);
     }
 }
 

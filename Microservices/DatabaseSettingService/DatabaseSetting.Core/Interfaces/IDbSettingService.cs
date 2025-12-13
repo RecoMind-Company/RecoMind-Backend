@@ -10,13 +10,12 @@ namespace DatabaseSetting.Core.Services
 {
     public interface IDbSettingService
     {
-        Task<IEnumerable<DbSettingResponseForAi>> GetAllByCompanyIdForAiAsync(string companyId);
-        Task<IEnumerable<DbSettingResponse>> GetAllByCompanyIdAsync(string companyId);
-        Task<DbSettingResponse?> GetByIdAsync(string id, string companyId);
-        Task<DbSettingModel> GetConnectionByIdAsync(string Id, string companyId);
+        Task<DbSettingResponseForAiDto> GetByCompanyIdForAiAsync(string companyId);
+        Task<DbSettingResponseDto> GetByCompanyIdAsync(string companyId);
+        Task<DbSettingResponseDto> GetByIdAsync(string id, string companyId);
 
-        Task<DbSettingResponse> CreateAsync(CreateDbSettingModel request, string companyId);
-        Task<DbSettingResponse> UpdateAsync(string id, string companyId, UpdateDbSettingModel request);
+        Task<DbSettingResponseDto> CreateAsync(CreateDbSettingDto request, string companyId);
+        Task<DbSettingResponseDto> UpdateAsync(string id, string companyId, UpdateDbSettingDto request);
         Task<bool> DeleteAsync(string id, string companyId);
 
     }
