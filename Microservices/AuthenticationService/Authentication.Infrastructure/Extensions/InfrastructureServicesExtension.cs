@@ -2,6 +2,7 @@
 using Authentication.Core.Models;
 using Authentication.Infrastructure.Context;
 using Authentication.Infrastructure.gRPC;
+using Authentication.Infrastructure.gRPC.CompanyGrpc;
 using Authentication.Infrastructure.gRPC.TeamGrpc;
 using Authentication.Infrastructure.Repository;
 using Authentication.Infrastructure.UnitOfWork;
@@ -29,5 +30,6 @@ public static class InfrastructureServicesExtension
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IGrpcInvitationService, GrpcInvitationService>();
         services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+        services.AddScoped<IGrpcCompanyService, GrpcCompanyServiceImp>();
     }
 }

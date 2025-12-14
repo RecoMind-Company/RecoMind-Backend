@@ -38,6 +38,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly IEmailSender emailSender;
     private readonly IGrpcInvitationService invitationService;
     private readonly IGrpcTeamService grpcTeamService;
+    private readonly IGrpcCompanyService grpcCompanyService;
     private readonly IGenericRepository<UsersJobTitle> jobTitleRepo;
     private readonly IUnitOfWork<UsersJobTitle> jobTitleUow;
 
@@ -48,6 +49,7 @@ public class AuthenticationService : IAuthenticationService
                                        IEmailSender emailSender,
                                        IGrpcInvitationService invitationService,
                                        IGrpcTeamService grpcTeamService,
+                                       IGrpcCompanyService grpcCompanyService,
                                        IGenericRepository<UsersJobTitle> jobTitleRepo,
                                        IUnitOfWork<UsersJobTitle> jobTitleUow)
     {
@@ -57,6 +59,7 @@ public class AuthenticationService : IAuthenticationService
         this.emailSender = emailSender;
         this.invitationService = invitationService;
         this.grpcTeamService = grpcTeamService;
+        this.grpcCompanyService = grpcCompanyService;
         jwtSettings = jwtOptions.Value;
         this.jobTitleRepo = jobTitleRepo;
         this.jobTitleUow = jobTitleUow;
@@ -72,6 +75,7 @@ public class AuthenticationService : IAuthenticationService
             return new AuthenticationDto { message = "Role is not valid!" };
         // Create New user 
         var user = new AppUser();
+        user.Id = Guid.NewGuid().ToString();
 
         // FOR ALL ROLES
         user.Email = registerDto.Email;
@@ -100,7 +104,7 @@ public class AuthenticationService : IAuthenticationService
         }
         await userManager.AddToRoleAsync(user, registerDto.Role);
         // Prepare the email
-        if (registerDto.Role == Roles.TeamLeader || registerDto.Role == Roles.Employee)
+        if (registerDto.Role == Roles.TeamLeader || registerDto.Role == Roles.Employee || registerDto.Role == Roles.Manager)
         {
             var subject = "recomind.com || Account Information";
             var body = $@"
@@ -136,7 +140,8 @@ public class AuthenticationService : IAuthenticationService
             Roles = new List<string> { registerDto.Role }, // To Edit --------------------------------------------
             Token = new JwtSecurityTokenHandler().WriteToken(token),
             RefreshToken = refreshToken.Token,
-            RefreshTokenExp = refreshToken.ExpiresOn
+            RefreshTokenExp = refreshToken.ExpiresOn,
+            UserId = user.Id
         };
     }
 
@@ -151,6 +156,7 @@ public class AuthenticationService : IAuthenticationService
         // check if the user have any refresh tokens is active
         // if not create refresh token and add it to datebase then update the user
         var userToReturn = new AuthenticationDto();
+        string? userCompanyId;
         var user = await userManager.FindByEmailAsync(loginDto.Email);
         if (user is null || !await userManager.CheckPasswordAsync(user, loginDto.Password))
         {
@@ -161,6 +167,7 @@ public class AuthenticationService : IAuthenticationService
         var userRoles = await userManager.GetRolesAsync(user);
         if (userRoles.Contains(Roles.Admin))
         {
+            userCompanyId = await grpcCompanyService.GetCompanyByUserId(user.Id);
             // Continue the normal login proccess
         }
         else
@@ -171,9 +178,10 @@ public class AuthenticationService : IAuthenticationService
                 userToReturn.message = validInvitation.Message;
                 return userToReturn;
             }
+            userCompanyId = await grpcTeamService.GetTeamByUserId(user.Id);
         }
-        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
-        var token = await CreateToken(user, userTeam.CompanyId);
+
+        var token = await CreateToken(user, userCompanyId);
         userToReturn.Name = user.FullName;
         userToReturn.Email = user.Email;
         userToReturn.IsAuthenticated = true;
@@ -229,8 +237,18 @@ public class AuthenticationService : IAuthenticationService
         user.RefreshTokens.Add(newRefreshToken);
         await userManager.UpdateAsync(user);
 
-        var userTeam = await grpcTeamService.GetTeamByUserId(user.Id);
-        var jwtToken = await CreateToken(user, userTeam.CompanyId);
+        var userRole = await userManager.GetRolesAsync(user);
+        string? userCompanyId;
+        if (userRole.Contains(Roles.Admin))
+        {
+            // Continue the normal login proccess
+            userCompanyId = await grpcCompanyService.GetCompanyByUserId(user.Id);
+        }
+        else
+        {
+            userCompanyId = await grpcTeamService.GetTeamByUserId(user.Id);
+        }
+        var jwtToken = await CreateToken(user, userCompanyId);
         var roles = await userManager.GetRolesAsync(user);
 
         userToReturn.IsAuthenticated = true;
