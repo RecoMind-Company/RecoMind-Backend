@@ -19,35 +19,35 @@ namespace WebApi.Controllers
             _chatBotService = chatBotService;            
         }
 
-        //[HttpPost("CreateQuery")]
-        //public async Task<IActionResult> CreateQuery([FromBody]string Question)
-        //{
-        //    if (!ModelState.IsValid)
-        //        return BadRequest(ModelState);            
+        [HttpPost("CreateQuery")]
+        public async Task<IActionResult> CreateQuery([FromBody] string Question)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        //    try
-        //    {           
-        //        var dto = new CreateChatRequestDto
-        //        {                    
-        //            user_question = Question,
-        //            UserID = User.FindFirstValue(ClaimTypes.NameIdentifier)??string.Empty,
-        //            UserRole = User.FindFirstValue(ClaimTypes.Role)?? string.Empty,
-        //        };
-        //        var result = await _chatBotService.HandelRequestBeforeBassingItToAiService(dto);
-        //        return Ok(result);
-        //    }
-        //    catch (KeyNotFoundException knfEx)
-        //    {
-        //        return NotFound(knfEx.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
+            try
+            {
+                var dto = new CreateChatRequestDto
+                {
+                    user_question = Question,
+                    UserID = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                    UserRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty,
+                };
+                var result = await _chatBotService.HandelRequestBeforeBassingItToAiService(dto);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException knfEx)
+            {
+                return NotFound(knfEx.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost("ChatbotResponse")]
-        public async Task<IActionResult> GetResult([FromBody] GetMethodDto dto )
+        public async Task<IActionResult> GetResult( [FromBody] GetMethodDto dto )
         {
             try 
             {                
@@ -90,17 +90,35 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("GetHistory")]
-        public async Task<IActionResult> GetHistory(string UserId)
+        public async Task<IActionResult> GetHistory()
         {
-            var result = await _chatBotService.GetHistory(UserId);
-            return Ok(result);
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var result = await _chatBotService.GetHistory(userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("DeleteHistory")]
-        public async Task<IActionResult> DeleteHistory(string UserId)
+        public async Task<IActionResult> DeleteHistory()
         {
-            await _chatBotService.DeleteHistory(UserId);
-            return NoContent();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                await _chatBotService.DeleteHistory(userId);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

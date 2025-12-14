@@ -5,13 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Grpc\team.proto" />
-    <None Remove="Grpc\teamMessages.proto" />
-    <None Remove="Grpc\TeamService.proto" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.33.2" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
@@ -32,13 +26,14 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Protobuf Include="Grpc\team.proto" GrpcServices="Client" >
+		
+    <Protobuf Include="Grpc\teamMessages.proto" GrpcServices="None">
+		<ProtoRoot>Grpc</ProtoRoot>
+    </Protobuf>
+
+	  <Protobuf Include="Grpc\TeamService.proto" GrpcServices="client" >
 		  <ProtoRoot>Grpc</ProtoRoot>
 	  </Protobuf>
-		
-    <Protobuf Include="Grpc\teamMessages.proto" GrpcServices="None" >
-		<ProtoRoot>Grpc</ProtoRoot>
-    </Protobuf>		
   </ItemGroup>
 
 </Project>

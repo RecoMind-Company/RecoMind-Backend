@@ -13,7 +13,7 @@ namespace Core.Services.Interface
         public Task<FinalResponseDto> GetResponseFromAiService(GetMethodDto dto);
         public Task<IEnumerable<GetHistoryDto>> GetHistory(string userId);
         public Task DeleteHistory(string userId);
-       // public Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto);
+        public Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto);
         public Task SaveToDatabase(SaveDto model);
 
         //public Task<string> DeleteQuery(string queryId);

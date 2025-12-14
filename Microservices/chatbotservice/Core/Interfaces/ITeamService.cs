@@ -9,6 +9,6 @@ namespace Core.Interfaces
 {
     public interface ITeamService
     {
-        Task<GetTeamInformationDto> GetTeamInformation(string userId);
+        GetTeamInformationDto GetTeamInformation(string userId);
     }
 }
