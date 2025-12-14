@@ -1,50 +1,69 @@
 ﻿using Core.DTOs;
 using Core.DTOs.AI;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+[Authorize(Policy = "TeamLeadership")]
 public class ReportController(IReportService reportService) : ControllerBase
 {
-    //[HttpPost("teams/{teamId}")]
-    [HttpPost("teams")]
-    public async Task<ActionResult<AnalysisResponseDto>> CreateReport(string userRequest)
+    [HttpGet("teams/user")]
+    public async Task<ActionResult<TeamToReturnDto>> GetUserData()
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        var result = await reportService.CreateReport(userRequest);
+        var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (UserId == null)
+            return NotFound("There is no user!");
+        var result = await reportService.GetUserData(UserId);
         if (result == null)
-            return NotFound("there is no team with this id");
+            return NotFound("there is no team for this user");
         return Ok(result);
     }
-    [HttpGet("teams/{teamId}")]
-    public async Task<ActionResult> GetReport([FromRoute] string teamId, [FromQuery] string taskId)
+    [HttpPost("teams/create")]
+    public async Task<ActionResult<AnalysisResponseDto>> CreateReport(AnalysisRequestDto analysisRequest)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        var result = await reportService.GetReport(teamId, taskId);
+        var result = await reportService.CreateReportByAi(analysisRequest);
         if (result == null)
-            return NotFound("there is no team with this id");
+            return NotFound("Error while creating the report!");
         return Ok(result);
     }
-    [HttpGet("{id}")]
+    [HttpPost("teams/add")]
+    public async Task<ActionResult<AiReportResponseDto>> AddReport(GetReportFromAiDto reportFromAiDto)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null)
+            return NotFound("There is no user!");
+        reportFromAiDto.UserId = userId;
+        var result = await reportService.GetReportFromAi(reportFromAiDto);
+        if (!result.IsSuccess)
+            return NotFound(result.message);
+        return Ok(result);
+    }
+    [HttpGet("get/{id}")]
     public async Task<ActionResult<AiReportResponseDto>> GetReportById(string id)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
         var result = await reportService.GetReportById(id);
-        if (result == null)
-            return NotFound("there is no report with this id");
+        if (!result.IsSuccess)
+            return NotFound(result.message);
         return Ok(result);
     }
-    [HttpDelete("{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<ActionResult<string>> DeleteReport(string id)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
@@ -55,6 +74,20 @@ public class ReportController(IReportService reportService) : ControllerBase
             return NotFound("there is no report with this id");
         return Ok(result);
     }
+
+    [HttpGet("all/{teamId}")]
+    public async Task<ActionResult<IEnumerable<ReportDto>>> GetReportsByTeamId([FromRoute] string teamId)
+    {
+        var errors = ModelState.Values.SelectMany(e => e.Errors);
+        if (!ModelState.IsValid)
+            return BadRequest(errors);
+        var result = await reportService.GetAllReportsByTeamId(teamId);
+        if (result == null || !result.Any())
+            return NotFound("there is no reports for this team");
+        return Ok(result);
+    }
+
+    // NOT REPORT ENDPOINTS
     [HttpPost("dataAssing/{companyId}")]
     public async Task<ActionResult<string>> AssignDataToCompany([FromRoute] string companyId)
     {

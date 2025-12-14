@@ -5,5 +5,5 @@ namespace Core.Interfaces;
 
 public interface IGrpcTeamService
 {
-    TeamToReturnDto GetTeamDetails(string teamId);
+    Task<TeamToReturnDto> GetTeamByUserId(string userId);
 }
