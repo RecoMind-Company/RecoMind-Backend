@@ -8,7 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = "TeamLeadership")]
 public class InvitationController(IInvitationService invitationService) : ControllerBase
 {
     [HttpPost("createInvitation")]
