@@ -1,18 +1,22 @@
-﻿using Authentication.Core.DTOs;
-using Authentication.Core.Interfaces;
+﻿using Authentication.Core.Interfaces;
+using Grpc.Core;
 
 namespace Authentication.Infrastructure.gRPC.TeamGrpc;
 
 public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient grpcServiceClient) : IGrpcTeamService
 {
-    public async Task<TeamDto> GetTeamByUserId(string userId)
+    public async Task<string?> GetTeamByUserId(string userId)
     {
-        var request = new GetUserTeamRequest { UserId = userId };
-        var response = await grpcServiceClient.GetUserTeamAsync(request);
-        return new TeamDto
+        var request = new GetUserTeamInfoRequest { UserId = userId };
+        try
         {
-            CompanyId = response.CompanyId,
-            TeamId = response.Id
-        };
+            var response = await grpcServiceClient.GetUserTeamInfoAsync(request);
+            return response.CompanyId;
+        }
+        catch (RpcException ex)
+        {
+            return null;
+        }
+
     }
 }

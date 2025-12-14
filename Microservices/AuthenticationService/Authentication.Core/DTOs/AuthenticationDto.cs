@@ -15,5 +15,7 @@ public class AuthenticationDto
     [JsonIgnore]
     public string? RefreshToken { get; set; }
     public DateTime RefreshTokenExp { get; set; }
+    [JsonIgnore]
+    public string UserId { get; set; } = default!;
 
 }

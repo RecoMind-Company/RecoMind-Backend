@@ -25,8 +25,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseStaticFiles();
 // app.UseHttpsRedirection();

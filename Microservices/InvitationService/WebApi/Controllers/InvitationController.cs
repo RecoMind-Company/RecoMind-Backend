@@ -8,7 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Policy = "TeamLeadership")]
 public class InvitationController(IInvitationService invitationService) : ControllerBase
 {
     [HttpPost("createInvitation")]
@@ -18,6 +18,9 @@ public class InvitationController(IInvitationService invitationService) : Contro
         if (!ModelState.IsValid)
             return BadRequest(errors);
         invitation.SenderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        invitation.CompanyId = User.FindFirstValue("CompanyId");
+        if (invitation.SenderId == null || invitation.CompanyId == null)
+            return Unauthorized("this user has no user id or company id");
         var result = await invitationService.SendInvitationAsync(invitation);
         if (!result.IsSuccess)
             return BadRequest(result);

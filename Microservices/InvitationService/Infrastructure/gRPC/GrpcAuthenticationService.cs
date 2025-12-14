@@ -17,7 +17,8 @@ namespace Infrastructure.gRPC
                 return new AuthResponseDto
                 {
                     IsAuthenticated = response.IsAuthenticated,
-                    Message = response.Message
+                    Message = response.Message,
+                    UserId = response.Id
                 };
             }
             catch (RpcException ex)

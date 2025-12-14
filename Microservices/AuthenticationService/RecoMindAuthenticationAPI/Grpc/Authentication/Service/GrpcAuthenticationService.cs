@@ -35,6 +35,7 @@ public class GrpcAuthenticationService(IAuthenticationService AuthService, IVeri
             IsAuthenticated = response.IsAuthenticated,
             PhotoUrl = response.PhotoUrl ?? string.Empty,
             Message = response.message ?? string.Empty,
+            Id = response.UserId ?? string.Empty
         };
         messageToReturn.Roles.AddRange(response.Roles);
         return messageToReturn;

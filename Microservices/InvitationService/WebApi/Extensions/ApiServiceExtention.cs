@@ -1,10 +1,9 @@
 ﻿using Infrastructure.gRPC.Protos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Builder;
 
 namespace WebApi.Extensions;
 
@@ -84,14 +83,18 @@ public static class ApiServiceExtention
             o.Address = new Uri(configuration["Urls:AuthenticationServiceUrl"]);
         }).ConfigurePrimaryHttpMessageHandler(() =>
         {
-            
-            
-                return new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                };
-            
+
+
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
             return new HttpClientHandler();
         });
+        var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+        authorizationBuilder.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
+        authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
+        authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
     }
 }

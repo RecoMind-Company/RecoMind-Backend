@@ -24,12 +24,13 @@ public class AuthenticationServiceTests
     private readonly Mock<IEmailSender> _emailSenderMock;
     private readonly Mock<IGrpcInvitationService> _grpcInvitationServiceMock;
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
+    private readonly Mock<IGrpcCompanyService> _grpcCompanyServiceMock;
     private readonly Mock<IGenericRepository<UsersJobTitle>> _jobTitleRepositoryMock;
     private readonly Mock<IUnitOfWork<UsersJobTitle>> _jobTitleUnitOfWorkMock;
     private readonly Core.Services.AuthenticationService _sut;
+
     public AuthenticationServiceTests()
     {
-
         _userStoreMock = new Mock<IUserStore<AppUser>>();
         _userManagerMock = new Mock<UserManager<AppUser>>(_userStoreMock.Object, null, null, null, null, null, null, null, null);
         _passwordHasher = new PasswordHasher<AppUser>();
@@ -40,15 +41,23 @@ public class AuthenticationServiceTests
         _emailSenderMock = new Mock<IEmailSender>();
         _grpcInvitationServiceMock = new Mock<IGrpcInvitationService>();
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
+        _grpcCompanyServiceMock = new Mock<IGrpcCompanyService>();
         _jobTitleRepositoryMock = new Mock<IGenericRepository<UsersJobTitle>>();
         _jobTitleUnitOfWorkMock = new Mock<IUnitOfWork<UsersJobTitle>>();
-        _sut = new Core.Services.AuthenticationService(_userManagerMock.Object, _passwordHasher, _jwtOptions.Object,
-                                                       _verficationEmailServiceMock.Object, _emailSenderMock.Object,
-                                                       _grpcInvitationServiceMock.Object,
-                                                       _grpcTeamServiceMock.Object,
-                                                       _jobTitleRepositoryMock.Object,
-                                                       _jobTitleUnitOfWorkMock.Object);
+
+        _sut = new Core.Services.AuthenticationService(
+            _userManagerMock.Object,
+            _passwordHasher,
+            _jwtOptions.Object,
+            _verficationEmailServiceMock.Object,
+            _emailSenderMock.Object,
+            _grpcInvitationServiceMock.Object,
+            _grpcTeamServiceMock.Object,
+            _grpcCompanyServiceMock.Object,
+            _jobTitleRepositoryMock.Object,
+            _jobTitleUnitOfWorkMock.Object);
     }
+
     [Fact]
     public async Task Register_WhenUserIsExist_ShouldReturnFalseWithMessage()
     {
@@ -69,6 +78,7 @@ public class AuthenticationServiceTests
         result.message.Should().Contain("already registered");
         _userManagerMock.Verify(um => um.FindByEmailAsync(registerDto.Email), Times.Once);
     }
+
     [Fact]
     public async Task Register_WhenUserRoleIsInvalid_ShouldReturnFalseWithMessage()
     {
@@ -89,6 +99,7 @@ public class AuthenticationServiceTests
         _userManagerMock.Verify(um => um.FindByEmailAsync(registerDto.Email), Times.Once);
         _userManagerMock.Verify(um => um.CreateAsync(It.IsAny<AppUser>()), Times.Never);
     }
+
     [Fact]
     public async Task Register_WhenUserRoleIsAdmin_ShouldReturnFullAuthenticationDto()
     {
@@ -102,6 +113,8 @@ public class AuthenticationServiceTests
         };
         var Roles = new List<string> { "admin" };
         var successfullyIdnetityResult = IdentityResult.Success;
+        var companyId = "testCompanyId";
+
         _userManagerMock.Setup(um => um.FindByEmailAsync(registerDto.Email)).ReturnsAsync((AppUser?)null);
         _userManagerMock.Setup(um => um.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>())).ReturnsAsync(successfullyIdnetityResult);
         _userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<AppUser>(), registerDto.Role)).ReturnsAsync(successfullyIdnetityResult);
@@ -109,6 +122,7 @@ public class AuthenticationServiceTests
         _verficationEmailServiceMock.Setup(em => em.SendVerificationCodeEmail(registerDto.Email)).Returns(Task.CompletedTask);
         // act 
         var result = await _sut.Register(registerDto);
+
         //assert
         // validate claims
         var handler = new JwtSecurityTokenHandler();
@@ -116,16 +130,16 @@ public class AuthenticationServiceTests
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == "admin");
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == new MailAddress(registerDto.Email).User);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Email && c.Value == registerDto.Email);
-        jsonToken.Claims.Should().NotContain(c => c.Type == "CompanyId");
         // validate AuthenticationDto props
         result.Name.Should().Be(registerDto.FullName);
         result.Email.Should().Be(registerDto.Email);
         result.IsAuthenticated.Should().BeTrue();
         result.message.Should().Contain("completed sucessfully!");
-        result.ExperiesOn.Should().NotBe(null);
+        result.ExperiesOn.Should().NotBe(default);
         result.Roles.Should().Contain(registerDto.Role);
         result.RefreshToken.Should().NotBe(null);
-        result.RefreshTokenExp.Should().NotBe(null);
+        result.RefreshTokenExp.Should().NotBe(default);
+
         // validate calling of methods inside the method
         _userManagerMock.Verify(um => um.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Once);
         _userManagerMock.Verify(um => um.AddToRoleAsync(It.IsAny<AppUser>(), registerDto.Role), Times.Once);
@@ -133,6 +147,7 @@ public class AuthenticationServiceTests
         _emailSenderMock.Verify(em => em.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         _userManagerMock.Verify(um => um.UpdateAsync(It.IsAny<AppUser>()), Times.Once);
     }
+
     [Fact]
     public async Task Register_WhenUserRoleIsTeamLeader_ShouldReturnFullAuthenticationDto()
     {
@@ -144,36 +159,42 @@ public class AuthenticationServiceTests
         };
         var Roles = new List<string> { "teamleader" };
         var successfllyIdentityResult = IdentityResult.Success;
+        var companyId = "testCompanyId";
+
         _userManagerMock.Setup(um => um.FindByEmailAsync(registerDto.Email)).ReturnsAsync((AppUser?)null);
         _userManagerMock.Setup(um => um.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>())).ReturnsAsync(successfllyIdentityResult);
         _userManagerMock.Setup(um => um.AddToRoleAsync(It.IsAny<AppUser>(), registerDto.Role)).ReturnsAsync(successfllyIdentityResult);
         _emailSenderMock.Setup(es => es.SendEmailAsync(registerDto.Email, It.IsAny<string>(), It.IsAny<string>())).Returns(Task.CompletedTask);
         _userManagerMock.Setup(um => um.GetRolesAsync(It.IsAny<AppUser>())).ReturnsAsync(Roles);
+
         // act
         var result = await _sut.Register(registerDto);
+
         //assert
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadJwtToken(result.Token);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Email && c.Value == registerDto.Email);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == registerDto.Role);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == new MailAddress(registerDto.Email).User);
-        jsonToken.Claims.Should().NotContain(c => c.Type == "CompanyId");
         jsonToken.Issuer.Should().Be("TestIssuer");
         jsonToken.Audiences.Should().Contain("TestAudience");
+
         _verficationEmailServiceMock.Verify(v => v.SendVerificationCodeEmail(It.IsAny<string>()), Times.Never);
         _userManagerMock.Verify(um => um.FindByEmailAsync(It.IsAny<string>()), Times.Once);
         _userManagerMock.Verify(um => um.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Once);
         _userManagerMock.Verify(um => um.AddToRoleAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Once);
         _emailSenderMock.Verify(es => es.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+
         result.Name.Should().Be(new MailAddress(registerDto.Email).User);
         result.Email.Should().Be(registerDto.Email);
         result.IsAuthenticated.Should().BeTrue();
         result.message.Should().Contain("completed sucessfully!");
-        result.ExperiesOn.Should().NotBe(null);
+        result.ExperiesOn.Should().NotBe(default);
         result.Roles.Should().Contain(registerDto.Role);
         result.RefreshToken.Should().NotBe(null);
-        result.RefreshTokenExp.Should().NotBe(null);
+        result.RefreshTokenExp.Should().NotBe(default);
     }
+
     [Fact]
     public async Task Login_WhenPasswordOrEmailIsIncorrect_ReturnsFalseWithMessage()
     {
@@ -190,6 +211,7 @@ public class AuthenticationServiceTests
         result.IsAuthenticated.Should().BeFalse();
         result.message.Should().Contain("email or password is incorrect");
     }
+
     [Fact]
     public async Task Login_WhenUserIsNotFound_ReturnsFalseWithMessage()
     {
@@ -204,6 +226,7 @@ public class AuthenticationServiceTests
         result.IsAuthenticated.Should().BeFalse();
         result.message.Should().Contain("email or password is incorrect");
     }
+
     [Fact]
     public async Task Login_WhenUserIsInAdminRole_ContinueLoginWithoutCallInvitationService()
     {
@@ -211,13 +234,16 @@ public class AuthenticationServiceTests
         var loginDto = new LoginDto { Email = "test@gmail.com", Password = "Test@2345" };
         var user = new AppUser { Email = loginDto.Email, UserName = "test", FullName = "fulltest" };
         var roles = new List<string> { "admin" };
-        var teamDto = new TeamDto { CompanyId = "testCompanyId", TeamId = "testTeamId" };
+        var companyId = "testCompanyId";
+
         _userManagerMock.Setup(um => um.FindByEmailAsync(loginDto.Email)).ReturnsAsync(user);
         _userManagerMock.Setup(um => um.CheckPasswordAsync(It.IsAny<AppUser>(), loginDto.Password)).ReturnsAsync(true);
         _userManagerMock.Setup(um => um.GetRolesAsync(user)).ReturnsAsync(roles);
-        _grpcTeamServiceMock.Setup(t => t.GetTeamByUserId(It.IsAny<string>())).ReturnsAsync(teamDto);
+        _grpcCompanyServiceMock.Setup(c => c.GetCompanyByUserId(It.IsAny<string>())).ReturnsAsync(companyId);
+
         // act
         var result = await _sut.Login(loginDto);
+
         // assert
         // claims
         var handler = new JwtSecurityTokenHandler();
@@ -226,24 +252,24 @@ public class AuthenticationServiceTests
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == new MailAddress(loginDto.Email).User);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == roles.First());
-        jsonToken.Claims.Should().Contain(c => c.Type == "CompanyId" && c.Value == teamDto.CompanyId);
+        jsonToken.Claims.Should().Contain(c => c.Type == "CompanyId" && c.Value == companyId);
         jsonToken.Issuer.Should().Be("TestIssuer");
         jsonToken.Audiences.Should().Contain("TestAudience");
-        // 
+
         result.Name.Should().Be(user.FullName);
         result.Email.Should().Be(user.Email);
         result.IsAuthenticated.Should().BeTrue();
-        result.ExperiesOn.Should().NotBe(null);
+        result.ExperiesOn.Should().NotBe(default);
         result.Token.Should().NotBeNull();
-        result.message.Contains("login successfully");
-        result.Roles.Contains(roles.First());
+        result.message.Should().Contain("login successfully");
+        result.Roles.Should().Contain(roles.First());
+
         _userManagerMock.Verify(um => um.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Once());
         _userManagerMock.Verify(um => um.GetRolesAsync(It.IsAny<AppUser>()), Times.Exactly(2));
-        _grpcTeamServiceMock.Verify(t => t.GetTeamByUserId(It.IsAny<string>()), Times.Once);
+        _grpcCompanyServiceMock.Verify(c => c.GetCompanyByUserId(It.IsAny<string>()), Times.Once);
         _grpcInvitationServiceMock.Verify(i => i.LoginAttempt(It.IsAny<string>()), Times.Never);
-
-
     }
+
     [Fact]
     public async Task Login_WhenUserIsInTeamLeaderRole_ContinueLoginWithCallingInvitationService()
     {
@@ -252,32 +278,39 @@ public class AuthenticationServiceTests
         var user = new AppUser { Email = "test@gmail.com", FullName = new MailAddress(loginDto.Email).User, UserName = new MailAddress(loginDto.Email).User };
         var roles = new List<string> { "teamleader" };
         var baseToReturn = new BaseToReturnDto { Message = "test", Success = true };
-        var team = new TeamDto { CompanyId = "testCompanyId", TeamId = "testTeamId" };
+        var companyId = "testCompanyId";
+
         _userManagerMock.Setup(um => um.FindByEmailAsync(loginDto.Email)).ReturnsAsync(user);
         _userManagerMock.Setup(um => um.CheckPasswordAsync(user, loginDto.Password)).ReturnsAsync(true);
         _userManagerMock.Setup(um => um.GetRolesAsync(user)).ReturnsAsync(roles);
         _grpcInvitationServiceMock.Setup(i => i.LoginAttempt(It.IsAny<string>())).ReturnsAsync(baseToReturn);
-        _grpcTeamServiceMock.Setup(t => t.GetTeamByUserId(It.IsAny<string>())).ReturnsAsync(team);
+        _grpcTeamServiceMock.Setup(c => c.GetTeamByUserId(It.IsAny<string>())).ReturnsAsync(companyId);
+
         // act
         var result = await _sut.Login(loginDto);
+
         // assert
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadJwtToken(result.Token);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Email && c.Value == loginDto.Email);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == user.UserName);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == roles.First());
-        jsonToken.Claims.Should().Contain(c => c.Type == "CompanyId" && c.Value == team.CompanyId);
+        jsonToken.Claims.Should().Contain(c => c.Type == "CompanyId" && c.Value == companyId);
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier);
         jsonToken.Issuer.Should().Be("TestIssuer");
         jsonToken.Audiences.Should().Contain("TestAudience");
+
         result.Name.Should().Be(user.FullName);
         result.Email.Should().Be(user.Email);
         result.IsAuthenticated.Should().BeTrue();
-        result.ExperiesOn.Should().NotBe(null);
+        result.ExperiesOn.Should().NotBe(default);
         result.Token.Should().NotBeNull();
         result.message.Should().Contain("login successfully");
         result.Roles.Should().Contain(roles.First());
+
+        _grpcTeamServiceMock.Verify(c => c.GetTeamByUserId(It.IsAny<string>()), Times.Once);
     }
+
     [Fact]
     public async Task ForgetPassword_WhenUserIsNotFound_ReturnFalseWithMessage()
     {
@@ -292,6 +325,7 @@ public class AuthenticationServiceTests
         _userManagerMock.Verify(um => um.FindByEmailAsync(forgetDto.Email), Times.Once);
         _verficationEmailServiceMock.Verify(s => s.SendVerificationCodeEmail(forgetDto.Email), Times.Never);
     }
+
     [Fact]
     public async Task ForgetPassword_WhenUserIsExist_ReturnTrueWithMessage()
     {
@@ -308,6 +342,7 @@ public class AuthenticationServiceTests
         _userManagerMock.Verify(um => um.FindByEmailAsync(forgetDto.Email), Times.Once);
         _verficationEmailServiceMock.Verify(ve => ve.SendVerificationCodeEmail(forgetDto.Email), Times.Once);
     }
+
     [Fact]
     public async Task ResetPassword_WhenPasswordIsIncorrect_ReturnsFalseWithMessage()
     {
@@ -326,6 +361,7 @@ public class AuthenticationServiceTests
         result.Success.Should().BeFalse();
         result.Message.Should().Contain("Password is not correct");
     }
+
     [Fact]
     public async Task ResetPassword_WhenPasswordIsCorrrect_ReturnsTrueWithMessage()
     {
@@ -346,6 +382,7 @@ public class AuthenticationServiceTests
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("The password Updated successfully");
     }
+
     [Fact]
     public async Task GetUserById_WhenUserIsNotFound_ReturnNull()
     {
@@ -359,6 +396,7 @@ public class AuthenticationServiceTests
         _userManagerMock.Verify(um => um.GetRolesAsync(It.IsAny<AppUser>()), Times.Never);
         result.Should().BeNull();
     }
+
     [Fact]
     public async Task GetuserById_WhenUserIsExist_ReturnUserWithJobTitle()
     {
@@ -379,7 +417,7 @@ public class AuthenticationServiceTests
             repo.Find(It.IsAny<Expression<Func<UsersJobTitle, bool>>>()), Times.Once);
 
         result.Should().NotBeNull();
-        result.Id.Should().Be(id);
+        result!.Id.Should().Be(id);
         result.Name.Should().Be(user.FullName);
         result.JobTitle.Should().Be(jobTitleEntity.JobTitle);
     }

@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package company.service;
+
+option csharp_namespace = "Authentication.Infrastructure.gRPC.CompanyGrpc";
+import "GrpcCompanyMessages.proto";
+
+
+service CompanyService {
+
+    rpc GetById (GitByIdRequest) returns (CompanyResponse);
+
+    rpc GetAll (Empty) returns (GetAllCompaniesResponse);
+
+    rpc Create (CreateCompanyRequest)
+        returns (CompanyResponse);
+
+    rpc Update (UpdateCompanyRequest)
+        returns (CompanyResponse);
+
+    rpc Delete (DeleteCompanyRequest)
+        returns (DeleteCompanyResponse);
+
+    rpc GetCompanyByAdminId (GitByAdminIdRequest)
+        returns (CompanyResponse);
+
+    rpc AssignSubscripion (AssignSubscriptionRequest)
+        returns (CompanyResponse);
+}

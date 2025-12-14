@@ -39,7 +39,8 @@ public class InvitationService(IGrpcAuthenticationService grpcAuthenticationServ
         return new BaseToReturnDto
         {
             IsSuccess = true,
-            Message = "Invitation sent successfully."
+            Message = "Invitation sent successfully.",
+            UserId = grpcResponse.UserId
         };
     }
     public async Task<BaseToReturnDto> LoginAttemptWithInvitation(string email)
