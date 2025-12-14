@@ -1,6 +1,7 @@
 ﻿using Core.DTOs;
 using Core.DTOs.AI;
 using Core.Interfaces;
+using Core.Models;
 
 namespace Core.Services;
 
@@ -11,50 +12,55 @@ public class ReportService(IGenerateReportService generateReportService,
                            IGrpcTeamService grpcTeamService,
                            IDataAssignService dataAssignService) : IReportService
 {
-    public async Task<AnalysisResponseDto> CreateReport(string userRequest)
+    public async Task<TeamToReturnDto> GetUserData(string userId)
     {
-        // Call the grpc service to get the TeamName, companyId by {teamId}
-        //var teamDetails = grpcTeamService.GetTeamDetails(teamId);``
-        //if (teamDetails is null)
-        //    return null;
-        var analysisRequest = new AnalysisRequestDto
+        var teamDetails = await grpcTeamService.GetTeamByUserId(userId);
+        if (teamDetails is null)
+            return null;
+        var teamToReturnDto = new TeamToReturnDto
         {
-            CompanyId = "fb140d33-7e96-474d-a06d-ab3a6c65d1a9",    //teamDetails.CompanyId,
-            TeamName = "HR", //teamDetails.TeamName,
-            UserRequest = userRequest // getReportDto.UserRequest
+            TeamName = teamDetails.TeamName,
+            TeamId = teamDetails.TeamId,
+            CompanyId = teamDetails.CompanyId
         };
+        return teamToReturnDto;
+    }
+    public async Task<AnalysisResponseDto> CreateReportByAi(AnalysisRequestDto analysisRequest)
+    {
         var generateReportInitialResponse = await generateReportService.GenerateReport(analysisRequest);
         return generateReportInitialResponse;
     }
-    public async Task<AiReportResponseDto> GetReport(string teamId, string taskId)
+    public async Task<AiReportResponseDto> GetReportFromAi(GetReportFromAiDto reportFromAiDto)
     {
-        var generatedReportStatus = await generateReportService.GetStatus(taskId);
+        var generatedReportStatus = await generateReportService.GetStatus(reportFromAiDto.TaskId);
         if (generatedReportStatus.Status == Status.PENDING || generatedReportStatus.Status == Status.PROGRESS)
         {
-            return null;
+            return new AiReportResponseDto { message = "your report is being generated." };
         }
         //The Status are have only 3 values PENDING, FAILURE, SUCCESS
         // FAILURE CASE HANDELD IN GENERATE REPORT SERVICE
         // PENDING CASE HANDELD ABOVE
         // SUCCESS
-        //var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
-        //// create report model 
-        //// add to database
-        //// save changes
-        //// return report model
-        //var report = new Report
-        //{
-        //    Id = Guid.NewGuid().ToString(),
-        //    TeamId = teamId,
-        //    FilePath = dynamicPath,
-        //    FileType = ".txt",
-        //    GeneratedDate = DateTime.Now,
-        //    Periodic = Periodic.Weekly
-        //};
-        //await reportRepository.AddAsync(report);
-        //await unitOfWork.Save();
+        var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
+        // create report model 
+        // add to database
+        // save changes
+        // return report model
+        var report = new Report
+        {
+            Id = Guid.NewGuid().ToString(),
+            TeamId = reportFromAiDto.TeamId,
+            UserId = reportFromAiDto.UserId,
+            FilePath = dynamicPath,
+            FileType = ".txt",
+            GeneratedDate = DateTime.Now,
+            Periodic = Enum.Parse<Periodic>(reportFromAiDto.Periodic)
+        };
+        await reportRepository.AddAsync(report);
+        await unitOfWork.Save();
         var aiReportResponse = new AiReportResponseDto
         {
+            IsSuccess = true,
             AiResponse = generatedReportStatus.Result!,
             GeneratedDate = DateTime.UtcNow
         };
@@ -65,17 +71,19 @@ public class ReportService(IGenerateReportService generateReportService,
     {
         var report = await reportRepository.GetByIdAsync(reportId);
         if (report is null)
-            return null;
+            return new AiReportResponseDto { message = "there is no report with this id" };
         var reportContent = await fileStorageService.ReadFileAsync(report.FilePath);
         if (string.IsNullOrEmpty(reportContent))
-            return null;
+            return new AiReportResponseDto { message = "there is no content for this report" };
         var aiReportResponse = new AiReportResponseDto
         {
+            IsSuccess = true,
             AiResponse = reportContent,
             GeneratedDate = report.GeneratedDate
         };
         return aiReportResponse;
     }
+
     public async Task<string> DeleteReport(string reportId)
     {
         var report = await reportRepository.GetByIdAsync(reportId);
@@ -84,6 +92,70 @@ public class ReportService(IGenerateReportService generateReportService,
         reportRepository.Delete(report);
         await unitOfWork.Save();
         return "Report deleted successfully";
+    }
+    public async Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId)
+    {
+        /*       Fetch all reports for the given TeamId from the repository WITH IT'S CONTENT
+
+
+        var reports = await reportRepository.FindAll(r => r.TeamId == TeamId);
+
+        if (!reports.Any())
+        {
+            return Enumerable.Empty<ReportDto>();
+        }
+
+        const int maxParallelTasks = 50;
+
+        var semaphore = new SemaphoreSlim(maxParallelTasks);
+
+        var tasks = reports.Select(async r =>
+        {
+            // wait for a slot from the semaphore
+            await semaphore.WaitAsync();
+            try
+            {
+                // Read file execution
+                var content = await fileStorageService.ReadFileAsync(r.FilePath);
+
+                // Create the DTO
+                return new ReportDto
+                {
+                    Id = r.Id,
+                    TeamId = r.TeamId,
+                    Periodic = r.Periodic.ToString(),
+                    GeneratedDate = r.GeneratedDate,
+                    Content = content
+                };
+            }
+            finally
+            {
+                // Release the slot after completion (in both cases: success or error)
+                semaphore.Release();
+            }
+        }).ToList(); // Convert to list to ensure all Select executions begin
+
+        // Wait for all tasks to complete
+        var reportsDto = await Task.WhenAll(tasks);
+
+        return reportsDto;
+         */
+
+        var reports = await reportRepository.FindAll(r => r.TeamId == TeamId);
+
+        if (!reports.Any())
+        {
+            return Enumerable.Empty<ReportDto>();
+        }
+        var reportsDto = reports.Select(r => new ReportDto
+        {
+            Id = r.Id,
+            TeamId = r.TeamId,
+            UserId = r.UserId,
+            Periodic = r.Periodic.ToString(),
+            GeneratedDate = r.GeneratedDate
+        }).ToList();
+        return reportsDto;
     }
 
     public async Task<string> AssignCompanyData(string companyId)
@@ -96,4 +168,5 @@ public class ReportService(IGenerateReportService generateReportService,
         var status = await dataAssignService.DataAssignResult(taskId);
         return status;
     }
+
 }
