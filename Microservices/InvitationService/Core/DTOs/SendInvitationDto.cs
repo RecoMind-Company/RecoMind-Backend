@@ -7,11 +7,12 @@ public class SendInvitationDto
 {
     [JsonIgnore]
     public string? SenderId { get; set; } = default!;
+
     [EmailAddress]
     [Required]
     public string Email { get; set; } = default!;
     [Required]
     public string ReciverRole { get; set; } = default!;
-    [Required]
+    [JsonIgnore]
     public string CompanyId { get; set; } = default!;
 }
