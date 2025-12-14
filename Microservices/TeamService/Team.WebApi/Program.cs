@@ -19,7 +19,7 @@ namespace Team.WebApi
 
             // Add DbContext
             builder.Services.AddDbContext<TeamDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"), // "DefaultConnection"),
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"), // "DefaultConnection"), // 
 
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
@@ -124,7 +124,6 @@ namespace Team.WebApi
             //    c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
             //}).ConfigurePrimaryHttpMessageHandler(() =>
             //{
-
 
             //    return new HttpClientHandler
             //    {

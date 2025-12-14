@@ -9,8 +9,7 @@ namespace Team.Core.DTOs
 {
     public class UpdateTeamDto
     {
-        public string Name { get; set; }
-        public string TeamLeadId { get; set; }
+        public string? Name { get; set; }
+        public string? TeamLeadId { get; set; }
     }
-
 }

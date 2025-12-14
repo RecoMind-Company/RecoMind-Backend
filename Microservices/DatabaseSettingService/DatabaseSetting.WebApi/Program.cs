@@ -86,7 +86,6 @@ namespace DatabaseSetting.WebApi
             });
 
 
-
             builder.WebHost.ConfigureKestrel(options =>
             {
                 // اقرأ من environment أولاً (أولوية أعلى)
@@ -108,6 +107,7 @@ namespace DatabaseSetting.WebApi
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("OpenCors", policy =>
@@ -123,6 +123,7 @@ namespace DatabaseSetting.WebApi
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
             authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
             // [Authorize(Policy = "ManagerRole")]
+
 
 
 
