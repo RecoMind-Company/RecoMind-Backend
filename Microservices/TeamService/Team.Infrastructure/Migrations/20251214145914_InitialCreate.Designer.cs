@@ -12,8 +12,8 @@ using Team.Infrastructure.Data;
 namespace Team.Infrastructure.Migrations
 {
     [DbContext(typeof(TeamDbContext))]
-    [Migration("20251212224140_UpdateModel")]
-    partial class UpdateModel
+    [Migration("20251214145914_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,26 @@ namespace Team.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Team.Core.Models.TeamEmployee", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("EmployeeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TeamId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("TeamEmployees");
+                });
+
             modelBuilder.Entity("Team.Core.Models.TeamModel", b =>
                 {
                     b.Property<string>("Id")
@@ -34,27 +54,38 @@ namespace Team.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("EmployeeIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TeamLeadId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("Team.Core.Models.TeamEmployee", b =>
+                {
+                    b.HasOne("Team.Core.Models.TeamModel", "Team")
+                        .WithMany("TeamEmployees")
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Team.Core.Models.TeamModel", b =>
+                {
+                    b.Navigation("TeamEmployees");
                 });
 #pragma warning restore 612, 618
         }
