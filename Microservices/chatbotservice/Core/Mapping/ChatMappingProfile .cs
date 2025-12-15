@@ -32,8 +32,8 @@ namespace Core.Mapping
                 .ForMember(dest => dest.TimeStamp, opt => opt.Ignore());
                        
             CreateMap<ChatMessage,SaveDto>()
-                .ForMember(dest => dest.Result.Answer, opt => opt.MapFrom(src => src.Response.Answer))
-                .ForMember(dest => dest.Result.Sql_Query, opt => opt.MapFrom(src => src.Response.Sql_Query))
+                .ForPath(dest => dest.Result.Answer, opt => opt.MapFrom(src => src.Response.Answer))
+                .ForPath(dest => dest.Result.Sql_Query, opt => opt.MapFrom(src => src.Response.Sql_Query))
                 .ForMember(dest => dest.TaskId, opt => opt.Ignore())
                 .ForMember(opt=> opt.Status,  act => act.Ignore())
                 .ReverseMap();

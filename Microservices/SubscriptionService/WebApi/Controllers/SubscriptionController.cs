@@ -10,7 +10,7 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin")]
     public class SubscriptionController : ControllerBase
     {
         private ISubscriptionCompanyService _subscriptionService;

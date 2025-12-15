@@ -5,10 +5,12 @@ using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace Core.Services
 {
+    //[Authorize]
     public class ChatBotService : IChatBotService
     {
         private readonly IUnitOfWork<ChatMessage> _unitOfWork;
@@ -27,37 +29,34 @@ namespace Core.Services
             _teamService = teamService;
         }
 
-        //public async Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto)
-        //{
-        //    //// call team service to get team name and company id
-        //    //var teaminfo = await _teamService.GetTeamByUserId(requestDto.UserID);
+        public async Task<AiResponseDto> HandelRequestBeforeBassingItToAiService(CreateChatRequestDto requestDto)
+        {
+            try
+            {
+                // call team service to get team name and company id
+                var teaminfo = _teamService.GetTeamInformation(requestDto.UserID);
 
-        //    //// create AiRequestDto to send to Ai service
-        //    //AiRequestDto aiRequestDto = new AiRequestDto
-        //    //{
-        //    //    company_id = teaminfo.CompanyId,
-        //    //    team_name = teaminfo.TeamName,
-        //    //    user_question = requestDto.user_question,
-        //    //};
-        //    ////1.Call Post Method
-        //    //AiResponseDto postResponse;
-        //    //try
-        //    //{
-        //    //    postResponse = await _aiClientService.SentRequestToAiService(aiRequestDto);
-        //    //    return postResponse;
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    return new AiResponseDto
-        //    //    {
-        //    //        status = Status.FAILURE,
-        //    //    };
-        //    //}
-        //    //return new AiResponseDto
-        //    //{
-        //    //    status = Status.SUCCESS,
-        //    //};
-        //}
+                // create AiRequestDto to send to Ai service
+                AiRequestDto aiRequestDto = new AiRequestDto
+                {
+                    company_id = teaminfo.CompanyId,
+                    team_name = teaminfo.TeamName,
+                    user_question = requestDto.user_question,
+                };
+                //1.Call Post Method
+                AiResponseDto postResponse;
+
+                postResponse = await _aiClientService.SentRequestToAiService(aiRequestDto);
+                return postResponse;
+            }
+            catch (Exception ex)
+            {
+                return new AiResponseDto
+                {
+                    status = Status.FAILURE,
+                };
+            }            
+        }
 
         public async Task<FinalResponseDto> GetResponseFromAiService(GetMethodDto dto)
         {
