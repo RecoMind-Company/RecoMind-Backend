@@ -34,6 +34,7 @@ namespace WebApi.Controllers
                     UserRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty,
                 };
                 var result = await _chatBotService.HandelRequestBeforeBassingItToAiService(dto);
+                result.user_question = Question;
                 return Ok(result);
             }
             catch (KeyNotFoundException knfEx)
