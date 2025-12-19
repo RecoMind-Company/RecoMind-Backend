@@ -55,6 +55,9 @@ namespace Team.WebApi.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             try
             {
                 var team = await _service.CreateTeamAsync(_companyId, dto);
@@ -123,7 +126,7 @@ namespace Team.WebApi.Controllers
         {
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
-            if (claim == null)
+            if (claim == null )
                 return string.Empty;
 
             return claim.Value;
