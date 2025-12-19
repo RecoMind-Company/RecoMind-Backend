@@ -2,6 +2,7 @@
 using Core.DTOs.AiService;
 using Core.DTOs.Chatbot;
 using Core.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -10,6 +11,7 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ChatbotController : ControllerBase
     {
         private readonly IChatBotService _chatBotService;
