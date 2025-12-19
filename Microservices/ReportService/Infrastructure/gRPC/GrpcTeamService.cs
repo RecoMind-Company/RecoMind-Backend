@@ -9,7 +9,7 @@ public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient grpcServiceCl
 {
     public async Task<TeamToReturnDto> GetTeamByUserId(string userId)
     {
-        var request = new GetUserTeamInfoRequest { UserId = userId };
+        var request = new GetUserTeamInfoRequest { UserId = userId ?? string.Empty };
         try
         {
             var response = await grpcServiceClient.GetUserTeamInfoAsync(request);
