@@ -16,12 +16,11 @@ namespace Team.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CompanyId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TeamLeadId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CompanyId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TeamLeadId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -34,8 +33,7 @@ namespace Team.Infrastructure.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     TeamId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EmployeeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    AddedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    EmployeeId = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,16 +47,9 @@ namespace Team.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TeamEmployees_TeamId_EmployeeId",
+                name: "IX_TeamEmployees_TeamId",
                 table: "TeamEmployees",
-                columns: new[] { "TeamId", "EmployeeId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Teams_CompanyId_Name",
-                table: "Teams",
-                columns: new[] { "CompanyId", "Name" },
-                unique: true);
+                column: "TeamId");
         }
 
         /// <inheritdoc />

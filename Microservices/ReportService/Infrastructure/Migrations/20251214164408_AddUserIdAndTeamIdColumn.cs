@@ -2,28 +2,28 @@
 
 #nullable disable
 
-namespace Team.Infrastructure.Migrations
+namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddEmployeeIds : Migration
+    public partial class AddUserIdAndTeamIdColumn : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "EmployeeIds",
-                table: "Teams",
+                name: "UserId",
+                table: "Reports",
                 type: "nvarchar(max)",
                 nullable: false,
-                defaultValue: "[]");
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "EmployeeIds",
-                table: "Teams");
+                name: "UserId",
+                table: "Reports");
         }
     }
 }

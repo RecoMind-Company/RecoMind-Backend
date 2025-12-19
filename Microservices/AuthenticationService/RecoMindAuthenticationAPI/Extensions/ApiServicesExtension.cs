@@ -1,4 +1,5 @@
-﻿using Authentication.Infrastructure.gRPC.Protos;
+﻿using Authentication.Infrastructure.gRPC.CompanyGrpc;
+using Authentication.Infrastructure.gRPC.Protos;
 using Authentication.Infrastructure.gRPC.TeamGrpc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.FileProviders;
@@ -71,6 +72,18 @@ namespace RecoMindAuthenticationAPI.Extensions
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(c =>
             {
                 c.Address = new Uri(configuration["Urls:TeamServiceUrl"]);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+
+
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
+            builder.Services.AddGrpcClient<CompanyService.CompanyServiceClient>(c =>
+            {
+                c.Address = new Uri(configuration["Urls:CompanyServiceUrl"]);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
 

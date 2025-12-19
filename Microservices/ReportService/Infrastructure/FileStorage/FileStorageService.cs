@@ -9,7 +9,7 @@ public class FileStorageService(IWebHostEnvironment env) : IFileStorageService
     public async Task<string> SaveFileAsync(string content)
     {
         // get the full physical path to the "StaticFiles/Reports" directory
-        var physicalPath = Path.Combine(env.ContentRootPath, "StaticFiles", "Reports");
+        var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles", "Reports");
 
         // If the directory does not exist, create it
         if (!Directory.Exists(physicalPath))
@@ -27,7 +27,7 @@ public class FileStorageService(IWebHostEnvironment env) : IFileStorageService
     }
     public async Task<string> ReadFileAsync(string dynamicPath)
     {
-        string rootPath = env.ContentRootPath;
+        string rootPath = Directory.GetCurrentDirectory();
         string fullPath = Path.Combine(rootPath, dynamicPath);
         if (!File.Exists(fullPath))
             return "";

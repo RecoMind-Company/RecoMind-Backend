@@ -5,10 +5,12 @@ namespace Core.Interfaces;
 
 public interface IReportService
 {
-    Task<AiReportResponseDto> GetReport(string teamId, string taskId);
+    Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId);
+    Task<AiReportResponseDto> GetReportFromAi(GetReportFromAiDto reportFromAiDto);
     Task<AiReportResponseDto> GetReportById(string reportId);
     Task<string> DeleteReport(string reportId);
-    Task<AnalysisResponseDto> CreateReport(string userRequest);
+    Task<AnalysisResponseDto> CreateReportByAi(AnalysisRequestDto analysisRequest);
     Task<string> AssignCompanyData(string companyId);
     Task<string> GetAssignCompanyDataStatus(string taskId);
+    Task<TeamToReturnDto> GetUserData(string userId);
 }

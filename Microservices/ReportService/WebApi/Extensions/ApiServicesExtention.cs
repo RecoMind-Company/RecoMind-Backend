@@ -89,6 +89,11 @@ public static class ApiServicesExtention
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
         });
+
+        var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+        authorizationBuilder.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
+        authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
+        authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
     }
 
 

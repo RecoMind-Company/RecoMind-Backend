@@ -17,6 +17,7 @@ message AuthenticatedMessage{
 	repeated string roles = 6;
 	string photoUrl = 7;
 	string message = 8;
+	string Id = 9;
 }
 
 message LoginMessage{

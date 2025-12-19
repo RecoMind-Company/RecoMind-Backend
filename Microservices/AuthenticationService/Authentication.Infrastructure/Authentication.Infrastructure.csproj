@@ -7,10 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\CompanyGrpc\GrpcCompanyService.proto" />
     <None Remove="gRPC\Protos\InvitationMessages.proto" />
     <None Remove="gRPC\Protos\InvitationService.proto" />
     <None Remove="gRPC\TeamGrpc\team.proto" />
     <None Remove="gRPC\TeamGrpc\teamMessages.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <Protobuf Include="gRPC\CompanyGrpc\GrpcCompanyService.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\CompanyGrpc</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\CompanyGrpc\GrpcCompanyMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\CompanyGrpc</ProtoRoot>
+	  </Protobuf>
 	  <Protobuf Include="gRPC\Protos\InvitationMessages.proto" GrpcServices="None">
 		  <ProtoRoot>gRPC\Protos</ProtoRoot>
 	  </Protobuf>
