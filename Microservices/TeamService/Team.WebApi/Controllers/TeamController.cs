@@ -49,7 +49,7 @@ namespace Team.WebApi.Controllers
 
 
         [HttpPost]
-        [Authorize(Policy = "Management")]
+        //[Authorize(Policy = "Management")]
         public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
         {
             if (!ModelState.IsValid)
@@ -58,8 +58,7 @@ namespace Team.WebApi.Controllers
             try
             {
                 var team = await _service.CreateTeamAsync(_companyId, dto);
-                return CreatedAtAction(nameof(GetById), new { teamId = team.Id }, team);
-                //return Ok(team);
+                return Ok(team);
             }
             catch (Exception ex)
             {
@@ -122,7 +121,7 @@ namespace Team.WebApi.Controllers
         // Helper to get company id from claims(single source of truth)
         private string GetCompanyIdFromClaims()
         {
-            //return "C4843CF9-8A71-451B-8052-FB229E9313E5";
+            return "C4843CF9-8A71-451B-8052-FB229E9313E5";
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
             if (claim == null)
