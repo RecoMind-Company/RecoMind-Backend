@@ -88,7 +88,7 @@ public class ReportController(IReportService reportService) : ControllerBase
     }
 
     // NOT REPORT ENDPOINTS
-    [HttpPost("dataAssing")]
+    [HttpGet("dataAssing")]
     public async Task<ActionResult<string>> AssignDataToCompany()
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
