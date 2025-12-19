@@ -26,7 +26,7 @@ public class InvitationController(IInvitationService invitationService) : Contro
             return BadRequest(result);
         return Ok(result);
     }
-    [HttpGet("{id}")]
+    [HttpGet("get/invitation/{id}")]
     public async Task<ActionResult<InvitationsToReturnDto>> GetInvitationById(int id)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
