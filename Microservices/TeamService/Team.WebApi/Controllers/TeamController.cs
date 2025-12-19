@@ -55,11 +55,13 @@ namespace Team.WebApi.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             try
             {
                 var team = await _service.CreateTeamAsync(_companyId, dto);
-                return CreatedAtAction(nameof(GetById), new { teamId = team.Id }, team);
-                //return Ok(team);
+                return Ok(team);
             }
             catch (Exception ex)
             {
@@ -122,10 +124,9 @@ namespace Team.WebApi.Controllers
         // Helper to get company id from claims(single source of truth)
         private string GetCompanyIdFromClaims()
         {
-            //return "C4843CF9-8A71-451B-8052-FB229E9313E5";
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
-            if (claim == null)
+            if (claim == null )
                 return string.Empty;
 
             return claim.Value;
