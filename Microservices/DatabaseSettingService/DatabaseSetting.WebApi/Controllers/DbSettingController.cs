@@ -18,6 +18,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
         [HttpGet("for-ai")]
+        [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetForAiAsync()
         {
             var result = await _service.GetByCompanyIdForAiAsync(_companyId);
