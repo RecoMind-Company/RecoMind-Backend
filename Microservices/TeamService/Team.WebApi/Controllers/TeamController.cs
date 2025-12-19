@@ -22,6 +22,7 @@ namespace Team.WebApi.Controllers
 
 
         [HttpGet("for-ai")]
+        [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetTeamsForAI()
         {
             var teams = await _service.GetForAiAsync(_companyId);
@@ -118,11 +119,10 @@ namespace Team.WebApi.Controllers
         }
 
 
-
         // Helper to get company id from claims(single source of truth)
         private string GetCompanyIdFromClaims()
         {
-            //return "fb140d33-7e96-474d-a06d-ab3a6c65d1a9";
+            //return "C4843CF9-8A71-451B-8052-FB229E9313E5";
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
             if (claim == null)
