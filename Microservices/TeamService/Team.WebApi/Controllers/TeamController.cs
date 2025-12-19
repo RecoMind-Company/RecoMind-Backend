@@ -121,7 +121,6 @@ namespace Team.WebApi.Controllers
         // Helper to get company id from claims(single source of truth)
         private string GetCompanyIdFromClaims()
         {
-            return "C4843CF9-8A71-451B-8052-FB229E9313E5";
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
             if (claim == null)
