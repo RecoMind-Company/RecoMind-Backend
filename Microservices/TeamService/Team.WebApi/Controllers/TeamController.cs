@@ -49,7 +49,7 @@ namespace Team.WebApi.Controllers
 
 
         [HttpPost]
-        //[Authorize(Policy = "Management")]
+        [Authorize(Policy = "Management")]
         public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
         {
             if (!ModelState.IsValid)
