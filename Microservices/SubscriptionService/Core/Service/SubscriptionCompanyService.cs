@@ -100,10 +100,9 @@ namespace Core.Service
 
         public async Task<double> SetPrice ( string billingCycle , string PlaneName  ) 
         {
-            billingCycle.ToLower();
             var price = await _subscriptionTypeService.GetPrice(PlaneName);
 
-            switch (billingCycle) {
+            switch (billingCycle.ToLower()) {
                 case "monthly":
                     return price;
 
@@ -120,8 +119,7 @@ namespace Core.Service
 
         public DateTime SetEndDate(string BillingCycle)
         {
-            BillingCycle = BillingCycle.ToLower();
-            switch (BillingCycle)
+            switch (BillingCycle.ToLower())
             {
                 case "monthly":
                     return DateTime.Now.AddMonths(1);
