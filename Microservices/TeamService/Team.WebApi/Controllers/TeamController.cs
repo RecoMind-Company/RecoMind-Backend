@@ -23,12 +23,12 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetTeamsForAI()
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
-            var teams = await _service.GetForAiAsync(_companyId);
+            var teams = await _service.GetForAiAsync(companyId);
             return Ok(teams);
         }
 
@@ -36,12 +36,11 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> GetTeamsForCompany()
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
-
-            var teams = await _service.GetByCompanyIdAsync(_companyId);
+            var teams = await _service.GetByCompanyIdAsync(companyId);
             return Ok(teams);
         }
 
@@ -60,58 +59,48 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> CreateTeam(CreateTeamDto dto)
         {
-            if (!ModelState.IsValid)
-                return ValidationProblem(ModelState);
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
-
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
             try
             {
-                var team = await _service.CreateTeamAsync(_companyId, dto);
+                var team = await _service.CreateTeamAsync(companyId, dto);
                 return Ok(team);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
 
         [HttpPut("{teamId}")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> UpdateTeam(string teamId, UpdateTeamDto dto)
         {
-            if (!ModelState.IsValid)
-                return ValidationProblem(ModelState);
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
-
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
             try
             {
-                var team = await _service.UpdateTeamAsync(teamId, _companyId, dto);
+                var team = await _service.UpdateTeamAsync(teamId, companyId, dto);
                 return Ok(team);
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
 
         [HttpDelete("{teamId}")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> DeleteTeam(string teamId)
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
-            var success = await _service.DeleteTeamAsync(teamId, _companyId);
+            var success = await _service.DeleteTeamAsync(teamId, companyId);
             if (!success) return NotFound();
 
             return NoContent();
@@ -124,12 +113,12 @@ namespace Team.WebApi.Controllers
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
 
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
-            var success = await _service.AddEmployeeAsync(teamId, _companyId, emp.EmployeeId);
+            var success = await _service.AddEmployeeAsync(teamId, companyId, emp.EmployeeId);
             if (!success) return BadRequest(new { message = "Cannot add employee to team." });
 
             return Ok();
@@ -139,12 +128,12 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "TeamLeadership")]
         public async Task<IActionResult> RemoveEmployee(string teamId, string employeeId)
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrEmpty(_companyId))
-                return BadRequest(new { message = "Invalid company context." });
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId claim is missing.");
 
-            var success = await _service.RemoveEmployeeAsync(teamId, _companyId, employeeId);
+            var success = await _service.RemoveEmployeeAsync(teamId, companyId, employeeId);
             if (!success) return BadRequest(new { message = "Cannot remove employee from team." });
 
             return NoContent();

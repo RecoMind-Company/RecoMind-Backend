@@ -19,27 +19,28 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetForAiAsync()
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if(string.IsNullOrWhiteSpace(_companyId)) 
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var result = await _service.GetByCompanyIdForAiAsync(_companyId);
+            var result = await _service.GetByCompanyIdForAiAsync(companyId);
             if (result == null)  return NotFound();
 
             return Ok(result);
         }
 
+
         [HttpGet]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetForCompanyAsync()
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrWhiteSpace(_companyId))
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var result = await _service.GetByCompanyIdAsync(_companyId);
+            var result = await _service.GetByCompanyIdAsync(companyId);
             if (result == null) return NotFound();
 
             return Ok(result);
@@ -49,12 +50,12 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetById(string id)
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrWhiteSpace(_companyId))
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var result = await _service.GetByIdAsync(id, _companyId);
+            var result = await _service.GetByIdAsync(id, companyId);
             if (result == null) return NotFound();
 
             return Ok(result);
@@ -67,12 +68,12 @@ namespace DatabaseSetting.WebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrWhiteSpace(_companyId))
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var result = await _service.CreateAsync(request, _companyId);
+            var result = await _service.CreateAsync(request, companyId);
             if (result == null) return BadRequest("Failed to create DbSetting.");
 
             return Ok(result);
@@ -84,12 +85,12 @@ namespace DatabaseSetting.WebApi.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrWhiteSpace(_companyId))
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var result = await _service.UpdateAsync(id, _companyId, request);
+            var result = await _service.UpdateAsync(id, companyId, request);
             if (result == null) return NotFound("Invalid data");
 
             return Ok(result);
@@ -99,12 +100,12 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Delete(string id)
         {
-            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+            var companyId = User.FindFirst("CompanyId")?.Value;
 
-            if (string.IsNullOrWhiteSpace(_companyId))
+            if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
-            var success = await _service.DeleteAsync(id, _companyId);
+            var success = await _service.DeleteAsync(id, companyId);
             if (!success) return NotFound();
 
             return NoContent();
