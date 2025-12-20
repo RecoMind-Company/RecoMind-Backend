@@ -19,7 +19,7 @@ namespace Team.WebApi
 
             // Add DbContext
             builder.Services.AddDbContext<TeamDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"), // "DefaultConnection"), // 
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"),
 
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
@@ -127,30 +127,11 @@ namespace Team.WebApi
             });
 
 
-
-            //builder.Services.AddGrpcClient<AuthenticationService.AuthenticationServiceClient>(c =>
-            //{
-            //    c.Address = new Uri(builder.Configuration["Urls:AuthenticationUrl"]);
-            //}).ConfigurePrimaryHttpMessageHandler(() =>
-            //{
-
-            //    return new HttpClientHandler
-            //    {
-            //        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            //    };
-            //});
-
-
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
             authorizationBuilder.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
             authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
             authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
             authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
-
-            // [Authorize("AllEmployees")]
-            // [Authorize(Policy = "TeamLeadership")]
-
-
 
             var app = builder.Build();
 
