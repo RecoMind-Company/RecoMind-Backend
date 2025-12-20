@@ -28,6 +28,9 @@ namespace Team.WebApi
                 )
             );
 
+            builder.Configuration.AddEnvironmentVariables();
+
+
             // Configure CORS Policy
             builder.Services.AddCors(options =>
             {
@@ -49,6 +52,7 @@ namespace Team.WebApi
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
             //builder.Services.AddScoped<IGrpcAuthService, GrpcAuthService>();
             builder.Services.AddGrpc();
+
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -75,6 +79,7 @@ namespace Team.WebApi
                 });
             });
 
+
             builder.Services.AddAuthentication(config =>
             {
                 config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,6 +100,10 @@ namespace Team.WebApi
                     ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
                 };
             });
+
+
+
+
 
             builder.WebHost.ConfigureKestrel(options =>
             {
@@ -133,7 +142,7 @@ namespace Team.WebApi
 
 
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
-            authorizationBuilder.AddPolicy("AllEmployees", p =>  p.RequireRole("admin", "manager", "teamleader", "employee"));
+            authorizationBuilder.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
             authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
             authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
             authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));

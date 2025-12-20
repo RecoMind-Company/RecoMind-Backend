@@ -9,8 +9,6 @@ namespace DatabaseSetting.WebApi.Controllers
     [ApiController]
     public class DbSettingController : ControllerBase
     {
-        private string _companyId => GetCompanyIdFromClaims();
-
         private readonly IDbSettingService _service;
         public DbSettingController(IDbSettingService service)
         {
@@ -21,10 +19,13 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetForAiAsync()
         {
-            var result = await _service.GetByCompanyIdForAiAsync(_companyId);
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
 
-            if (result == null)
-                return NotFound();
+            if(string.IsNullOrWhiteSpace(_companyId)) 
+                return BadRequest("CompanyId claim is missing.");
+
+            var result = await _service.GetByCompanyIdForAiAsync(_companyId);
+            if (result == null)  return NotFound();
 
             return Ok(result);
         }
@@ -33,10 +34,13 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetForCompanyAsync()
         {
-            var result = await _service.GetByCompanyIdAsync(_companyId);
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
 
-            if (result == null)
-                return NotFound();
+            if (string.IsNullOrWhiteSpace(_companyId))
+                return BadRequest("CompanyId claim is missing.");
+
+            var result = await _service.GetByCompanyIdAsync(_companyId);
+            if (result == null) return NotFound();
 
             return Ok(result);
         }
@@ -45,9 +49,13 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetById(string id)
         {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_companyId))
+                return BadRequest("CompanyId claim is missing.");
+
             var result = await _service.GetByIdAsync(id, _companyId);
-            if (result == null)
-                return NotFound();
+            if (result == null) return NotFound();
 
             return Ok(result);
         }
@@ -57,12 +65,15 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Create([FromBody] CreateDbSettingDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_companyId))
+                return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.CreateAsync(request, _companyId);
-            if (result == null)
-                return BadRequest("Failed to create DbSetting.");
+            if (result == null) return BadRequest("Failed to create DbSetting.");
 
             return Ok(result);
         }
@@ -71,13 +82,15 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingDto request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_companyId))
+                return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.UpdateAsync(id, _companyId, request);
-
-            if (result == null)
-                return NotFound("Invalid data");
+            if (result == null) return NotFound("Invalid data");
 
             return Ok(result);
         }
@@ -86,23 +99,17 @@ namespace DatabaseSetting.WebApi.Controllers
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Delete(string id)
         {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_companyId))
+                return BadRequest("CompanyId claim is missing.");
+
             var success = await _service.DeleteAsync(id, _companyId);
             if (!success) return NotFound();
+
             return NoContent();
         }
 
 
-        // Helper to get company id from claims(single source of truth)
-        private string GetCompanyIdFromClaims()
-        {
-            //return "fb140d33-7e96-474d-a06d-ab3a6c65d1a9";  // static companyId for testing
-
-            var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
-
-            if (claim == null)
-                return string.Empty;
-
-            return claim.Value;
-        }
     }
 }
