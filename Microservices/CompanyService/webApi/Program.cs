@@ -9,7 +9,6 @@ using Infrastructure.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -58,41 +57,42 @@ namespace Campany.API
                 o.Address = new Uri("http://subscriptionservice:5004");              // Subscription service address
             });
 
-            // Configure Kestrel to listen on a specific port for gRPC
+            //Configure Kestrel to listen on a specific port for gRPC
 
-            //builder.WebHost.ConfigureKestrel(options =>
-            //{
-            //    // اقرأ من environment أولاً (أولوية أعلى)
-            //    var httpPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-            //        "8001"
-            //    );
 
-            //    var grpcPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-            //        "5001"
-            //    );
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            //});
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
+
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
             builder.Services.AddSwaggerGen(cfg =>
-            {
-                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+             {
+                 cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+                 {
+                     Name = "Authorization",
+                     Type = SecuritySchemeType.ApiKey,
+                     Scheme = "Bearer",
+                     BearerFormat = "JWT",
+                     In = ParameterLocation.Header,
+                 });
+                 cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                });
-                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-               {
                    {
                    new OpenApiSecurityScheme
                        {
@@ -100,11 +100,11 @@ namespace Campany.API
                        },
                        []
                    }
-               });
-            });
+                });
+             });
 
 
-            
+
             builder.Services.AddAuthentication(config =>
             {
                 config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
