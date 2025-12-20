@@ -14,5 +14,5 @@ public class SendInvitationDto
     [Required]
     public string ReciverRole { get; set; } = default!;
     [JsonIgnore]
-    public string CompanyId { get; set; } = default!;
+    public string? CompanyId { get; set; } = default!;
 }

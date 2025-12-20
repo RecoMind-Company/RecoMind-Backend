@@ -6,6 +6,7 @@ using RecoMindAuthenticationAPI.Grpc.Authentication.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Configuration.AddEnvironmentVariables();
 builder.AddPresentationServices(builder.Configuration);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddCoreServices(builder.Configuration);

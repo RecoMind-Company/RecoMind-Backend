@@ -29,6 +29,7 @@ public static class CoreServicesExtension
             config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
         {
+            var jwt = configuration.GetSection("JwtOptions").Get<JwtSettings>()!;
             options.SaveToken = true;
             options.RequireHttpsMetadata = true;
             options.TokenValidationParameters = new TokenValidationParameters
@@ -36,9 +37,9 @@ public static class CoreServicesExtension
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = configuration["JwtOptions:Issuer"],
-                ValidAudience = configuration["JwtOptions:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtOptions:SecretKey"])),
+                ValidIssuer = jwt.Issuer,
+                ValidAudience = jwt.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
                 ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
             };
         });
