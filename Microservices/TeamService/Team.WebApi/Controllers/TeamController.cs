@@ -22,6 +22,7 @@ namespace Team.WebApi.Controllers
 
 
         [HttpGet("for-ai")]
+        [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetTeamsForAI()
         {
             var teams = await _service.GetForAiAsync(_companyId);
@@ -54,11 +55,13 @@ namespace Team.WebApi.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             try
             {
                 var team = await _service.CreateTeamAsync(_companyId, dto);
-                return CreatedAtAction(nameof(GetById), new { teamId = team.Id }, team);
-                //return Ok(team);
+                return Ok(team);
             }
             catch (Exception ex)
             {
@@ -118,14 +121,12 @@ namespace Team.WebApi.Controllers
         }
 
 
-
         // Helper to get company id from claims(single source of truth)
         private string GetCompanyIdFromClaims()
         {
-            //return "fb140d33-7e96-474d-a06d-ab3a6c65d1a9";
             var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
 
-            if (claim == null)
+            if (claim == null )
                 return string.Empty;
 
             return claim.Value;

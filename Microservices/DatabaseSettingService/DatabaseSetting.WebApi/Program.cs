@@ -1,15 +1,16 @@
 using DatabaseSetting.Core.Interfaces;
+using DatabaseSetting.Core.Mapper;
 using DatabaseSetting.Core.Services;
 using DatabaseSetting.Infrastructure.Data;
 using DatabaseSetting.Infrastructure.Repositories;
 using DatabaseSetting.WebApi.GrpcServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace DatabaseSetting.WebApi
 {
@@ -37,7 +38,7 @@ namespace DatabaseSetting.WebApi
             builder.Services.AddScoped<IDbSettingRepository, DbSettingRepository>();
             builder.Services.AddScoped<IDbSettingService, DbSettingService>();
             builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
-            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
             builder.Services.AddGrpc();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -53,15 +54,15 @@ namespace DatabaseSetting.WebApi
                     In = ParameterLocation.Header,
                 });
                 cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-                 {
-                     {
-                     new OpenApiSecurityScheme
-                         {
-                             Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-                         },
-                         []
-                     }
-                 });
+                {
+                    {
+                    new OpenApiSecurityScheme
+                        {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                        },
+                        []
+                    }
+                });
             });
 
             builder.Services.AddAuthentication(config =>
@@ -122,9 +123,8 @@ namespace DatabaseSetting.WebApi
 
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
             authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
+            authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
             // [Authorize(Policy = "ManagerRole")]
-
-
 
 
             var app = builder.Build();
