@@ -15,6 +15,16 @@ namespace DatabaseSetting.WebApi.Controllers
             _service = service;
         }
 
+
+        [HttpGet("company/{companyId}")]
+        public async Task<IActionResult> GetByCompanyId(string companyId)
+        {
+            var result = await _service.GetByCompanyIdForAiAsync(companyId);
+            if (result == null) return NotFound();
+
+            return Ok(result);
+        }
+
         [HttpGet("for-ai")]
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetForAiAsync()
@@ -62,7 +72,7 @@ namespace DatabaseSetting.WebApi.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Create([FromBody] CreateDbSettingDto request)
         {
@@ -79,7 +89,7 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("update/{id}")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingDto request)
         {
@@ -96,7 +106,7 @@ namespace DatabaseSetting.WebApi.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -110,7 +120,5 @@ namespace DatabaseSetting.WebApi.Controllers
 
             return NoContent();
         }
-
-
     }
 }

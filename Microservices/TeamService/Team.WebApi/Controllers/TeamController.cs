@@ -19,6 +19,15 @@ namespace Team.WebApi.Controllers
         }
 
 
+        [HttpGet("company/{companyId}")]
+        public async Task<IActionResult> GetByCompanyId(string companyId)
+        {
+            var teams = await _service.GetForAiAsync(companyId);
+            if (teams == null) return NotFound();
+
+            return Ok(teams);
+        }
+
         [HttpGet("for-ai")]
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetTeamsForAI()
@@ -32,7 +41,7 @@ namespace Team.WebApi.Controllers
             return Ok(teams);
         }
 
-        [HttpGet]
+        [HttpGet("get-all")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> GetTeamsForCompany()
         {
@@ -55,7 +64,7 @@ namespace Team.WebApi.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> CreateTeam(CreateTeamDto dto)
         {
@@ -73,7 +82,7 @@ namespace Team.WebApi.Controllers
             catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
 
-        [HttpPut("{teamId}")]
+        [HttpPut("update/{teamId}")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> UpdateTeam(string teamId, UpdateTeamDto dto)
         {
@@ -91,7 +100,7 @@ namespace Team.WebApi.Controllers
             catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
         }
 
-        [HttpDelete("{teamId}")]
+        [HttpDelete("delete/{teamId}")]
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> DeleteTeam(string teamId)
         {
@@ -107,7 +116,7 @@ namespace Team.WebApi.Controllers
         }
 
 
-        [HttpPost("{teamId}")]
+        [HttpPost("{teamId}/employees")]
         [Authorize(Policy = "TeamLeadership")]
         public async Task<IActionResult> AddEmployee(string teamId, AddEmployeeDto emp)
         {
