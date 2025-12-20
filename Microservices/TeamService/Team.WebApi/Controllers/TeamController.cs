@@ -5,7 +5,6 @@ using System.ComponentModel.Design;
 using System.Security.Claims;
 using Team.Core.DTOs;
 using Team.Core.Interfaces;
-using Team.Core.Services;
 
 namespace Team.WebApi.Controllers
 {
@@ -13,7 +12,6 @@ namespace Team.WebApi.Controllers
     [ApiController]
     public class TeamController : ControllerBase
     {
-        private string _companyId => GetCompanyIdFromClaims();
         private readonly ITeamService _service;
         public TeamController(ITeamService service)
         {
@@ -25,7 +23,25 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "Ai")]
         public async Task<IActionResult> GetTeamsForAI()
         {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             var teams = await _service.GetForAiAsync(_companyId);
+            return Ok(teams);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "Management")]
+        public async Task<IActionResult> GetTeamsForCompany()
+        {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
+            var teams = await _service.GetByCompanyIdAsync(_companyId);
             return Ok(teams);
         }
 
@@ -39,21 +55,15 @@ namespace Team.WebApi.Controllers
             return Ok(team);
         }
 
-        [HttpGet]
-        [Authorize(Policy = "Management")]
-        public async Task<IActionResult> GetTeamsForCompany()
-        {
-            var teams = await _service.GetByCompanyIdAsync(_companyId);
-            return Ok(teams);
-        }
-
 
         [HttpPost]
         [Authorize(Policy = "Management")]
-        public async Task<IActionResult> CreateTeam([FromBody] CreateTeamDto dto)
+        public async Task<IActionResult> CreateTeam(CreateTeamDto dto)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
+
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
 
             if (string.IsNullOrEmpty(_companyId))
                 return BadRequest(new { message = "Invalid company context." });
@@ -71,10 +81,15 @@ namespace Team.WebApi.Controllers
 
         [HttpPut("{teamId}")]
         [Authorize(Policy = "Management")]
-        public async Task<IActionResult> UpdateTeam(string teamId, [FromBody] UpdateTeamDto dto)
+        public async Task<IActionResult> UpdateTeam(string teamId, UpdateTeamDto dto)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
+
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
 
             try
             {
@@ -91,17 +106,28 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "Management")]
         public async Task<IActionResult> DeleteTeam(string teamId)
         {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             var success = await _service.DeleteTeamAsync(teamId, _companyId);
             if (!success) return NotFound();
 
             return NoContent();
         }
 
+
         [HttpPost("{teamId}")]
         [Authorize(Policy = "TeamLeadership")]
-        public async Task<IActionResult> AddEmployee(string teamId, [FromBody] AddEmployeeDto emp)
+        public async Task<IActionResult> AddEmployee(string teamId, AddEmployeeDto emp)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
 
             var success = await _service.AddEmployeeAsync(teamId, _companyId, emp.EmployeeId);
             if (!success) return BadRequest(new { message = "Cannot add employee to team." });
@@ -109,27 +135,19 @@ namespace Team.WebApi.Controllers
             return Ok();
         }
 
-
         [HttpDelete("{teamId}/employees/{employeeId}")]
         [Authorize(Policy = "TeamLeadership")]
         public async Task<IActionResult> RemoveEmployee(string teamId, string employeeId)
         {
+            var _companyId = User.FindFirst("CompanyId").Value ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_companyId))
+                return BadRequest(new { message = "Invalid company context." });
+
             var success = await _service.RemoveEmployeeAsync(teamId, _companyId, employeeId);
             if (!success) return BadRequest(new { message = "Cannot remove employee from team." });
 
             return NoContent();
-        }
-
-
-        // Helper to get company id from claims(single source of truth)
-        private string GetCompanyIdFromClaims()
-        {
-            var claim = User.FindFirst("CompanyId") ?? User.FindFirst("companyId");
-
-            if (claim == null )
-                return string.Empty;
-
-            return claim.Value;
         }
     }
 }

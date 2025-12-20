@@ -32,8 +32,14 @@ namespace DatabaseSetting.WebApi
                 )
             );
 
+            builder.Configuration.AddEnvironmentVariables();
+
             // Add services to the container.
             builder.Services.AddControllers();
+
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
+            authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
 
             builder.Services.AddScoped<IDbSettingRepository, DbSettingRepository>();
             builder.Services.AddScoped<IDbSettingService, DbSettingService>();
@@ -121,9 +127,7 @@ namespace DatabaseSetting.WebApi
             });
 
 
-            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
-            authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
-            authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
+            
             // [Authorize(Policy = "ManagerRole")]
 
 
@@ -134,7 +138,7 @@ namespace DatabaseSetting.WebApi
                 app.UseSwagger();
                 app.UseSwaggerUI();
             
-
+            
             // app.UseHttpsRedirection();
 
             app.UseAuthentication();

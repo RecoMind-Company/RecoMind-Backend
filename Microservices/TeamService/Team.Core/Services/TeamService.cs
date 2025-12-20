@@ -62,6 +62,7 @@ namespace Team.Core.Services
             team.UpdatedAt = DateTime.UtcNow;
 
             await _repo.CreateAsync(team);
+
             return _mapper.Map<TeamResponseDto>(team);
         }
 
