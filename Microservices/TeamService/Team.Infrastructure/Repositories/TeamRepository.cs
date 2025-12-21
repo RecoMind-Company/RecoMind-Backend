@@ -27,6 +27,13 @@ namespace Team.Infrastructure.Repositories
                 .FirstOrDefaultAsync(t =>
                     t.TeamEmployees.Any(e => e.EmployeeId == employeeId));
         }
+
+        public async Task<TeamModel?> GetTeamByTeamLeadIdAsync(string teamLeadId)
+        {
+            return await _context.Teams
+                .FirstOrDefaultAsync(t => t.TeamLeadId == teamLeadId);
+        }
+
         public async Task<List<TeamModel>> GetByCompanyIdAsync(string companyId)
         {
             return await _context.Teams
@@ -70,6 +77,9 @@ namespace Team.Infrastructure.Repositories
 
         public async Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId)
         {
+            var valid = await FindTeamEmployeeAsync(teamId, employeeId);
+            if (valid) return false;
+
             var relation = new TeamEmployee
             {
                 Id = Guid.NewGuid().ToString(),
@@ -81,6 +91,13 @@ namespace Team.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> FindTeamEmployeeAsync(string teamId, string employeeId)
+        {
+            return await _context.TeamEmployees
+                .AnyAsync(te => te.TeamId == teamId && te.EmployeeId == employeeId);
+        }
+
         public async Task<bool> RemoveEmployeeFromTeamAsync(string teamId, string employeeId)
         {
             var relation = await _context.TeamEmployees

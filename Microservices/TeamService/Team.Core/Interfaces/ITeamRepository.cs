@@ -10,6 +10,8 @@ namespace Team.Core.Interfaces
     public interface ITeamRepository
     {
         Task<List<TeamModel>> GetByCompanyIdAsync(string companyId);
+        Task<TeamModel?> GetTeamByTeamLeadIdAsync(string teamLeadId);
+
         Task<TeamModel?> GetByIdAsync(string teamId);
         Task<TeamModel?> GetTeamByEmployeeIdAsync(string employeeId);
         Task CreateAsync(TeamModel team);
@@ -19,6 +21,7 @@ namespace Team.Core.Interfaces
         Task<bool> ExistsByNameAsync(string companyId, string name);
 
         Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId);
+        Task<bool> FindTeamEmployeeAsync(string teamId, string employeeId);
         Task<bool> RemoveEmployeeFromTeamAsync(string teamId, string employeeId);
     }
 }
