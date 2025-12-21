@@ -128,9 +128,20 @@ namespace WebApi
 
             builder.Services.AddGrpc();
 
+
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             builder.Services.AddGrpcClient <TeamGrpcService.TeamGrpcServiceClient> (o =>
             {
-                o.Address = new Uri("http://teamservice:8010");                       // Team service address
+                o.Address = new Uri("http://localhost:5264");         //https://localhost:7192  http://localhost:5264 Team service address http://teamservice:5010
+            
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+
+
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
             });
 
             // Auto-register all AutoMapper profiles in loaded assemblies (no need to update this file when profiles are added)
@@ -139,7 +150,7 @@ namespace WebApi
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
             builder.Services.AddScoped(typeof(IChatBotService), typeof(ChatBotService));
             builder.Services.AddScoped(typeof(IAiClientService), typeof(AiClientService));
-            builder.Services.AddScoped(typeof(ITeamService), typeof(TeamService));
+            builder.Services.AddScoped(typeof(ITeamService), typeof(TeamServiceImpl));
 
             builder.Services.AddCors(options =>
             {
@@ -171,7 +182,7 @@ namespace WebApi
             app.UseAuthorization();
             app.UseCors("OpenCors");
             app.MapControllers();
-
+            
             app.Run();
         }
     }

@@ -34,7 +34,7 @@ namespace Core.Services
             try
             {
                 // call team service to get team name and company id
-                var teaminfo = _teamService.GetTeamInformation(requestDto.UserID);
+                var teaminfo =await _teamService.GetTeamInformation(requestDto.UserID);
 
                 // create AiRequestDto to send to Ai service
                 AiRequestDto aiRequestDto = new AiRequestDto
