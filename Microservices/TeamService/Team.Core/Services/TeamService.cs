@@ -31,6 +31,22 @@ namespace Team.Core.Services
             };
         }
 
+        public async Task<UserTeamInfoDto?> GetTeamByTeamLeadIdAsync(string teamLeadId)
+        {
+            var team = await _repo.GetTeamByTeamLeadIdAsync(teamLeadId);
+
+            if (team == null)
+                return null;
+
+            return new UserTeamInfoDto
+            {
+                CompanyId = team.CompanyId,
+                TeamId = team.Id,
+                TeamName = team.Name
+            };
+        }
+
+
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
@@ -62,7 +78,6 @@ namespace Team.Core.Services
             team.UpdatedAt = DateTime.UtcNow;
 
             await _repo.CreateAsync(team);
-
             return _mapper.Map<TeamResponseDto>(team);
         }
 
