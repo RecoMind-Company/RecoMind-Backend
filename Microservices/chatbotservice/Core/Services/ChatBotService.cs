@@ -99,6 +99,7 @@ namespace Core.Services
         public async Task SaveToDatabase(SaveDto model)
         {
             var charmessage = _mapper.Map<ChatMessage>(model);
+            charmessage.Id = Guid.NewGuid().ToString();
             await _unitOfWork.Entity.AddAsync(charmessage);
             await _unitOfWork.Save();
         }
