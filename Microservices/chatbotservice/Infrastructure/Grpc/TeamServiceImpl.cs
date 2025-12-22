@@ -15,7 +15,7 @@ namespace Infrastructure.Grpc
         {
             try
             {
-                var result = await _grpcClient.GetUserTeamInfoAsync(new GetUserTeamInfoRequest { UserId = userId });
+                var result = await _grpcClient.GetTeamByTeamLeaderAsync(new GetUserTeamInfoRequest { UserId = userId });
 
                 return new GetTeamInformationDto { CompanyId = result.CompanyId, TeamName = result.TeamName };
             }

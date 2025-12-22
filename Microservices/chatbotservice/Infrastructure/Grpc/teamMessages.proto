@@ -2,25 +2,6 @@ syntax = "proto3";
 
 option csharp_namespace = "Infrastructure.Grpc";
 
-message GetTeamByIdRequest {
-  string teamId = 1;
-}
-
-message GetCompanyTeamsRequest {
-  string companyId = 1;
-}
-
-message TeamResponse {
-  string id = 1;
-  string name = 2;
-  string teamLeadId = 3;
-  repeated string employees = 4;
-  string companyId = 5;
-}
-
-message TeamsListResponse {
-  repeated TeamResponse teams = 1;
-}
 
 message GetUserTeamInfoRequest {
   string userId = 1;
