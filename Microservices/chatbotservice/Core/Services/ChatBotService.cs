@@ -54,6 +54,7 @@ namespace Core.Services
                 return new AiResponseDto
                 {
                     status = Status.FAILURE,
+                    message = ex.Message
                 };
             }            
         }
@@ -97,8 +98,9 @@ namespace Core.Services
 
         public async Task SaveToDatabase(SaveDto model)
         {
-            var charmessage = _mapper.Map<ChatMessage>(model);
-            await _unitOfWork.Entity.AddAsync(charmessage);
+            var chatmessage = _mapper.Map<ChatMessage>(model);
+            chatmessage.Id = Guid.NewGuid().ToString();
+            await _unitOfWork.Entity.AddAsync(chatmessage);
             await _unitOfWork.Save();
         }
     }
