@@ -10,7 +10,7 @@ public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient grpcServiceCl
         var request = new GetUserTeamInfoRequest { UserId = userId };
         try
         {
-            var response = await grpcServiceClient.GetUserTeamInfoAsync(request);
+            var response = await grpcServiceClient.GetTeamByTeamLeaderAsync(request);
             return response.CompanyId;
         }
         catch (RpcException ex)
