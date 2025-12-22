@@ -54,6 +54,7 @@ namespace Core.Services
                 return new AiResponseDto
                 {
                     status = Status.FAILURE,
+                    message = ex.Message
                 };
             }            
         }
