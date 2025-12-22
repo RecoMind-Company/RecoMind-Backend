@@ -14,7 +14,7 @@ namespace Core.Models
         public string UserId { get; set; }
         public string UserRole { get; set; }
         public string UserQuestion { get; set; }
-        public ResponseMessage Response { get; set; }
+        public ResponseMessage? Response { get; set; }
         public DateTime TimeStamp { get; set; }
     }
 }
