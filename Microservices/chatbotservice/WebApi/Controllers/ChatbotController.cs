@@ -15,14 +15,14 @@ namespace WebApi.Controllers
     public class ChatbotController : ControllerBase
     {
         private readonly IChatBotService _chatBotService;
-       
+
         public ChatbotController(IChatBotService chatBotService)
         {
-            _chatBotService = chatBotService;            
+            _chatBotService = chatBotService;
         }
 
         [HttpPost("CreateQuery")]
-        public async Task<IActionResult> CreateQuery([FromBody] string Question)
+        public async Task<IActionResult> CreateQuery(QuestionDto question)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -31,12 +31,12 @@ namespace WebApi.Controllers
             {
                 var dto = new CreateChatRequestDto
                 {
-                    user_question = Question,
+                    user_question = question.Question,
                     UserID = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
                     UserRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty,
                 };
                 var result = await _chatBotService.HandelRequestBeforeBassingItToAiService(dto);
-                result.user_question = Question;
+                result.user_question = question.Question;
                 return Ok(result);
             }
             catch (KeyNotFoundException knfEx)
@@ -50,10 +50,10 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("ChatbotResponse")]
-        public async Task<IActionResult> GetResult( [FromBody] GetMethodDto dto )
+        public async Task<IActionResult> GetResult([FromBody] GetMethodDto dto)
         {
-            try 
-            {                
+            try
+            {
                 var result = await _chatBotService.GetResponseFromAiService(dto);
 
                 if (result.Status == Status.SUCCESS) // Save to DB
@@ -72,7 +72,7 @@ namespace WebApi.Controllers
                     };
 
                     await _chatBotService.SaveToDatabase(model);
-                }  
+                }
                 else if (result.Status == Status.FAILURE)
                 {
                     return BadRequest("Failed to get response from AI service.");
@@ -81,7 +81,7 @@ namespace WebApi.Controllers
                 var res = new UserResponseDto
                 {
                     Status = result.Status,
-                    Response= result.Result.Answer,
+                    Response = result.Result.Answer,
                 };
 
                 return Ok(res);
