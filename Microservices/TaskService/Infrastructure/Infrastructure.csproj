@@ -26,9 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Context\" />
     <Folder Include="gRPC\" />
-    <Folder Include="Repository\" />
   </ItemGroup>
 
 </Project>
