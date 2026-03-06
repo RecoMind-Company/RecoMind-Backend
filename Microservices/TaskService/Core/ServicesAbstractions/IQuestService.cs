@@ -7,4 +7,5 @@ public interface IQuestService
 {
     Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string planId);
     Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId);
+    Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId);
 }

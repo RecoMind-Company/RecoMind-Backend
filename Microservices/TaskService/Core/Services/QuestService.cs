@@ -28,5 +28,15 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
+    public async Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId)
+    {
+        var ExistedQuest = await _questRepository.Find(q => q.QuestId == questId);
+        if (ExistedQuest is null)
+            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+        mapper.Map(updateQuestDto, ExistedQuest);
+        await unitOfWork.SaveChangesAsync();
+        var questToReturn = mapper.Map<QuestToReturnDto>(ExistedQuest);
+        return Result<QuestToReturnDto>.Success(questToReturn);
+    }
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate plan existence.
 }
