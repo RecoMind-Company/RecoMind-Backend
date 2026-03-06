@@ -44,6 +44,10 @@ public class QuestService(IUnitOfWork unitOfWork,
         {
             return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
         }
+        if (existedQuest.UserAssignedQuests.Any(uq => uq.UserId == userToQuestDto.UserId))
+        {
+            return Result<QuestToReturnDto>.Failure(QuestErrors.UserAlreadyAssignedToQuest);
+        }
         // TODO: here will be a grpc method that take userId and teamId and return boolean to check if the user exists in the team.
         existedQuest.UserAssignedQuests.Add(new UserQuests
         {
