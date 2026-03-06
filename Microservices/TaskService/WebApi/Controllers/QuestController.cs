@@ -49,6 +49,16 @@ public class QuestController(IQuestService questService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
+    [HttpDelete("delete/{questId}")]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<ActionResult> DeleteTaskAsync(string questId)
+    {
+        var result = await questService.DeleteQuestAsync(questId);
+        return result.Map(
+            onSuccess: _ => NoContent(),
+            onFailure: err => HandleFailure(err));
+    }
     [HttpPost("add-user-to-task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
