@@ -8,9 +8,14 @@ namespace Infrastructure.Repository;
 public class GenericRepository<T>(ApplicationDbContext context) : IGenericRepository<T> where T : class
 {
     private readonly DbSet<T> _dbset = context.Set<T>();
-    public IQueryable<T> GetAllAsync()
+    public IQueryable<T> GetAllAsync(params Expression<Func<T, object>>[] includes)
     {
-        return _dbset.AsNoTracking();
+        IQueryable<T> query = _dbset.AsNoTracking();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return query;
     }
     public async Task<T?> Find(Expression<Func<T, bool>> predicate)
     {

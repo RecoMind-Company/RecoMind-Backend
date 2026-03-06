@@ -4,7 +4,7 @@ namespace Core.Interfaces;
 
 public interface IGenericRepository<T> where T : class
 {
-    IQueryable<T> GetAllAsync();
+    IQueryable<T> GetAllAsync(params Expression<Func<T, object>>[] includes);
     Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate);
     Task<T?> Find(Expression<Func<T, bool>> predicate);
     Task AddAsync(T entity);
