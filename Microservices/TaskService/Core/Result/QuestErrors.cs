@@ -1,5 +1,7 @@
 ﻿namespace Core.Result;
 
-public class QuestErrors
+public static class QuestErrors
 {
+    public static Error QuestNotFound =>
+        new("Task.NotFound", "The specified Task was not found.");
 }
