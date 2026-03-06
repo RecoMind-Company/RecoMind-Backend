@@ -20,7 +20,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
 });
 builder.Services.AddAutoMapper(cfg => { }, typeof(QuestProfile).Assembly);
-builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, includeInternalTypes: true);
 builder.Services.AddScoped<IQuestService, QuestService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 var app = builder.Build();

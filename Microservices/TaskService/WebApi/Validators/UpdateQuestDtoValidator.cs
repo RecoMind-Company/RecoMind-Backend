@@ -3,15 +3,14 @@ using FluentValidation;
 
 namespace WebApi.Validators;
 
-internal class QuestDtoValidator : AbstractValidator<QuestDto>
+internal class UpdateQuestDtoValidator : AbstractValidator<UpdateQuestDto>
 {
-    public QuestDtoValidator()
+    public UpdateQuestDtoValidator()
     {
         RuleFor(q => q.Title)
-            .NotEmpty()
-            .WithMessage("Title is required.")
             .MaximumLength(100)
-            .WithMessage("Title must not exceed 100 characters.");
+            .WithMessage("Title must not exceed 100 characters.")
+            .When(q => !string.IsNullOrEmpty(q.Title));
 
         RuleFor(q => q.Description)
             .MaximumLength(255)
@@ -26,7 +25,7 @@ internal class QuestDtoValidator : AbstractValidator<QuestDto>
             .When(q => q.StartDate is not null);
 
         RuleFor(q => q.DeadLine)
-            .NotEmpty().WithMessage("Deadline is required.")
-            .Must(date => date >= DateTime.UtcNow.AddMinutes(-2)).WithMessage("Deadline must be in the future.");
+            .Must(date => date >= DateTime.UtcNow.AddMinutes(-2)).WithMessage("Deadline must be in the future.")
+            .When(q => q.DeadLine is not null);
     }
 }
