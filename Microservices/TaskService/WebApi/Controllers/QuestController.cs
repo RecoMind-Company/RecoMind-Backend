@@ -10,7 +10,8 @@ namespace WebApi.Controllers;
 [Route("api/Tasks")]
 public class QuestController(IQuestService questService,
                              IValidator<QuestDto> questDtoValidator,
-                             IValidator<UpdateQuestDto> updateQuestDtoValidator) : BaseApiController
+                             IValidator<UpdateQuestDto> updateQuestDtoValidator,
+                             IValidator<AddUserToQuestDto> addUserToQuestValidator) : BaseApiController
 {
     [HttpPost("{planId}/task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
@@ -44,6 +45,20 @@ public class QuestController(IQuestService questService,
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
         var result = await questService.EditQuestAsync(updateQuestDto, questId);
+        return result.Map<ActionResult<QuestToReturnDto>>(
+            onSuccess: quest => Ok(quest),
+            onFailure: err => HandleFailure(err));
+    }
+    [HttpPost("add-user-to-task")]
+    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<QuestToReturnDto>> AddUserToTaskAsync(AddUserToQuestDto userToQuestDto)
+    {
+        var validationResult = await ExecuteValidation(addUserToQuestValidator, userToQuestDto);
+        if (!validationResult.IsSuccess)
+            return BadRequest(validationResult.ErrorList);
+        var result = await questService.AddUserToQuestAsync(userToQuestDto);
         return result.Map<ActionResult<QuestToReturnDto>>(
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
