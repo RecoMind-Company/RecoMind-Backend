@@ -8,14 +8,9 @@ namespace Infrastructure.Repository;
 public class GenericRepository<T>(ApplicationDbContext context) : IGenericRepository<T> where T : class
 {
     private readonly DbSet<T> _dbset = context.Set<T>();
-    public IQueryable<T> GetAllAsync(params Expression<Func<T, object>>[] includes)
+    public IQueryable<T> GetAllAsync()
     {
-        IQueryable<T> query = _dbset.AsNoTracking();
-        foreach (var include in includes)
-        {
-            query = query.Include(include);
-        }
-        return query;
+        return _dbset.AsNoTracking();
     }
     public async Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
     {
@@ -26,9 +21,14 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         }
         return await query.FirstOrDefaultAsync(predicate);
     }
-    public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate)
+    public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
     {
-        return await _dbset.Where(predicate).ToListAsync();
+        IQueryable<T> query = _dbset;
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return await query.Where(predicate).ToListAsync();
     }
     public async Task AddAsync(T entity)
     {

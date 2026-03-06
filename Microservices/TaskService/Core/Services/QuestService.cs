@@ -4,7 +4,6 @@ using Core.Interfaces;
 using Core.Models;
 using Core.Result;
 using Core.ServicesAbstractions;
-using Microsoft.EntityFrameworkCore;
 namespace Core.Services;
 
 public class QuestService(IUnitOfWork unitOfWork,
@@ -24,7 +23,7 @@ public class QuestService(IUnitOfWork unitOfWork,
     }
     public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId)
     {
-        var quests = await _questRepository.GetAllAsync(q => q.UserAssignedQuests).Where(q => q.PlanId == planId).ToListAsync();
+        var quests = await _questRepository.FindAll(q => q.PlanId == planId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
@@ -48,8 +47,8 @@ public class QuestService(IUnitOfWork unitOfWork,
         // TODO: here will be a grpc method that take userId and teamId and return boolean to check if the user exists in the team.
         existedQuest.UserAssignedQuests.Add(new UserQuests
         {
-            QuestId = userToQuestDto.QuestId,
-            UserId = userToQuestDto.UserId
+            QuestId = userToQuestDto.QuestId!,
+            UserId = userToQuestDto.UserId!
         });
         await unitOfWork.SaveChangesAsync();
         var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
