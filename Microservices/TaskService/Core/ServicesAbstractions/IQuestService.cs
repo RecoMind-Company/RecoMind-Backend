@@ -9,4 +9,5 @@ public interface IQuestService
     Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId);
     Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId);
     Task<Result<QuestToReturnDto>> AddUserToQuestAsync(AddUserToQuestDto userToQuestDto);
+    Task<Result<IEnumerable<QuestToReturnDto>>> GetUserAssignedQuestsAsync(string userId);
 }

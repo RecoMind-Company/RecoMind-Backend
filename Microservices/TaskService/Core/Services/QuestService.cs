@@ -10,6 +10,7 @@ public class QuestService(IUnitOfWork unitOfWork,
                           IMapper mapper) : IQuestService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
+    private readonly IGenericRepository<UserQuests> _userQuestsRepository = unitOfWork.GetRepository<UserQuests>();
     public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string planId)
     {
         // TODO: here will be a grpc method that take questDto.PlanId and return the plan to check if it exists.
@@ -58,6 +59,13 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetUserAssignedQuestsAsync(string userId)
+    {
+        var userQuests = await _userQuestsRepository.FindAll(uq => uq.UserId == userId, uq => uq.Quest);
+        var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(userQuests);
+        return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
+    }
+
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate plan existence.
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
 }
