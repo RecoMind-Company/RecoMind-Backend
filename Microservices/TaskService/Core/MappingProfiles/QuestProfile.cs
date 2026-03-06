@@ -21,6 +21,9 @@ public class QuestProfile : Profile
 
 
         CreateMap<Quest, QuestToReturnDto>();
+
+        CreateMap<UpdateQuestDto, Quest>()
+            .ForAllMembers(opt => opt.Condition((src, des, srcMember) => srcMember != null));
     }
 
 
