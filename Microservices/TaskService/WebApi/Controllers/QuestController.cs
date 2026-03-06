@@ -24,4 +24,13 @@ public class QuestController(IQuestService questService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
+    [HttpGet("{planId}/tasks")]
+    [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync(string planId)
+    {
+        var result = await questService.GetAllQuestsAsync(planId);
+        return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
+            onSuccess: quests => Ok(quests),
+            onFailure: err => HandleFailure(err));
+    }
 }
