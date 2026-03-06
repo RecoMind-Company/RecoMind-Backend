@@ -20,7 +20,9 @@ public class QuestProfile : Profile
             : QuestStatusEnum.pending));
 
 
-        CreateMap<Quest, QuestToReturnDto>();
+        CreateMap<Quest, QuestToReturnDto>()
+            .ForMember(des => des.UserAssignedQuests, opt => opt.
+            MapFrom(src => src.UserAssignedQuests.Select(x => x.UserId).ToList()));
 
         CreateMap<UpdateQuestDto, Quest>()
             .ForAllMembers(opt => opt.Condition((src, des, srcMember) => srcMember != null));

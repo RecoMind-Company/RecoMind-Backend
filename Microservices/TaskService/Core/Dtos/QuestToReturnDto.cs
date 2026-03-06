@@ -12,4 +12,5 @@ public class QuestToReturnDto
     public DateTime DeadLine { get; set; }
     public TimeSpan Duration { get; set; }
     public string PlanId { get; set; } = default!;
+    public List<string> UserAssignedQuests { get; set; } = [];
 }
