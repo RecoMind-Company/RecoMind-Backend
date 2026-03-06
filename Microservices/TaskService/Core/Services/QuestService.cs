@@ -4,7 +4,7 @@ using Core.Interfaces;
 using Core.Models;
 using Core.Result;
 using Core.ServicesAbstractions;
-
+using Microsoft.EntityFrameworkCore;
 namespace Core.Services;
 
 public class QuestService(IUnitOfWork unitOfWork,
@@ -24,7 +24,7 @@ public class QuestService(IUnitOfWork unitOfWork,
     }
     public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId)
     {
-        var quests = await _questRepository.FindAll(q => q.PlanId == planId);
+        var quests = await _questRepository.GetAllAsync(q => q.UserAssignedQuests).Where(q => q.PlanId == planId).ToListAsync();
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
@@ -39,4 +39,5 @@ public class QuestService(IUnitOfWork unitOfWork,
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate plan existence.
+    // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
 }
