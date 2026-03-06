@@ -38,6 +38,15 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questToReturn = mapper.Map<QuestToReturnDto>(ExistedQuest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
+    public async Task<Result<bool>> DeleteQuestAsync(string questId)
+    {
+        var existedQuest = await _questRepository.Find(q => q.QuestId == questId);
+        if (existedQuest is null)
+            return Result<bool>.Failure(QuestErrors.QuestNotFound);
+        _questRepository.Delete(existedQuest);
+        await unitOfWork.SaveChangesAsync();
+        return Result<bool>.Success(true);
+    }
     public async Task<Result<QuestToReturnDto>> AddUserToQuestAsync(AddUserToQuestDto userToQuestDto)
     {
         var existedQuest = await _questRepository.Find(q => q.QuestId == userToQuestDto.QuestId, q => q.UserAssignedQuests);
@@ -65,6 +74,8 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(userQuests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
+
+
 
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate plan existence.
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
