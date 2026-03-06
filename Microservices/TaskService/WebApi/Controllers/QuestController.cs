@@ -9,7 +9,8 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("api/Tasks")]
 public class QuestController(IQuestService questService,
-                             IValidator<QuestDto> questDtoValidator) : BaseApiController
+                             IValidator<QuestDto> questDtoValidator,
+                             IValidator<UpdateQuestDto> updateQuestDtoValidator) : BaseApiController
 {
     [HttpPost("{planId}/task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
@@ -31,6 +32,20 @@ public class QuestController(IQuestService questService,
         var result = await questService.GetAllQuestsAsync(planId);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
+            onFailure: err => HandleFailure(err));
+    }
+    [HttpPatch("update/{questId}")]
+    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<QuestToReturnDto>> EditTaskAsync([FromBody] UpdateQuestDto updateQuestDto, string questId)
+    {
+        var validationResult = await ExecuteValidation(updateQuestDtoValidator, updateQuestDto);
+        if (!validationResult.IsSuccess)
+            return BadRequest(validationResult.ErrorList);
+        var result = await questService.EditQuestAsync(updateQuestDto, questId);
+        return result.Map<ActionResult<QuestToReturnDto>>(
+            onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
 }
