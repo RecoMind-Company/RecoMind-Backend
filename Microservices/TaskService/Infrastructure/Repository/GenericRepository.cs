@@ -17,9 +17,14 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         }
         return query;
     }
-    public async Task<T?> Find(Expression<Func<T, bool>> predicate)
+    public async Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
     {
-        return await _dbset.FirstOrDefaultAsync(predicate);
+        IQueryable<T> query = _dbset;
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return await query.FirstOrDefaultAsync(predicate);
     }
     public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate)
     {
