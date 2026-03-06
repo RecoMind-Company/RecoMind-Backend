@@ -38,6 +38,23 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questToReturn = mapper.Map<QuestToReturnDto>(ExistedQuest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
+    public async Task<Result<QuestToReturnDto>> AddUserToQuestAsync(AddUserToQuestDto userToQuestDto)
+    {
+        var existedQuest = await _questRepository.Find(q => q.QuestId == userToQuestDto.QuestId, q => q.UserAssignedQuests);
+        if (existedQuest is null)
+        {
+            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+        }
+        // TODO: here will be a grpc method that take userId and teamId and return boolean to check if the user exists in the team.
+        existedQuest.UserAssignedQuests.Add(new UserQuests
+        {
+            QuestId = userToQuestDto.QuestId,
+            UserId = userToQuestDto.UserId
+        });
+        await unitOfWork.SaveChangesAsync();
+        var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
+        return Result<QuestToReturnDto>.Success(questToReturn);
+    }
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate plan existence.
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
 }
