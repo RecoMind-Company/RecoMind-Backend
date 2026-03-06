@@ -63,4 +63,15 @@ public class QuestController(IQuestService questService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
+    [HttpGet("user-tasks")]
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetUserAssignedTasksAsync()
+    {
+        // TODO: Refactor this to get the userId from the token, and add authorization to the endpoint.
+        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = "testUser1";
+        var result = await questService.GetUserAssignedQuestsAsync(userId!);
+        return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
+            onSuccess: quests => Ok(quests),
+            onFailure: err => HandleFailure(err));
+    }
 }
