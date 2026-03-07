@@ -13,7 +13,7 @@ public class QuestController(IQuestService questService,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
                              IValidator<QuestByStatusDto> questByStatusDtoValidator) : BaseApiController
 {
-    [HttpPost("{planId}/task")]
+    [HttpPost("{planId}/add-task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<QuestToReturnDto>> CreateTask([FromBody] QuestDto questDto, string planId)
