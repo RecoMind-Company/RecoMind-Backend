@@ -2,7 +2,9 @@
 using Core.Result;
 using Core.ServicesAbstractions;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebApi.Controllers;
 
@@ -25,12 +27,11 @@ public class UserQuestsController(IUserQuestsService userQuestsService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
+    [Authorize]
     [HttpGet("user-tasks")]
     public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetUserAssignedTasksAsync()
     {
-        // TODO: Refactor this to get the userId from the token, and add authorization to the endpoint.
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userId = "testUser1";
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var result = await userQuestsService.GetUserAssignedQuestsAsync(userId!);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
