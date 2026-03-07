@@ -10,8 +10,7 @@ namespace WebApi.Controllers;
 [Route("api/Tasks")]
 public class QuestController(IQuestService questService,
                              IValidator<QuestDto> questDtoValidator,
-                             IValidator<UpdateQuestDto> updateQuestDtoValidator,
-                             IValidator<AddUserToQuestDto> addUserToQuestValidator) : BaseApiController
+                             IValidator<UpdateQuestDto> updateQuestDtoValidator) : BaseApiController
 {
     [HttpPost("{planId}/task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
@@ -59,29 +58,5 @@ public class QuestController(IQuestService questService,
             onSuccess: _ => NoContent(),
             onFailure: err => HandleFailure(err));
     }
-    [HttpPost("add-user-to-task")]
-    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<QuestToReturnDto>> AddUserToTaskAsync(AddUserToQuestDto userToQuestDto)
-    {
-        var validationResult = await ExecuteValidation(addUserToQuestValidator, userToQuestDto);
-        if (!validationResult.IsSuccess)
-            return BadRequest(validationResult.ErrorList);
-        var result = await questService.AddUserToQuestAsync(userToQuestDto);
-        return result.Map<ActionResult<QuestToReturnDto>>(
-            onSuccess: quest => Ok(quest),
-            onFailure: err => HandleFailure(err));
-    }
-    [HttpGet("user-tasks")]
-    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetUserAssignedTasksAsync()
-    {
-        // TODO: Refactor this to get the userId from the token, and add authorization to the endpoint.
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userId = "testUser1";
-        var result = await questService.GetUserAssignedQuestsAsync(userId!);
-        return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
-            onSuccess: quests => Ok(quests),
-            onFailure: err => HandleFailure(err));
-    }
+
 }

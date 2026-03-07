@@ -22,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 builder.Services.AddAutoMapper(cfg => { }, typeof(QuestProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, includeInternalTypes: true);
 builder.Services.AddScoped<IQuestService, QuestService>();
+builder.Services.AddScoped<IUserQuestsService, UserQuestsService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 var app = builder.Build();
 
