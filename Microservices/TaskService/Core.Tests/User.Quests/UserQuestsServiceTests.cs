@@ -41,16 +41,13 @@ public class UserQuestsServiceTests
         var mapper = config.CreateMapper();
         _sut = new UserQuestsService(_unitOfWorkMock.Object, mapper);
     }
-    [Theory]
-    [InlineData(234)]
-    [InlineData(567)]
-    [InlineData(890)]
-    [InlineData(14)]
-    public async Task AddUserToQuestAsync_WithValidDate_ShouldReturnQuestToReturnDto(int seed)
+
+    [Fact]
+    public async Task AddUserToQuestAsync_WithValidDate_ShouldReturnQuestToReturnDto()
     {
         // arrange
-        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto(seed).Generate("valid");
-        var quest = FakeQuests.GetFakeQuest(seed).Generate();
+        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto().Generate(FakeUserQuests.ValidRuleSet);
+        var quest = FakeQuests.GetFakeQuest().Generate();
         _questRepositoryMock.Setup(qr => qr.Find
         (
             It.IsAny<Expression<Func<Quest, bool>>>(),
@@ -74,17 +71,13 @@ public class UserQuestsServiceTests
         result.Value.Should().NotBeNull();
         result.Value.UserAssignedQuests.Should().NotBeEmpty();
         result.Value.UserAssignedQuests.Should().Contain(addUserToQuestDto.QuestId);
-
     }
-    [Theory]
-    [InlineData(24)]
-    [InlineData(57)]
-    [InlineData(89)]
-    [InlineData(134)]
-    public async Task AddUserToQuestAsync_WithNonExistingQuest_ShouldReturnQuestNotFoundError(int seed)
+
+    [Fact]
+    public async Task AddUserToQuestAsync_WithNonExistingQuest_ShouldReturnQuestNotFoundError()
     {
         // arrange
-        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto(seed).Generate(FakeUserQuests.ValidRuleSet);
+        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto().Generate(FakeUserQuests.ValidRuleSet);
         _questRepositoryMock.Setup(qr => qr.Find
         (
             It.IsAny<Expression<Func<Quest, bool>>>(),
@@ -106,16 +99,13 @@ public class UserQuestsServiceTests
         result.IsSuccess.Should().BeFalse();
         result.ErrorList.Should().Contain(QuestErrors.QuestNotFound, "the error list must include QuestNotFound when no quest matches the provided ID");
     }
-    [Theory]
-    [InlineData(3)]
-    [InlineData(89)]
-    [InlineData(55)]
-    [InlineData(567)]
-    public async Task AddUserToQeustAsync_WhenAlreadyUserIsAsignedToQuest_ShouldReturnUserAlreadyAssignedToQuestError(int seed)
+
+    [Fact]
+    public async Task AddUserToQeustAsync_WhenAlreadyUserIsAsignedToQuest_ShouldReturnUserAlreadyAssignedToQuestError()
     {
         // arrange
-        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto(seed).Generate(FakeUserQuests.UserAssignedRuleSet);
-        var quest = FakeQuests.GetFakeQuest(seed).Generate();
+        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto().Generate(FakeUserQuests.UserAssignedRuleSet);
+        var quest = FakeQuests.GetFakeQuest().Generate();
         _questRepositoryMock.Setup(qr => qr.Find
         (
             It.IsAny<Expression<Func<Quest, bool>>>(),
@@ -128,18 +118,15 @@ public class UserQuestsServiceTests
         result.IsSuccess.Should().BeFalse();
         result.ErrorList.Should().Contain(UserQuestsErrors.UserAlreadyAssignedToQuest, "the error list must include UserAlreadyAssignedToQuest when the user is already assigned to the quest");
     }
-    [Theory]
-    [InlineData(23)]
-    [InlineData(89)]
-    [InlineData(55)]
-    [InlineData(567)]
-    public async Task GetUserAssignedQuestsAsync_WithValidUserId_ShouldReturnListOfQuestToReturnDto(int seed)
+
+    [Fact]
+    public async Task GetUserAssignedQuestsAsync_WithValidUserId_ShouldReturnListOfQuestToReturnDto()
     {
         // arrange
         var userId = "user1";
-        var userQuests = FakeUserQuests.GetFakeUserQuests(seed)
+        var userQuests = FakeUserQuests.GetFakeUserQuests()
             .RuleFor(uq => uq.UserId, f => userId)
-            .RuleFor(uq => uq.Quest, f => FakeQuests.GetFakeQuest(seed).Generate())
+            .RuleFor(uq => uq.Quest, f => FakeQuests.GetFakeQuest().Generate())
             .Generate(3);
         _userQuestsRepositoryMock.Setup(uqr => uqr.FindAll
             (
@@ -154,6 +141,7 @@ public class UserQuestsServiceTests
         result.Value.Should().NotBeNull();
         result.Value.Should().HaveCount(3, "the returned list of quests should contain exactly 3 quests assigned to the user");
     }
+
     [Fact]
     public async Task GetUserAssignedQuestsAsync_WithInvalidUserId_ShouldReturnEmptyList()
     {
@@ -173,6 +161,7 @@ public class UserQuestsServiceTests
         result.Value.Should().NotBeNull();
         result.Value.Should().BeEmpty("the returned list of quests should be empty when no quests are assigned to the user");
     }
+
     [Fact]
     public async Task UnAssignUserFromQuestAsync_WhenUserIsNotAssignedToQuest_ShouldReturnUserNotAssignedToQuestError()
     {
@@ -190,13 +179,12 @@ public class UserQuestsServiceTests
         result.IsSuccess.Should().BeFalse();
         result.ErrorList.Should().Contain(UserQuestsErrors.UserNotAssignedToQuest, "the error list must include UserNotAssignedToQuest when the user is not assigned to the quest");
     }
-    [Theory]
-    [InlineData(23)]
-    [InlineData(89)]
-    public async Task UnAssignUserFromQuestAsync_WithValidDate_ShouldReturnUserNotAssignedToQuestError(int seed)
+
+    [Fact]
+    public async Task UnAssignUserFromQuestAsync_WithValidDate_ShouldReturnUserNotAssignedToQuestError()
     {
         // arrange
-        var userQuest = FakeUserQuests.GetFakeUserQuests(seed).Generate();
+        var userQuest = FakeUserQuests.GetFakeUserQuests().Generate();
         var userId = userQuest.UserId;
         var questId = userQuest.QuestId;
         _userQuestsRepositoryMock.Setup(uqr => uqr.Find
