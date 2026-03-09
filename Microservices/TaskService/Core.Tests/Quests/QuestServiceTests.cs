@@ -127,7 +127,7 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task EditQuestAsync_WhenQuestIsNotExisted_ReturnFailure()
+    public async Task EditQuestAsync_WhenQuestIsNotExisted_ReturnQuestNotFoundError()
     {
         // arrange
         var updateDto = FakeQuests.GetFakeUpdateQuestDto().Generate();
@@ -141,7 +141,7 @@ public class QuestServiceTests
     }
 
     [Fact]
-    public async Task DeleteQuestAsync_WhenQuestIsNotExisted_ReturnFailure()
+    public async Task DeleteQuestAsync_WhenQuestIsNotExisted_ReturnQuestNotFoundError()
     {
         // arrange
         var questId = Guid.NewGuid().ToString();
