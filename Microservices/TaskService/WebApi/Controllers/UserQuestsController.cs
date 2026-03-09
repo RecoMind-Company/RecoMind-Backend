@@ -27,6 +27,7 @@ public class UserQuestsController(IUserQuestsService userQuestsService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
+
     [Authorize]
     [HttpGet("user-tasks")]
     public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetUserAssignedTasksAsync()
@@ -37,6 +38,7 @@ public class UserQuestsController(IUserQuestsService userQuestsService,
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));
     }
+
     [HttpDelete("{questId}/users/{userId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
