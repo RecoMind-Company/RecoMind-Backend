@@ -309,4 +309,39 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         request.Should().BeAs(errors);
     }
     #endregion
+
+    #region Delete Task
+    [Fact]
+    public async Task DeleteTaskAsync_WhenTaskIsExisted_ReturnNoContent()
+    {
+        // arrange
+        var quest = QuestFakers.Quest(seed: 4).Generate();
+        var questId = quest.QuestId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
+        }
+        // act
+        var response = await _client.DeleteAsync($"{_baseUrl}/delete/{questId}");
+        // assert
+        response.Should().Be204NoContent();
+    }
+    [Fact]
+    public async Task DeleteTaskAsync_WhenTaskIsNotFound_ReturnNotFound()
+    {
+        // arrange
+        var nonExistingQuestId = "nonExistingQuestId";
+        // act
+        var response = await _client.DeleteAsync($"{_baseUrl}/delete/{nonExistingQuestId}");
+        // assert
+        response.Should().Be404NotFound();
+        var errors = new Error[]
+        {
+            new("Task.NotFound", "The specified Task was not found.")
+        };
+        response.Should().BeAs(errors);
+    }
+    #endregion
 }
