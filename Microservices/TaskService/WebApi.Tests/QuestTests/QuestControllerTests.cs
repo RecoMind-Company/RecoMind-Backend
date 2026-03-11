@@ -1,4 +1,5 @@
 ﻿using Core.Dtos;
+using Core.Models;
 using Core.Result;
 using FluentAssertions;
 using Infrastructure.Context;
@@ -31,6 +32,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         db.Database.EnsureCreated();
         _client = factory.CreateClient();
     }
+    #region Create Task
     [Theory]
     [InlineData(2)]
     [InlineData(3)]
@@ -83,6 +85,9 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         response.Should().Be400BadRequest();
         response.Should().BeAs(errors);
     }
+    #endregion
+
+    #region Get All Tasks
     [Fact]
     public async Task GetAllTaskAsync_WithValidPlanIdAndQuestsAssignedToUsers_ReturnOKWithListOfTasksIncludedUserQuests()
     {
@@ -138,6 +143,9 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
         result.Should().BeEmpty();
     }
+    #endregion
+
+    #region Get All Taks By Status 
     [Theory]
     [InlineData(2)]
     [InlineData(3)]
@@ -212,4 +220,93 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .And
             .OnlyContain(q => q.PlanId == planId);
     }
+    #endregion
+
+    #region Edit Task
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task EditTaskAsync_WithValidData_ReturnOk(int seed)
+    {
+        // arrange
+        var quest = QuestFakers.Quest(seed).Generate();
+        var updateQuest = QuestFakers.UpdateQuestDto(seed).Generate();
+        var validQuestAfterUpdate = new QuestToReturnDto
+        {
+            QuestId = quest.QuestId,
+            PlanId = quest.PlanId,
+            Title = updateQuest.Title ?? quest.Title,
+            Description = updateQuest.Description ?? quest.Description,
+            Status = updateQuest.Status == null ? quest.Status : (QuestStatusEnum)updateQuest.Status,
+            StartDate = updateQuest.StartDate ?? quest.StartDate,
+            DeadLine = updateQuest.DeadLine ?? quest.DeadLine,
+        };
+        validQuestAfterUpdate.Duration = validQuestAfterUpdate.DeadLine - validQuestAfterUpdate.StartDate;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
+        }
+        // act
+        var request = await _client.PatchAsJsonAsync($"{_baseUrl}/update/{quest.QuestId}", updateQuest);
+        // assert
+        request.Should().Be200Ok();
+        var result = await request.Content.ReadFromJsonAsync<QuestToReturnDto>(_jsonOptions);
+        result
+            .Should()
+            .BeEquivalentTo(validQuestAfterUpdate, opt =>
+                opt
+                .Excluding(q => q.Duration)
+                .Excluding(q => q.StartDate)
+                .Excluding(q => q.DeadLine)
+            );
+        result!.Duration.Should().BeCloseTo(validQuestAfterUpdate.Duration, TimeSpan.FromSeconds(3));
+        result.StartDate.Should().BeCloseTo(validQuestAfterUpdate.StartDate, TimeSpan.FromSeconds(3));
+        result.DeadLine.Should().BeCloseTo(validQuestAfterUpdate.DeadLine, TimeSpan.FromSeconds(3));
+    }
+    [Fact]
+    public async Task EditTaskAsync_WithInValidData_ReturnBadRequest()
+    {
+        // arrange
+        var quest = QuestFakers.Quest().Generate();
+        var updateQuest = QuestFakers.UpdateQuestDto().Generate(QuestFakers.InValid);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
+        }
+        var errors = new Error[]
+        {
+            new("Title", "Title must not exceed 100 characters."),
+            new("Description", "The length of 'Description' must be 255 characters or fewer. You entered 300 characters."),
+            new("Status", "Status must be between 0 and 3. 0: pending 1: active 2: completed 3: action_required"),
+            new("StartDate", "Start date must be in the future."),
+            new("DeadLine", "Deadline must be in the future and after the start date.")
+        };
+        // act
+        var request = await _client.PatchAsJsonAsync($"{_baseUrl}/update/{quest.QuestId}", updateQuest);
+        // assert
+        request.Should().Be400BadRequest();
+        request.Should().BeAs(errors);
+    }
+    [Fact]
+    public async Task EditTaskAsync_WhenTaskIsNotFound_ReturnNotFound()
+    {
+        // arrange
+        var updateQuest = QuestFakers.UpdateQuestDto(6).Generate();
+        var nonExistingQuestId = "nonExistingQuestId";
+        // act
+        var request = await _client.PatchAsJsonAsync($"{_baseUrl}/update/{nonExistingQuestId}", updateQuest);
+        // assert
+        request.Should().Be404NotFound();
+        var errors = new Error[]
+        {
+            new("Task.NotFound", "The specified Task was not found.")
+        };
+        request.Should().BeAs(errors);
+    }
+    #endregion
 }
