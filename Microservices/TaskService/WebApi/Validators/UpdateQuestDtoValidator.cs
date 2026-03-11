@@ -18,6 +18,7 @@ internal class UpdateQuestDtoValidator : AbstractValidator<UpdateQuestDto>
 
         RuleFor(q => q.Status)
             .InclusiveBetween(0, 3)
+            .WithMessage("Status must be between 0 and 3. 0: pending 1: active 2: completed 3: action_required")
             .When(q => q.Status is not null);
 
         RuleFor(q => q.StartDate)
@@ -25,7 +26,8 @@ internal class UpdateQuestDtoValidator : AbstractValidator<UpdateQuestDto>
             .When(q => q.StartDate is not null);
 
         RuleFor(q => q.DeadLine)
-            .Must(date => date >= DateTime.UtcNow.AddMinutes(-2)).WithMessage("Deadline must be in the future.")
-            .When(q => q.DeadLine is not null);
+            .Must((q, deadline) => deadline >= (q.StartDate ?? DateTime.UtcNow.AddMinutes(-1)))
+            .WithMessage("Deadline must be in the future and after the start date.")
+            .When(q => q.StartDate.HasValue && q.DeadLine.HasValue);
     }
 }
