@@ -52,7 +52,7 @@ public class QuestService(IUnitOfWork unitOfWork,
         {
             return await GetAllQuestsAsync(planId);
         }
-        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status!, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status! && q.PlanId == planId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
