@@ -33,7 +33,7 @@ internal static class QuestFakers
         .RuleFor(q => q.DeadLine, (f, q) => seed % 2 == 0 ? q.StartDate.AddDays(1) : DateTime.UtcNow.AddDays(1))
         .RuleFor(q => q.QuestId, f => f.Random.Guid().ToString())
         .RuleFor(q => q.Duration, (f, q) => q.DeadLine - q.StartDate)
-        .RuleFor(q => q.PlanId, f => "plan1")
+        .RuleFor(q => q.PlanId, f => seed % 2 == 0 ? "plan1" : "plan2")
         .RuleFor(q => q.UserAssignedQuests, f => []);
     internal static Faker<Quest> Quest(int seed = 0) => new Faker<Quest>()
          .UseSeed(seed)

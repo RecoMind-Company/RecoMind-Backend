@@ -37,11 +37,11 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     public async Task CreateTask_WhenDateIsValid_ReturnOk(int seed)
     {
         // arrange
-        var planId = "plan1";
-        var QuestDto = QuestFakers.QuestDto(seed).Generate();
+        var planId = seed % 2 == 0 ? "plan1" : "plan2";
+        var questDto = QuestFakers.QuestDto(seed).Generate();
         var questToReturnDto = QuestFakers.QuestToRetrunDto(seed).Generate();
         // act
-        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", QuestDto);
+        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", questDto);
         // assert
         response.Should().Be200Ok();
 
@@ -94,7 +94,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
                 quests.First().QuestId
             )
             .Generate(2);
-        using var scope = _factory.Services.CreateScope();
+        using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await db.Quests.AddRangeAsync(quests);
@@ -125,7 +125,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         // arrange
         var planId = "nonExistingPlanId";
         var quests = QuestFakers.Quest().Generate(5);
-        using var scope = _factory.Services.CreateScope();
+        using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             await db.Quests.AddRangeAsync(quests);
@@ -137,5 +137,79 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         response.Should().Be200Ok();
         var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
         result.Should().BeEmpty();
+    }
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task GetAllTasksByStatusAsync_WithValidStatus_ReturnOkWithListOfTasks(int seed)
+    {
+        // arrange
+        var quests = QuestFakers.Quest(seed).Generate(6);
+        var status = quests.First().Status;
+        var questsCount = quests.Count(q => q.Status == status);
+        var planId = quests.First().PlanId;
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        // act 
+        var response = await _client.GetAsync($"{_baseUrl}/{planId}/by-status?status={(int)status}");
+        // assert
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
+
+        result
+            .Should()
+            .HaveCount(questsCount)
+            .And
+            .OnlyContain(q => q.Status == status && q.PlanId == planId);
+    }
+    [Fact]
+    public async Task GetAllTasksByStatusAsync_WithInValidStatus_ReturnBadRequest()
+    {
+        // arrange
+        var planId = "plan1";
+        var status = 5; // invalid status
+        var quests = QuestFakers.Quest().Generate(3);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        // act 
+        var response = await _client.GetAsync($"{_baseUrl}/{planId}/by-status?status={status}");
+        response.Should().Be400BadRequest();
+        var errors = new Error[]
+        {
+            new("Status", "Status must be between 0 and 3. 0: pending 1: active 2: completed 3: action_required")
+        };
+        response.Should().BeAs(errors);
+    }
+    [Fact]
+    public async Task GetAllTasksByStatusAsync_WithNullStatus_ReturnOkWithAllTasks()
+    {
+        // arrange
+        var planId = "plan1";
+        var quests = QuestFakers.Quest().Generate(5);
+        var questsCount = quests.Count(q => q.PlanId == planId);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        // act 
+        var response = await _client.GetAsync($"{_baseUrl}/{planId}/by-status");
+        // assert
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
+        result
+            .Should()
+            .HaveCount(questsCount)
+            .And
+            .OnlyContain(q => q.PlanId == planId);
     }
 }
