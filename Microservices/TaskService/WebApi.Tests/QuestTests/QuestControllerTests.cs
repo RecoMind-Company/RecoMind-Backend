@@ -6,11 +6,13 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WebApi.Tests.UserQuestsTests;
 
 namespace WebApi.Tests.QuestTests;
 
 public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<Program>>
 {
+    private readonly string _baseUrl = "api/tasks";
     private readonly HttpClient _client;
     private readonly TestingWebApplicationFactory<Program> _factory;
     private static readonly JsonSerializerOptions _jsonOptions = new()
@@ -36,10 +38,10 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     {
         // arrange
         var planId = "plan1";
-        var QuestDto = QuestFakers.CreateQuestDto(seed).Generate();
-        var questToReturnDto = QuestFakers.CreateQuestToRetrunDto(seed).Generate();
+        var QuestDto = QuestFakers.QuestDto(seed).Generate();
+        var questToReturnDto = QuestFakers.QuestToRetrunDto(seed).Generate();
         // act
-        var response = await _client.PostAsJsonAsync($"api/tasks/{planId}/add-task", QuestDto);
+        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", QuestDto);
         // assert
         response.Should().Be200Ok();
 
@@ -65,7 +67,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     {
         // arrange
         var planId = "plan1";
-        var questDto = QuestFakers.CreateQuestDto().Generate(QuestFakers.InValid);
+        var questDto = QuestFakers.QuestDto().Generate(QuestFakers.InValid);
         var errors = new Error[]
         {
             new("Title", "Title is required."),
@@ -76,9 +78,64 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         };
 
         // act
-        var response = await _client.PostAsJsonAsync($"api/tasks/{planId}/add-task", questDto);
+        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", questDto);
         // assert
         response.Should().Be400BadRequest();
         response.Should().BeAs(errors);
+    }
+    [Fact]
+    public async Task GetAllTaskAsync_WithValidPlanIdAndQuestsAssignedToUsers_ReturnOKWithListOfTasksIncludedUserQuests()
+    {
+        // arrange
+        var quests = QuestFakers.Quest().Generate(5);
+        var userQuests = UserQuestFaker
+            .UserQuests()
+            .RuleFor(uq => uq.QuestId, f =>
+                quests.First().QuestId
+            )
+            .Generate(2);
+        using var scope = _factory.Services.CreateScope();
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        var planId = quests.First().PlanId;
+        // act 
+        var response = await _client.GetAsync($"{_baseUrl}/{planId}/tasks");
+        // assert
+        response.Should().Be200Ok();
+
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
+
+        result
+            .Should()
+            .NotBeEmpty()
+            .And
+            .OnlyContain(x => x.PlanId == planId);
+        result
+            .Should()
+            .Contain(x => x.QuestId == quests.First().QuestId);
+
+        result.Should().HaveCount(quests.Count);
+    }
+    [Fact]
+    public async Task GetAllTaskAsync_WhenThereIsNoTaskWithRequiredPlanId_ReturnOKWithEmptyList()
+    {
+        // arrange
+        var planId = "nonExistingPlanId";
+        var quests = QuestFakers.Quest().Generate(5);
+        using var scope = _factory.Services.CreateScope();
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        // act 
+        var response = await _client.GetAsync($"{_baseUrl}/{planId}/tasks");
+        // assert
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
+        result.Should().BeEmpty();
     }
 }
