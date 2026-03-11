@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace WebApi.Controllers;
 
 [ApiController]
-[Route("api/Tasks")]
+[Route("api/tasks")]
 public class QuestController(IQuestService questService,
                              IValidator<QuestDto> questDtoValidator,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
