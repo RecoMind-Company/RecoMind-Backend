@@ -191,4 +191,60 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         result.Should().HaveCount(0);
     }
     #endregion
+
+    #region UnAssign User From Task
+    [Fact]
+    public async Task UnAssignUserFromTaskAsync_WhenUserIsNotAssignedToTask_ReturnBadRequest()
+    {
+        // arrange
+        var userId = "test-user";
+        var quest = QuestFakers.Quest(seed: 4).Generate();
+        var userQuest = UserQuestFakers
+                        .UserQuests(seed: 4)
+                        .RuleFor(uq => uq.UserId, f => userId)
+                        .RuleFor(uq => uq.QuestId, f => quest.QuestId)
+                        .Generate();
+        var errors = new List<Error>()
+        {
+            new("Task.UserNotAssigned", "This user is not assigned to this Task.")
+        };
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddAsync(quest);
+            await db.SaveChangesAsync();
+        }
+
+        // act
+        var response = await _client.DeleteAsync($"{BaseUrl}/{quest.QuestId}/users/{userId}");
+        // assert
+        response.Should().Be400BadRequest();
+        response.Should().BeAs(errors);
+    }
+    [Fact]
+    public async Task UnAssignUserFromTaskAsync_WhenUserIsAssignedToTask_ReturnBadRequest()
+    {
+        // arrange
+        var userId = "test-user";
+        var quest = QuestFakers.Quest(seed: 4).Generate();
+        var userQuest = UserQuestFakers
+                        .UserQuests(seed: 4)
+                        .RuleFor(uq => uq.UserId, f => userId)
+                        .RuleFor(uq => uq.QuestId, f => quest.QuestId)
+                        .Generate();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddAsync(quest);
+            await db.UserQuests.AddAsync(userQuest);
+            await db.SaveChangesAsync();
+        }
+
+        // act
+        var response = await _client.DeleteAsync($"{BaseUrl}/{quest.QuestId}/users/{userId}");
+        // assert
+        response.Should().Be204NoContent();
+    }
+    #endregion
 }
