@@ -41,7 +41,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         // arrange
         var planId = seed % 2 == 0 ? "plan1" : "plan2";
         var questDto = QuestFakers.QuestDto(seed).Generate();
-        var questToReturnDto = QuestFakers.QuestToRetrunDto(seed).Generate();
+        var questToReturnDto = QuestFakers.QuestToReturnDto(seed).Generate();
         // act
         var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", questDto);
         // assert
@@ -93,7 +93,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     {
         // arrange
         var quests = QuestFakers.Quest().Generate(5);
-        var userQuests = UserQuestFaker
+        var userQuests = UserQuestFakers
             .UserQuests()
             .RuleFor(uq => uq.QuestId, f =>
                 quests.First().QuestId

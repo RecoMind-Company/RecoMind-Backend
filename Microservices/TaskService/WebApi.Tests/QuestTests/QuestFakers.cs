@@ -24,7 +24,7 @@ internal static class QuestFakers
             rules.RuleFor(q => q.DeadLine, f => DateTime.UtcNow.AddDays(-6));
         });
 
-    internal static Faker<QuestToReturnDto> QuestToRetrunDto(int seed = 0) => new Faker<QuestToReturnDto>()
+    internal static Faker<QuestToReturnDto> QuestToReturnDto(int seed = 0) => new Faker<QuestToReturnDto>()
         .UseSeed(seed)
         .RuleFor(q => q.Title, f => f.Lorem.Sentence(3))
         .RuleFor(q => q.Description, f => seed % 2 == 0 ? f.Lorem.Letter(20) : null)
@@ -40,7 +40,7 @@ internal static class QuestFakers
         .Rules((f, q) =>
         {
             q.Title = f.Lorem.Sentence(3);
-            q.Description = f.Random.Bool() ? f.Lorem.Letter(20) : null;
+            q.Description = seed % 2 == 0 ? f.Lorem.Letter(20) : null;
             q.Status = f.PickRandom<QuestStatusEnum>();
             q.StartDate = f.Date.Future(1, DateTime.UtcNow.AddSeconds(10));
             q.DeadLine = q.StartDate.AddDays(1);
