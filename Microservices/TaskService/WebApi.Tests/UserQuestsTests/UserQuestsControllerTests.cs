@@ -128,4 +128,67 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         response.Should().BeAs(errors);
     }
     #endregion
+
+    #region Get User Assigned Tasks 
+    [Fact]
+    public async Task GetUserAssignedTasksAsync_WhenAuthorizedAndUserIsAssignedToTasks_ReturnsOk()
+    {
+        // arrange
+        var userId = "test-user";
+        var quests = QuestFakers.Quest(seed: 4).Generate(4);
+        var questsIds = quests.Select(q => q.QuestId).ToList();
+        var userQuests = UserQuestFakers
+                        .UserQuests(seed: 4)
+                        .RuleFor(uq => uq.UserId, f => userId)
+                        .RuleFor(uq => uq.QuestId, f => questsIds[f.IndexVariable++])
+                        .Generate(3);
+        var questToReturnDtos = QuestFakers.QuestToReturnDto(seed: 4)
+                                .RuleFor(q => q.UserAssignedQuests, f => [userId])
+                                .Generate();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.UserQuests.AddRangeAsync(userQuests);
+            await db.SaveChangesAsync();
+        }
+
+        // act
+        var response = await _client.GetAsync($"{BaseUrl}/user-tasks");
+        // assert
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<List<QuestToReturnDto>>(_jsonOptions);
+        result.Should().HaveCount(3);
+        result.Select(q => q.QuestId).Should().NotContain(questsIds.Last());
+        result.Select(q => q.UserAssignedQuests).Should().AllSatisfy(uaq => uaq.Should().Contain(userId));
+    }
+    [Fact]
+    public async Task GetUserAssignedTaskAsync_WhenUserIsUnAuthorized_ReturnUnAuthorized()
+    {
+        // arrange
+        var specificClient = _factory.CreateClient();
+        // act
+        var response = await specificClient.GetAsync($"{BaseUrl}/user-tasks");
+        // assert
+        response.Should().Be401Unauthorized();
+    }
+    [Fact]
+    public async Task GetUserAssignedTaskAsync_WhenUserHasNoAssignedQuests_ReturnOkWithEmptyList()
+    {
+        // arrange
+        var quests = QuestFakers.Quest(seed: 4).Generate(4);
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.Quests.AddRangeAsync(quests);
+            await db.SaveChangesAsync();
+        }
+        // act
+        var response = await _client.GetAsync($"{BaseUrl}/user-tasks");
+        // assert
+        response.Should().Be200Ok();
+        var result = await response.Content.ReadFromJsonAsync<List<QuestToReturnDto>>(_jsonOptions);
+        result.Should().HaveCount(0);
+    }
+    #endregion
 }
