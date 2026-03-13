@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Notification.Core.Models;
 
 namespace Notification.Core.Infrastructure.Data
 {
@@ -13,7 +14,7 @@ namespace Notification.Core.Infrastructure.Data
         public NotificationDbContext(DbContextOptions<NotificationDbContext> options) 
             : base(options) { }
 
-        public DbSet<Core.Models.NotificationModel> Notifications { get; set; }
+        public DbSet<NotificationModel> Notifications { get; set; }
 
         override protected void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,8 +24,8 @@ namespace Notification.Core.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).HasMaxLength(200);
                 entity.Property(e => e.Message).IsRequired(); 
-                entity.Property(e => e.receiverId).IsRequired();
-                entity.HasIndex(e => e.receiverId);
+                entity.Property(e => e.ReceiverId).IsRequired();
+                entity.HasIndex(e => e.ReceiverId);
             });
         }
     }

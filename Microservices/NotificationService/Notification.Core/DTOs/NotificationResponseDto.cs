@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Notification.Core.Models
+namespace Notification.Core.DTOs
 {
-    public class NotificationModel
+    public class NotificationResponseDto
     {
         public string Id { get; set; }
         public string? Title { get; set; }

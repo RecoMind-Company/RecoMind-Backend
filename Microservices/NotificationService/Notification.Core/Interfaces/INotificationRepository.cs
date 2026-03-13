@@ -12,6 +12,7 @@ namespace Notification.Core.Interfaces
         Task AddAsync(NotificationModel notification);
         Task<NotificationModel?> GetByIdAsync(string id);
         Task<IEnumerable<NotificationModel>> GetByReceiverIdAsync(string receiverId);
+        Task<IEnumerable<NotificationModel>> GetByReadStatusAsync(string receiverId, bool isRead);
         Task<int> GetUnreadCountAsync(string receiverId);
         Task MarkAsReadAsync(string id);
         Task MarkAllAsReadAsync(string receiverId);

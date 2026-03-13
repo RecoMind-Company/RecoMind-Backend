@@ -31,31 +31,43 @@ namespace Notification.Infrastructure.Repositories
         public async Task<IEnumerable<NotificationModel>> GetByReceiverIdAsync(string receiverId)
         {
             return await _context.Notifications
-                        .Where(n => n.receiverId == receiverId)
+                        .AsNoTracking()
+                        .Where(n => n.ReceiverId == receiverId)
                         .OrderByDescending(n => n.CreatedAt) // sort by most recent first
+                        .ToListAsync();
+        }
+
+        public async Task<IEnumerable<NotificationModel>> GetByReadStatusAsync(string receiverId, bool isRead)
+        {
+            return await _context.Notifications
+                        .AsNoTracking()
+                        .Where(n => n.ReceiverId == receiverId && n.IsRead == isRead)
+                        .OrderByDescending(n => n.CreatedAt)
                         .ToListAsync();
         }
 
         public async Task<int> GetUnreadCountAsync(string receiverId)
         {
             return await _context.Notifications
-                        .CountAsync(n => n.receiverId == receiverId && !n.IsRead);
+                        .CountAsync(n => n.ReceiverId == receiverId && !n.IsRead);
         }
 
         public async Task MarkAsReadAsync(string id)
         {
-            var notification = await _context.Notifications.FindAsync(id);
-            if (notification != null)
-            {
-                notification.IsRead = true;
-                await _context.SaveChangesAsync();
-            }
+            var notification = await 
+                _context.Notifications.FindAsync(id);
+
+            if (notification == null) return;
+
+            notification.IsRead = true;
+            await _context.SaveChangesAsync();
+
         }
 
         public async Task MarkAllAsReadAsync(string receiverId)
         {
             var unreadNotifications = await _context.Notifications
-                        .Where(n => n.receiverId == receiverId && !n.IsRead)
+                        .Where(n => n.ReceiverId == receiverId && !n.IsRead)
                         .ToListAsync();
 
             foreach (var notification in unreadNotifications)

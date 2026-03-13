@@ -13,10 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Notification.Core\Notification.Core.csproj" />
     <ProjectReference Include="..\Notification.Infrastructure\Notification.Infrastructure.csproj" />
   </ItemGroup>
