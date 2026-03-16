@@ -13,10 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Dtos\" />
-    <Folder Include="Interface\" />
     <Folder Include="MappingProfiles\" />
-    <Folder Include="Models\" />
-    <Folder Include="Result\" />
     <Folder Include="ServicesAbstraction\" />
     <Folder Include="Services\" />
     <Folder Include="Settings\" />
