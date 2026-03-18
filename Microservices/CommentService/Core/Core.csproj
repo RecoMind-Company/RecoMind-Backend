@@ -12,10 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\" />
-    <Folder Include="MappingProfiles\" />
-    <Folder Include="ServicesAbstraction\" />
-    <Folder Include="Services\" />
     <Folder Include="Settings\" />
   </ItemGroup>
 

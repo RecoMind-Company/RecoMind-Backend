@@ -1,0 +1,26 @@
+﻿using AutoMapper;
+using Core.Dtos;
+using Core.Interface;
+using Core.Models;
+using Core.Result;
+using Core.ServicesAbstraction;
+
+namespace Core.Services;
+
+public class CommentService(IUnitOfWork unitOfWork,
+                            IMapper mapper) : ICommentService
+{
+    private readonly IGenericRepository<Comment> _commentRepository = unitOfWork.GetRepository<Comment>();
+    public async Task<Result<CommentDto>> AddCommentAsync(AddCommentDto addCommentDto)
+    {
+        // TODO: the main two validation
+        // 1- check if plan exists 
+        // 2- check if user is in the provided team by (userId) and (teamId) which is related to the plan
+        var comment = mapper.Map<Comment>(addCommentDto);
+        await _commentRepository.AddAsync(comment);
+        await unitOfWork.SaveChangesAsync();
+        var commentDto = mapper.Map<CommentDto>(comment);
+        return Result<CommentDto>.Success(commentDto);
+
+    }
+}
