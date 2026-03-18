@@ -11,8 +11,8 @@ public class Result<T>
     }
     private Result(IEnumerable<Error> errors) => ErrorsList = errors;
     private Result(Error error) => ErrorsList = new List<Error> { error };
-    public Result<T> Success(T value) => new Result<T>(value);
-    public Result<T> Failure(Error error) => new Result<T>(error);
-    public Result<T> Failure(IEnumerable<Error> errors) => new Result<T>(errors);
+    public static Result<T> Success(T value) => new Result<T>(value);
+    public static Result<T> Failure(Error error) => new Result<T>(error);
+    public static Result<T> Failure(IEnumerable<Error> errors) => new Result<T>(errors);
     public TResult Map<TResult>(Func<T, TResult> onSuccess, Func<IEnumerable<Error>, TResult> onFailure) => IsSuccess ? onSuccess(Value) : onFailure(ErrorsList);
 }
