@@ -30,4 +30,13 @@ public class CommentController(ICommentService commentService,
                 onSuccess: comment => Ok(comment),
                 onFailure: errors => HandleFailure(errors));
     }
+    [HttpGet("plans/{planId}/comments")]
+    [ProducesResponseType(typeof(IEnumerable<CommentDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsByPlanId([FromRoute] string planId)
+    {
+        var result = await commentService.GetCommentsByPlanIdAsync(planId);
+        return result.Map<ActionResult<IEnumerable<CommentDto>>>(
+                onSuccess: comments => Ok(comments),
+                onFailure: _ => HandleFailure(_));
+    }
 }
