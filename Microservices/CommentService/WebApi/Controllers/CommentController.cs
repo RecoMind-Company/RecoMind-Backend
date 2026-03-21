@@ -39,4 +39,18 @@ public class CommentController(ICommentService commentService,
                 onSuccess: comments => Ok(comments),
                 onFailure: _ => HandleFailure(_));
     }
+    [HttpDelete("comments/{commentId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult> DeleteComment([FromRoute] string commentId)
+    {
+        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //TODO: Placeholder for user ID, replace with actual user ID from claims
+        var userId = "user!@#123";
+        var result = await commentService.DeleteCommentAsync(commentId, userId);
+        return result.Map<ActionResult>(
+                onSuccess: _ => NoContent(),
+                onFailure: errors => HandleFailure(errors));
+    }
 }
