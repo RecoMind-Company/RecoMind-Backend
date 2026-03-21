@@ -28,15 +28,34 @@ public class CommentService(IUnitOfWork unitOfWork,
         var commentDtos = mapper.Map<IEnumerable<CommentDto>>(comments);
         return Result<IEnumerable<CommentDto>>.Success(commentDtos);
     }
+    public async Task<Result<CommentDto>> UpdateCommentAsync(UpdateCommentDto updateCommentDto)
+    {
+        var comment = await _commentRepository.Find(c => c.Id == updateCommentDto.CommentId);
+
+        if (comment == null)
+            return Result<CommentDto>.Failure(CommentErrors.NotFound);
+        if (comment.UserId != updateCommentDto.UserId)
+            return Result<CommentDto>.Failure(CommentErrors.AccessDenied);
+
+        mapper.Map(updateCommentDto, comment);
+        _commentRepository.Update(comment);
+        await unitOfWork.SaveChangesAsync();
+
+        var commentDto = mapper.Map<CommentDto>(comment);
+        return Result<CommentDto>.Success(commentDto);
+    }
     public async Task<Result<bool>> DeleteCommentAsync(string commentId, string userId)
     {
         var comment = await _commentRepository.Find(c => c.Id == commentId);
+
         if (comment == null)
             return Result<bool>.Failure(CommentErrors.NotFound);
         if (comment.UserId != userId)
             return Result<bool>.Failure(CommentErrors.AccessDenied);
+
         _commentRepository.Delete(comment);
         await unitOfWork.SaveChangesAsync();
+
         return Result<bool>.Success(true);
     }
 }
