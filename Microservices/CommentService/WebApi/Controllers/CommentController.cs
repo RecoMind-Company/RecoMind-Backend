@@ -31,7 +31,7 @@ public class CommentController(ICommentService commentService,
                 onSuccess: comment => Ok(comment),
                 onFailure: errors => HandleFailure(errors));
     }
-    [HttpGet("plans/{planId}/comments")]
+    [HttpGet("plans/{planId}/comments/get-all")]
     [ProducesResponseType(typeof(IEnumerable<CommentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsByPlanId([FromRoute] string planId)
     {
@@ -55,7 +55,7 @@ public class CommentController(ICommentService commentService,
                 onFailure: errors => HandleFailure(errors));
     }
 
-    [HttpPatch("comments/{commentId}")]
+    [HttpPatch("comments/{commentId}/edit")]
     [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status403Forbidden)]
