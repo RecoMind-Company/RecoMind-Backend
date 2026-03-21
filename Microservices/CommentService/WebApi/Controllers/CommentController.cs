@@ -8,7 +8,8 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("api")]
 public class CommentController(ICommentService commentService,
-                                IValidator<AddCommentDto> addCommentDtoValidator) : BaseApiController
+                                IValidator<AddCommentDto> addCommentDtoValidator,
+                                IValidator<UpdateCommentDto> updateCommentDtoValidator) : BaseApiController
 {
     [HttpPost("plans/{planId}/comments")]
     [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
@@ -51,6 +52,27 @@ public class CommentController(ICommentService commentService,
         var result = await commentService.DeleteCommentAsync(commentId, userId);
         return result.Map<ActionResult>(
                 onSuccess: _ => NoContent(),
+                onFailure: errors => HandleFailure(errors));
+    }
+
+    [HttpPatch("comments/{commentId}")]
+    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CommentDto>> UpdateComment([FromRoute] string commentId, [FromBody] UpdateCommentDto updateCommentDto)
+    {
+        var validationResult = await ExecuteValidation(updateCommentDto, updateCommentDtoValidator);
+        if (!validationResult.IsSuccess)
+            return HandleFailure(validationResult.ErrorsList);
+        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //TODO: Placeholder for user ID, replace with actual user ID from claims
+        var userId = "user!@#123";
+        updateCommentDto.UserId = userId;
+        updateCommentDto.CommentId = commentId;
+        var result = await commentService.UpdateCommentAsync(updateCommentDto);
+        return result.Map<ActionResult<CommentDto>>(
+                onSuccess: comment => Ok(comment),
                 onFailure: errors => HandleFailure(errors));
     }
 }
