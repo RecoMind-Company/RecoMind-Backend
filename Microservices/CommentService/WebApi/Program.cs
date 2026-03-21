@@ -1,7 +1,12 @@
 using Core.Interface;
+using Core.MappingProfiles;
+using Core.Services;
+using Core.ServicesAbstraction;
+using FluentValidation;
 using Infrastructure.Context;
 using Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
+using WebApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +20,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
 });
+builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
+builder.Services.AddScoped<ICommentService, CommentService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

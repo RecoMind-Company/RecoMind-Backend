@@ -1,0 +1,33 @@
+﻿using Core.Dtos;
+using Core.Result;
+using Core.ServicesAbstraction;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers;
+[ApiController]
+[Route("api")]
+public class CommentController(ICommentService commentService,
+                                IValidator<AddCommentDto> addCommentDtoValidator) : BaseApiController
+{
+    [HttpPost("plans/{planId}/comments")]
+    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CommentDto>> CreateComment([FromRoute] string planId, [FromBody] AddCommentDto addCommentDto)
+    {
+        var validationResult = await ExecuteValidation(addCommentDto, addCommentDtoValidator);
+        if (!validationResult.IsSuccess)
+            return HandleFailure(validationResult.ErrorsList);
+
+        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //TODO: Placeholder for user ID, replace with actual user ID from claims
+        var userId = "user!@#123";
+        addCommentDto.UserId = userId;
+        addCommentDto.PlanId = planId;
+
+        var result = await commentService.AddCommentAsync(addCommentDto);
+        return result.Map<ActionResult<CommentDto>>(
+                onSuccess: comment => Ok(comment),
+                onFailure: errors => HandleFailure(errors));
+    }
+}
