@@ -7,15 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="UnitOfWork\**" />
-    <EmbeddedResource Remove="UnitOfWork\**" />
-    <None Remove="UnitOfWork\**" />
+    <None Remove="GrpcClients\Team\TeamService.proto" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.22">
+    <PackageReference Include="Google.Protobuf" Version="3.34.0" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.76.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.ClientFactory" Version="2.76.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.76.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.78.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.24" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.24">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -24,5 +34,12 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="GrpcClients\Team\TeamService.proto" GrpcServices="Client">
+			<ProtoRote>GrpcClients\Team</ProtoRote>
+		</Protobuf>
+
+	</ItemGroup>
 
 </Project>

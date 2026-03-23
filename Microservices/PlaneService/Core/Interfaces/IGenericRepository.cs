@@ -9,14 +9,13 @@ namespace Core.Interfaces
 {
     public interface IGenericRepository<T> where T : class
     {
+        Task<IEnumerable<T>> GetAllAsync();
+        public Task<T?> GetByIdNoTrackingAsync(string id);
+        public Task<T> Find(Expression<Func<T, bool>> predicate);
         public Task<T?> GetByIdAsync(string id);
         Task<T> AddAsync(T entity);
-        T Update(T entity);
+        Task<T> UpdateAsync(T entity);
         T Delete(T entity);
-        Task<List<T>> GetAllAsync();
-
-        // to find by team id 
-        public Task<List<T>> FindAll(Expression<Func<T, bool>> predicate);
-        
+        Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate);
     }
 }
