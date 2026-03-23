@@ -2,11 +2,14 @@
 using Core.Result;
 using Core.ServicesAbstraction;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebApi.Controllers;
 [ApiController]
 [Route("api")]
+[Authorize]
 public class CommentController(ICommentService commentService,
                                 IValidator<AddCommentDto> addCommentDtoValidator,
                                 IValidator<UpdateCommentDto> updateCommentDtoValidator) : BaseApiController
@@ -20,9 +23,7 @@ public class CommentController(ICommentService commentService,
         if (!validationResult.IsSuccess)
             return HandleFailure(validationResult.ErrorsList);
 
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //TODO: Placeholder for user ID, replace with actual user ID from claims
-        var userId = "user!@#123";
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         addCommentDto.UserId = userId;
         addCommentDto.PlanId = planId;
 
@@ -46,10 +47,8 @@ public class CommentController(ICommentService commentService,
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status403Forbidden)]
     public async Task<ActionResult> DeleteComment([FromRoute] string commentId)
     {
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //TODO: Placeholder for user ID, replace with actual user ID from claims
-        var userId = "user!@#123";
-        var result = await commentService.DeleteCommentAsync(commentId, userId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await commentService.DeleteCommentAsync(commentId, userId!);
         return result.Map<ActionResult>(
                 onSuccess: _ => NoContent(),
                 onFailure: errors => HandleFailure(errors));
@@ -65,9 +64,7 @@ public class CommentController(ICommentService commentService,
         var validationResult = await ExecuteValidation(updateCommentDto, updateCommentDtoValidator);
         if (!validationResult.IsSuccess)
             return HandleFailure(validationResult.ErrorsList);
-        //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //TODO: Placeholder for user ID, replace with actual user ID from claims
-        var userId = "user!@#123";
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         updateCommentDto.UserId = userId;
         updateCommentDto.CommentId = commentId;
         var result = await commentService.UpdateCommentAsync(updateCommentDto);
