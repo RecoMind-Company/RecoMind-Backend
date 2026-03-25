@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using WebApi.gRPC.UserQuests;
 using WebApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,6 +70,9 @@ builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, i
 builder.Services.AddScoped<IQuestService, QuestService>();
 builder.Services.AddScoped<IUserQuestsService, UserQuestsService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddGrpc();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -83,6 +87,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGrpcService<UserQuestGrpcService>();
 
 app.Run();
 

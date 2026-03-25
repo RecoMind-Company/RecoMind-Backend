@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>faba8582-2848-48b3-b587-2fb007b8753b</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="gRPC\UserQuests\GrpcUserQuestsMessages.proto" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
@@ -26,6 +30,15 @@
 
   <ItemGroup>
     <Folder Include="CustomMiddlewares\" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Protobuf Include="gRPC\UserQuests\GrpcUserQuestsService.proto" GrpcServices="Server">
+		<ProtoRoot>gRPC/UserQuests</ProtoRoot>
+	</Protobuf>
+    <Protobuf Include="gRPC\UserQuests\GrpcUserQuestsMessages.proto" GrpcServices="None">
+		<ProtoRoot>gRPC/UserQuests</ProtoRoot>
+	</Protobuf>
   </ItemGroup>
 
 </Project>
