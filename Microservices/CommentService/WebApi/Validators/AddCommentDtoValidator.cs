@@ -8,8 +8,8 @@ internal class AddCommentDtoValidator : AbstractValidator<AddCommentDto>
     public AddCommentDtoValidator()
     {
         RuleFor(x => x.UserComment)
-            .NotEmpty()
-            .MaximumLength(500)
-            .WithMessage("User comment is required.");
+            .NotEmpty().WithMessage("User comment is required.")
+            .MaximumLength(500);
+
     }
 }
