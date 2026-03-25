@@ -1,4 +1,5 @@
-﻿using Core.ServicesAbstraction;
+﻿using Core.Dtos;
+using Core.ServicesAbstraction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
@@ -7,6 +8,7 @@ namespace WebApi.Hubs;
 
 [Authorize]
 public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
+                        ICommentService commentService,
                         ILogger<CommentHub> logger) : Hub
 {
     public override async Task OnConnectedAsync()
@@ -29,6 +31,8 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
 
             if (isInPlan)
             {
+                Context.Items["planId"] = planId;
+
                 await Groups.AddToGroupAsync(connectionId, planId!);
             }
             else
@@ -41,6 +45,18 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         {
             logger.LogError(ex, "CommentHub connection error during gRPC validation - UserId: {UserId}, PlanId: {PlanId}, ConnectionId: {ConnectionId}", userId, planId, connectionId);
             Context.Abort();
+        }
+    }
+
+    public async Task CreateComment(AddCommentDto addCommentDto)
+    {
+        var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        addCommentDto.UserId = userId;
+        addCommentDto.PlanId = Context.Items["planId"] as string;
+        var result = await commentService.AddCommentAsync(addCommentDto);
+        if (result.IsSuccess)
+        {
+            await Clients.Group(addCommentDto.PlanId!).SendAsync("ReceiveComment", result.Value);
         }
     }
 
@@ -58,3 +74,4 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         await base.OnDisconnectedAsync(exception);
     }
 }
+
