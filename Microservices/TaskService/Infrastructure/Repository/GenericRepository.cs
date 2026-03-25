@@ -30,6 +30,10 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         }
         return await query.Where(predicate).ToListAsync();
     }
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbset.AnyAsync(predicate);
+    }
     public async Task AddAsync(T entity)
     {
         await _dbset.AddAsync(entity);
