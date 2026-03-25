@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\UserQuests\GrpcUserQuestsMessages.proto" />
+	<None Remove="gRPC\UserQuests\GrpcUserQuestsService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.34.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Tools" Version="2.78.0">
@@ -22,11 +27,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="gRPC\" />
+    <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
+	<Protobuf Include="gRPC\UserQuests\GrpcUserQuestsService.proto" GrpcServices="Client">
+		<ProtoRoot>gRPC\UserQuests</ProtoRoot>  
+	</Protobuf>
+    <Protobuf Include="gRPC\UserQuests\GrpcUserQuestsMessages.proto" GrpcServices="None">
+		<ProtoRoot>gRPC\UserQuests</ProtoRoot>
+	</Protobuf>
   </ItemGroup>
 
 </Project>
