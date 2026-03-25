@@ -5,12 +5,14 @@ using Core.ServicesAbstraction;
 using Core.Settings;
 using FluentValidation;
 using Infrastructure.Context;
+using Infrastructure.gRPC.UserQuests;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using WebApi.Hubs;
 using WebApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +49,20 @@ builder.Services.AddAuthentication(config =>
     config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/comments"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     var jwt = builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>() ?? throw new InvalidOperationException("JWT configuration is missing.");
     options.SaveToken = true;
     options.RequireHttpsMetadata = true;
@@ -60,6 +76,9 @@ builder.Services.AddAuthentication(config =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
     };
 });
+
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
@@ -68,6 +87,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
+
+builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:UserQuestsServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -80,6 +112,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<CommentHub>("hubs/comments");
+
+app.UseStaticFiles();
 
 app.MapControllers();
 
