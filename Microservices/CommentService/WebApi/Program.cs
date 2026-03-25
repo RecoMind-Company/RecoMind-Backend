@@ -8,11 +8,13 @@ using Infrastructure.Context;
 using Infrastructure.gRPC.UserQuests;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApi.Hubs;
+using WebApi.Hubs.HubFilters;
 using WebApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,7 +79,10 @@ builder.Services.AddAuthentication(config =>
     };
 });
 
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(option =>
+{
+    option.AddFilter<CommentHubFilter>();
+});
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
