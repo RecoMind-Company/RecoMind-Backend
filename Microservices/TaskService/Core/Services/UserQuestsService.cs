@@ -48,5 +48,10 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
+    public async Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId)
+    {
+        var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
+        return isExist;
+    }
     // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
 }
