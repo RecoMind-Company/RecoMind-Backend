@@ -59,7 +59,17 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
             await Clients.Group(addCommentDto.PlanId!).SendAsync("ReceiveComment", result.Value);
         }
     }
-
+    public async Task EditComment(UpdateCommentDto updateCommentDto)
+    {
+        var userId = "e";
+        var planId = Context.Items["planId"] as string;
+        updateCommentDto.UserId = userId;
+        var result = await commentService.UpdateCommentAsync(updateCommentDto);
+        await result.MapAsync(
+            onSuccess: comment => Clients.Group(planId!).SendAsync("ReceiveEditedComment", comment),
+            onFailure: errors => Clients.Caller.SendAsync("ReceiveErrors", errors)
+        );
+    }
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (exception is not null)
