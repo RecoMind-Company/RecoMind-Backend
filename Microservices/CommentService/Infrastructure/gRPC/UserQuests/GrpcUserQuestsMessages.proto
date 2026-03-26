@@ -1,0 +1,10 @@
+syntax = "proto3";
+option csharp_namespace = "Infrastructure.gRPC.UserQuests";
+
+message IsUserInPlanRequest {
+	string userId = 1;
+	string planId = 2;
+}
+message IsUserInPlanResponse {
+	bool isInPlan = 1;
+}
