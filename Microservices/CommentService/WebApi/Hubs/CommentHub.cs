@@ -61,12 +61,22 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
     }
     public async Task EditComment(UpdateCommentDto updateCommentDto)
     {
-        var userId = "e";
+        var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
         var planId = Context.Items["planId"] as string;
         updateCommentDto.UserId = userId;
         var result = await commentService.UpdateCommentAsync(updateCommentDto);
         await result.MapAsync(
             onSuccess: comment => Clients.Group(planId!).SendAsync("ReceiveEditedComment", comment),
+            onFailure: errors => Clients.Caller.SendAsync("ReceiveErrors", errors)
+        );
+    }
+    public async Task DeleteComment(string commentId)
+    {
+        var userId = Context.User!.FindFirstValue(ClaimTypes.NameIdentifier);
+        var planId = Context.Items["planId"] as string;
+        var result = await commentService.DeleteCommentAsync(commentId, userId!);
+        await result.MapAsync(
+            onSuccess: _ => Clients.Group(planId!).SendAsync("ReceiveDeletedComment", commentId, "This comment has been deleted."),
             onFailure: errors => Clients.Caller.SendAsync("ReceiveErrors", errors)
         );
     }
