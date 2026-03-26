@@ -6,4 +6,6 @@ public class Comment
     public string UserComment { get; set; } = default!;
     public string UserId { get; set; } = default!;
     public string PlanId { get; set; } = default!;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
