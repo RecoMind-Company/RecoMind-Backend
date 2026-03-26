@@ -36,7 +36,8 @@ public class CommentService(IUnitOfWork unitOfWork,
             return Result<CommentDto>.Failure(CommentErrors.NotFound);
         if (comment.UserId != updateCommentDto.UserId)
             return Result<CommentDto>.Failure(CommentErrors.AccessDenied);
-
+        if (DateTime.UtcNow > comment.CreatedAt.AddMinutes(5))
+            return Result<CommentDto>.Failure(CommentErrors.EditTimeout);
         mapper.Map(updateCommentDto, comment);
         _commentRepository.Update(comment);
         await unitOfWork.SaveChangesAsync();
