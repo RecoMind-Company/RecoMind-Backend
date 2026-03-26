@@ -1,7 +1,6 @@
 ﻿using Core.Dtos;
 using Core.Result;
 using Core.ServicesAbstraction;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -10,28 +9,8 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("api")]
 [Authorize]
-public class CommentController(ICommentService commentService,
-                                IValidator<AddCommentDto> addCommentDtoValidator,
-                                IValidator<UpdateCommentDto> updateCommentDtoValidator) : BaseApiController
+public class CommentController(ICommentService commentService) : BaseApiController
 {
-    [HttpPost("plans/{planId}/comments")]
-    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CommentDto>> CreateComment([FromRoute] string planId, [FromBody] AddCommentDto addCommentDto)
-    {
-        var validationResult = await ExecuteValidation(addCommentDto, addCommentDtoValidator);
-        if (!validationResult.IsSuccess)
-            return HandleFailure(validationResult.ErrorsList);
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        addCommentDto.UserId = userId;
-        addCommentDto.PlanId = planId;
-
-        var result = await commentService.AddCommentAsync(addCommentDto);
-        return result.Map<ActionResult<CommentDto>>(
-                onSuccess: comment => Ok(comment),
-                onFailure: errors => HandleFailure(errors));
-    }
     [HttpGet("plans/{planId}/comments/get-all")]
     [ProducesResponseType(typeof(IEnumerable<CommentDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsByPlanId([FromRoute] string planId)
@@ -51,25 +30,6 @@ public class CommentController(ICommentService commentService,
         var result = await commentService.DeleteCommentAsync(commentId, userId!);
         return result.Map<ActionResult>(
                 onSuccess: _ => NoContent(),
-                onFailure: errors => HandleFailure(errors));
-    }
-
-    [HttpPatch("comments/{commentId}/edit")]
-    [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CommentDto>> UpdateComment([FromRoute] string commentId, [FromBody] UpdateCommentDto updateCommentDto)
-    {
-        var validationResult = await ExecuteValidation(updateCommentDto, updateCommentDtoValidator);
-        if (!validationResult.IsSuccess)
-            return HandleFailure(validationResult.ErrorsList);
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        updateCommentDto.UserId = userId;
-        updateCommentDto.CommentId = commentId;
-        var result = await commentService.UpdateCommentAsync(updateCommentDto);
-        return result.Map<ActionResult<CommentDto>>(
-                onSuccess: comment => Ok(comment),
                 onFailure: errors => HandleFailure(errors));
     }
 }
