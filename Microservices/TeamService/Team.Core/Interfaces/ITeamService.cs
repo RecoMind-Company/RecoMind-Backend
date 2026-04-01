@@ -23,5 +23,6 @@ namespace Team.Core.Interfaces
 
         Task<bool> AddEmployeeAsync(string teamId, string companyId, string employeeId);
         Task<bool> RemoveEmployeeAsync(string teamId, string companyId, string employeeId);
+        Task<bool> IsEmployeeInTeamAsync(string teamId, string employeeId);
     }
 }

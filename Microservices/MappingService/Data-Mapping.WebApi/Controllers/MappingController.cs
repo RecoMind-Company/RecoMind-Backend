@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data_Mapping.WebApi.Controllers
 {
-    [Authorize(Policy = "Management")]
+    //[Authorize(Policy = "Management")]
     [Route("api/[controller]")]
     [ApiController]
     public class MappingController : ControllerBase
