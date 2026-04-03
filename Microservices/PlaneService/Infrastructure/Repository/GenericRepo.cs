@@ -7,22 +7,44 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using static Grpc.Core.Metadata;
 
 namespace Infrastructure.Repository
 {
     public class GenericRepo<T> : IGenericRepository<T> where T : class
     {
-        private readonly PlanServiceDbContext _dbContext;
-        private readonly DbSet<T> _dbSet;
-        public GenericRepo(PlanServiceDbContext planServiceDbContext)
+        readonly DbContext _context;
+        readonly DbSet<T> _dbSet;
+        public GenericRepo(DbContext context)
         {
-            _dbContext = planServiceDbContext;
-            _dbSet = _dbContext.Set<T>();
+            _context = context;
+            _dbSet = _context.Set<T>();
         }
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return await _dbSet.AsNoTracking().ToListAsync() ?? new List<T>();
+        }
+
+        public async Task<T?> GetByIdAsync(string id)
+        {
+            return await _dbSet.FindAsync(id); // tracked
+        }
+
+        public async Task<T?> GetByIdNoTrackingAsync(string id)
+        {
+            return await _dbSet.AsNoTracking()
+                               .FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
+        }
+
         public async Task<T> AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            return entity;
+        }
+
+        public async Task<T> UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
             return entity;
         }
 
@@ -32,26 +54,14 @@ namespace Infrastructure.Repository
             return entity;
         }
 
-        public async Task<List<T>> FindAll(Expression<Func<T, bool>> predicate)
+        public async Task<T> Find(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            return await _dbSet.Where(predicate).FirstOrDefaultAsync() ;
         }
 
-        public Task<List<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate)
         {
-            return _dbSet.ToListAsync();
-        }
-
-        public async Task<T?> GetByIdAsync(string id)
-        {
-            return await _dbSet.AsNoTracking()
-                    .FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
-        }
-
-        public T Update(T entity)
-        {
-            _dbSet.Update(entity);
-            return entity;
+            return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
         }
     }
 }
