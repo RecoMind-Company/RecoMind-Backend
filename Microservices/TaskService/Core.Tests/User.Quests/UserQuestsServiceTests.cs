@@ -4,6 +4,7 @@ using Core.MappingProfiles;
 using Core.Models;
 using Core.Result;
 using Core.Services;
+using Core.ServicesAbstractions;
 using Core.Tests.Quests;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -17,11 +18,14 @@ public class UserQuestsServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<UserQuests>> _userQuestsRepositoryMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
+    private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
     private readonly UserQuestsService _sut;
+
     public UserQuestsServiceTests()
     {
         _userQuestsRepositoryMock = new Mock<IGenericRepository<UserQuests>>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
+        _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         _unitOfWorkMock.Setup(u => u.GetRepository<Quest>())
@@ -39,7 +43,7 @@ public class UserQuestsServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new UserQuestsService(_unitOfWorkMock.Object, mapper);
+        _sut = new UserQuestsService(_unitOfWorkMock.Object, mapper, _grpcTeamServiceMock.Object);
     }
 
     [Fact]
@@ -48,15 +52,30 @@ public class UserQuestsServiceTests
         // arrange
         var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto().Generate(FakeUserQuests.ValidRuleSet);
         var quest = FakeQuests.GetFakeQuest().Generate();
+
         _questRepositoryMock.Setup(qr => qr.Find
         (
             It.IsAny<Expression<Func<Quest, bool>>>(),
             It.IsAny<Expression<Func<Quest, object>>>()
         ))
         .ReturnsAsync(quest);
+
+        _grpcTeamServiceMock.Setup(gs => gs.IsUserExist(
+            It.IsAny<string>(),
+            It.IsAny<string>()
+        ))
+        .ReturnsAsync(true);
+
         // act
         var result = await _sut.AddUserToQuestAsync(addUserToQuestDto);
+
         // assert
+        _grpcTeamServiceMock.Verify(
+            gs => gs.IsUserExist(addUserToQuestDto.UserId, addUserToQuestDto.TeamId),
+            Times.Once,
+            "IsUserExist should be called once to verify the user is in the team"
+        );
+
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once, "SaveChangesAsync should be called once when a user is added to a quest");
         _questRepositoryMock.Verify(
             qr => qr.Find
@@ -84,8 +103,10 @@ public class UserQuestsServiceTests
             It.IsAny<Expression<Func<Quest, object>>>()
         ))
         .ReturnsAsync((Quest?)null);
+
         // act
         var result = await _sut.AddUserToQuestAsync(addUserToQuestDto);
+
         // assert
         _questRepositoryMock.Verify(
             qr => qr.Find
@@ -95,6 +116,11 @@ public class UserQuestsServiceTests
             ),
             Times.Once,
             "Find should be called once to attempt to retrieve the non-existing quest by ID"
+        );
+        _grpcTeamServiceMock.Verify(
+            gs => gs.IsUserExist(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never,
+            "IsUserExist should not be called when the quest does not exist"
         );
         result.IsSuccess.Should().BeFalse();
         result.ErrorList.Should().Contain(QuestErrors.QuestNotFound, "the error list must include QuestNotFound when no quest matches the provided ID");
@@ -112,11 +138,52 @@ public class UserQuestsServiceTests
             It.IsAny<Expression<Func<Quest, object>>>()
         ))
         .ReturnsAsync(quest);
+
         // act
         var result = await _sut.AddUserToQuestAsync(addUserToQuestDto);
+
         // assert
+        _grpcTeamServiceMock.Verify(
+            gs => gs.IsUserExist(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never,
+            "IsUserExist should not be called when the user is already assigned to the quest"
+        );
         result.IsSuccess.Should().BeFalse();
         result.ErrorList.Should().Contain(UserQuestsErrors.UserAlreadyAssignedToQuest, "the error list must include UserAlreadyAssignedToQuest when the user is already assigned to the quest");
+    }
+
+    [Fact]
+    public async Task AddUserToQuestAsync_WhenUserIsNotInTeam_ShouldReturnUserNotInTeamError()
+    {
+        // arrange
+        var addUserToQuestDto = FakeUserQuests.GetFakeAddUserToQuestDto().Generate(FakeUserQuests.ValidRuleSet);
+        var quest = FakeQuests.GetFakeQuest().Generate();
+
+        _questRepositoryMock.Setup(qr => qr.Find
+        (
+            It.IsAny<Expression<Func<Quest, bool>>>(),
+            It.IsAny<Expression<Func<Quest, object>>>()
+        ))
+        .ReturnsAsync(quest);
+
+        _grpcTeamServiceMock.Setup(gs => gs.IsUserExist(
+            It.IsAny<string>(),
+            It.IsAny<string>()
+        ))
+        .ReturnsAsync(false);
+
+        // act
+        var result = await _sut.AddUserToQuestAsync(addUserToQuestDto);
+
+        // assert
+        _grpcTeamServiceMock.Verify(
+            gs => gs.IsUserExist(addUserToQuestDto.UserId!, addUserToQuestDto.TeamId!),
+            Times.Once,
+            "IsUserExist should be called once to verify the user is in the team"
+        );
+        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Never, "SaveChangesAsync should not be called when the user is not in the team");
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorList.Should().Contain(UserQuestsErrors.UserNotInTeam, "the error list must include UserNotInTeam when the user is not a member of the team");
     }
 
     [Fact]
