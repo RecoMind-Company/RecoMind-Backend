@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <None Remove="gRPC\Plan\PlanService.proto" />
+    <None Remove="gRPC\Team\teamMessages.proto" />
+    <None Remove="gRPC\Team\TeamService.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +33,12 @@
 
   <ItemGroup>
     <Protobuf Include="gRPC\Plan\PlanService.proto" GrpcServices="Client" />
+	  <Protobuf Include="gRPC\Team\teamMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\Team\TeamService.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
   </ItemGroup>
 
 </Project>
