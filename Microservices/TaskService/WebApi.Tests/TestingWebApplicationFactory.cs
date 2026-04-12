@@ -33,6 +33,10 @@ public class TestingWebApplicationFactory<TProgram> : WebApplicationFactory<TPro
             // Replace the gRPC Plan Service with a test implementation
             services.RemoveAll(typeof(IGrpcPlanService));
             services.AddScoped<IGrpcPlanService, TestGrpcPlanService>();
+
+            // Replace the gRPC Team Service with a test implementation
+            services.RemoveAll(typeof(IGrpcTeamService));
+            services.AddScoped<IGrpcTeamService, TestGrpcTeamService>();
         });
     }
     protected override void Dispose(bool disposing)
