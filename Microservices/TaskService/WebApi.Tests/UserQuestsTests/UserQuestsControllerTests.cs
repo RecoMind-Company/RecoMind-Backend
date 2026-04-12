@@ -20,6 +20,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         Converters = { new JsonStringEnumConverter() },
         PropertyNameCaseInsensitive = true
     };
+
     public UserQuestsControllerTests(TestingWebApplicationFactory<Program> factory)
     {
         _factory = factory;
@@ -32,6 +33,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         _client = factory.CreateClient();
         _client.DefaultRequestHeaders.Add("Test-Authorization", "test-user");
     }
+
     #region Add User To Task
     [Fact]
     public async Task AddUserToTaskAsync_withValidData_ReturnOk()
@@ -63,6 +65,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         result.DeadLine.Should().BeCloseTo(quest.DeadLine, TimeSpan.FromSeconds(5));
         result.Duration.Should().BeCloseTo(quest.Duration, TimeSpan.FromSeconds(5));
     }
+
     [Fact]
     public async Task AddUserToTaskAsync_WithInValidRequest_ReturnBadRequest()
     {
@@ -80,6 +83,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         response.Should().Be400BadRequest();
         response.Should().BeAs(errors);
     }
+
     [Fact]
     public async Task AddUserToTaskAsync_WhenTaskIsNotFound_ReturnNotFound()
     {
@@ -95,6 +99,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         response.Should().Be404NotFound();
         response.Should().BeAs(errors);
     }
+
     [Fact]
     public async Task AddUserToTaskAsync_WhenUserIsAlreadyExisted_ReturnBadRequest()
     {
@@ -162,6 +167,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         result.Select(q => q.QuestId).Should().NotContain(questsIds.Last());
         result.Select(q => q.UserAssignedQuests).Should().AllSatisfy(uaq => uaq.Should().Contain(userId));
     }
+
     [Fact]
     public async Task GetUserAssignedTaskAsync_WhenUserIsUnAuthorized_ReturnUnAuthorized()
     {
@@ -172,6 +178,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         // assert
         response.Should().Be401Unauthorized();
     }
+
     [Fact]
     public async Task GetUserAssignedTaskAsync_WhenUserHasNoAssignedQuests_ReturnOkWithEmptyList()
     {
@@ -221,6 +228,7 @@ public class UserQuestsControllerTests : IClassFixture<TestingWebApplicationFact
         response.Should().Be400BadRequest();
         response.Should().BeAs(errors);
     }
+
     [Fact]
     public async Task UnAssignUserFromTaskAsync_WhenUserIsAssignedToTask_ReturnBadRequest()
     {

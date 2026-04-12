@@ -10,6 +10,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/user-tasks")]
+[Authorize]
 public class UserQuestsController(IUserQuestsService userQuestsService,
                                   IValidator<AddUserToQuestDto> addUserToQuestValidator) : BaseApiController
 {
@@ -28,7 +29,6 @@ public class UserQuestsController(IUserQuestsService userQuestsService,
             onFailure: err => HandleFailure(err));
     }
 
-    [Authorize]
     [HttpGet("user-tasks")]
     public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetUserAssignedTasksAsync()
     {

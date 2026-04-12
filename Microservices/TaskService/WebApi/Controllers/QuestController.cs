@@ -2,12 +2,14 @@
 using Core.Result;
 using Core.ServicesAbstractions;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/tasks")]
+[Authorize]
 public class QuestController(IQuestService questService,
                              IValidator<QuestDto> questDtoValidator,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,

@@ -8,7 +8,8 @@ using Core.ServicesAbstractions;
 namespace Core.Services;
 
 public class UserQuestsService(IUnitOfWork unitOfWork,
-                          IMapper mapper) : IUserQuestsService
+                          IMapper mapper,
+                          IGrpcTeamService grpcTeamService) : IUserQuestsService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
     private readonly IGenericRepository<UserQuests> _userQuestsRepository = unitOfWork.GetRepository<UserQuests>();
@@ -23,7 +24,13 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         {
             return Result<QuestToReturnDto>.Failure(UserQuestsErrors.UserAlreadyAssignedToQuest);
         }
-        // TODO: here will be a grpc method that take userId and teamId and return boolean to check if the user exists in the team.
+
+        var userExistsInTeam = await grpcTeamService.IsUserExist(userToQuestDto.UserId!, userToQuestDto.TeamId!);
+        if (!userExistsInTeam)
+        {
+            return Result<QuestToReturnDto>.Failure(UserQuestsErrors.UserNotInTeam);
+        }
+
         existedQuest.UserAssignedQuests.Add(new UserQuests
         {
             QuestId = userToQuestDto.QuestId!,
@@ -53,5 +60,4 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
         return isExist;
     }
-    // TODO: (HELPER METHOD) here will be a method that call grpc method to validate user existence TAKE: (userId, TeamId) retrun boolean.
 }

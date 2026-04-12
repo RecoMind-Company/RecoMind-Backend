@@ -3,6 +3,7 @@ using Core.Models;
 using Core.Result;
 using FluentAssertions;
 using Infrastructure.Context;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -30,7 +31,11 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
-        _client = factory.CreateClient();
+        _client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+        _client.DefaultRequestHeaders.Add("Test-Authorization", "test-user-id");
     }
     #region Create Task
     [Theory]

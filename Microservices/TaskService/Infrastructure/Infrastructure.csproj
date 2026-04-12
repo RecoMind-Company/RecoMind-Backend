@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\Plan\PlanService.proto" />
+    <None Remove="gRPC\Team\teamMessages.proto" />
+    <None Remove="gRPC\Team\TeamService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.34.0" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Tools" Version="2.78.0">
@@ -26,7 +32,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="gRPC\" />
+    <Protobuf Include="gRPC\Plan\PlanService.proto" GrpcServices="Client" />
+	  <Protobuf Include="gRPC\Team\teamMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\Team\TeamService.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
   </ItemGroup>
 
 </Project>

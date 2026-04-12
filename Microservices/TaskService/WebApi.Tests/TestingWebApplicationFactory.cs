@@ -1,4 +1,5 @@
-﻿using Infrastructure.Context;
+﻿using Core.ServicesAbstractions;
+using Infrastructure.Context;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -28,6 +29,14 @@ public class TestingWebApplicationFactory<TProgram> : WebApplicationFactory<TPro
             services.RemoveAll(typeof(IConfigureOptions<AuthenticationOptions>));
             services.AddAuthentication(defaultScheme: "Test")
                     .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
+
+            // Replace the gRPC Plan Service with a test implementation
+            services.RemoveAll(typeof(IGrpcPlanService));
+            services.AddScoped<IGrpcPlanService, TestGrpcPlanService>();
+
+            // Replace the gRPC Team Service with a test implementation
+            services.RemoveAll(typeof(IGrpcTeamService));
+            services.AddScoped<IGrpcTeamService, TestGrpcTeamService>();
         });
     }
     protected override void Dispose(bool disposing)
