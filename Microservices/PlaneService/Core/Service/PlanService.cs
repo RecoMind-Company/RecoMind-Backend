@@ -1,0 +1,221 @@
+﻿using AutoMapper;
+using AutoMapper.Configuration.Annotations;
+using Core.DTOs.PlanDtos;
+using Core.DTOs.PlnaTypeDtos;
+using Core.Interfaces;
+using Core.Models;
+using Core.Service.Interface;
+using Infrastructure.GrpcClients.Team;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+namespace Core.Service
+{
+    public class PlanService : IPlanService
+    {
+        readonly ITeamGrpcClient _teamGrpcClient;
+        readonly IUnitOfWork<Plan> _unitOfWork;
+        readonly IPlanType _planTypeService;
+        readonly IStatus _statusService;
+        readonly IMapper _mapper;
+        public PlanService(IUnitOfWork<Plan> planUnitOfWork , IMapper mapper, IStatus StatusService , IPlanType PlanTypeService , ITeamGrpcClient TeamGrpcCleint )
+        {
+            _unitOfWork = planUnitOfWork;
+            _mapper = mapper;           
+            _planTypeService = PlanTypeService;
+            _statusService = StatusService;
+            _teamGrpcClient = TeamGrpcCleint;
+        }
+
+        public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
+        {
+            Plan plan = _mapper.Map<Plan>(createPlanDto);
+
+            plan.Id = Guid.NewGuid().ToString();
+            plan.Owner_Id = userId;
+            plan.Company_Id = companyId;
+            plan.Status = "Draft";                                           // Default status for new plans
+            plan.IsApproved = false;                                         // Default approval status for new plans            
+            plan.StartDate = DateTime.UtcNow;                                // Default start date for new plans
+
+            var checkEndDate = GetPlanEndDate(plan.PlanType).Result;         // Calculate end date based on plan type
+            if (checkEndDate.IsSuccess) 
+            {
+                plan.EndDate = checkEndDate.Value;
+            } 
+            else
+                return Result<GetPlanDto>.Failure(checkEndDate.Error);
+
+            plan.Duration = (plan.EndDate - plan.StartDate).Days.ToString();  // Calculate duration in days
+
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            if (checkTeamId.IsSuccess)
+            {
+                plan.Team_Id = checkTeamId.Value;
+            }
+            else            
+                return Result<GetPlanDto>.Failure(checkTeamId.Error);            
+
+            await _unitOfWork.Entity.AddAsync(plan);
+            _unitOfWork.Save();
+
+            var result = _mapper.Map<GetPlanDto>(plan);
+
+            return Result<GetPlanDto>.Success(result);
+        }
+        
+        public async Task<Result<DateTime>> GetPlanEndDate(string planType)
+        {
+            // Implement logic to calculate end date based on plan type
+            // For example, if planType is "Monthly", add 30 days to the current date
+            planType = planType.ToLower();
+            DateTime endDate = DateTime.UtcNow;
+            
+            // find the plantype
+            var planTypeEntity = await _planTypeService.GetPlanTypeByName(planType);
+            if (planTypeEntity == null)
+            {
+                return Result<DateTime>.Failure("Invalid plan type provided.");
+            }
+            else
+            {
+                endDate = endDate.AddMonths(planTypeEntity.NumOfMonths);
+                return Result<DateTime>.Success(endDate);
+            }
+
+        }
+        
+        public async Task<bool> DeletePlan(string planId, string companyId)
+        {
+            var plan = await _unitOfWork.Entity.Find(p => p.Id == planId && p.Company_Id == companyId);
+            if (plan == null)
+            {
+                return false; // Plan not found
+            }
+
+            _unitOfWork.Entity.Delete(plan);
+            _unitOfWork.Save();
+
+            return true; // Plan deleted successfully
+        }
+
+        public async Task<IEnumerable<Result<GetPlanDto>>> GetAllPlans(string companyId)
+        {
+            var plans = await _unitOfWork.Entity.FindAll(p => p.Company_Id == companyId);
+
+            var planToReturn = new List<Result<GetPlanDto>>();
+
+            if (plans != null) 
+            {
+                foreach(var plan in plans)
+                {
+                    var item = _mapper.Map<GetPlanDto>(plan);
+                    planToReturn.Add(Result<GetPlanDto>.Success(item));
+                }
+                return planToReturn;
+            }
+            return planToReturn; // No plans found for the company
+        }
+
+        public async Task<Result<GetPlanDto>> GetPlanById(string planId, string companyId)
+        {
+            var plan = await _unitOfWork.Entity.Find(p =>( p.Company_Id == companyId && p.Id == planId ));
+
+            if(plan != null)
+            {
+                var item = _mapper.Map<GetPlanDto>(plan);
+                return Result<GetPlanDto>.Success(item);
+            }
+            return Result<GetPlanDto>.Failure("Invalid PLan Id !");
+        }
+
+        public async Task<Result<GetPlanDto>> UpdatePlan( string companyId , string userId , UpdatePlanDto updatePlanDto)
+        {
+            var plan = await _unitOfWork.Entity.Find(p => p.Id == updatePlanDto.PlanId && p.Company_Id == companyId);
+
+            if (plan != null)
+            {
+
+                plan.Goal = updatePlanDto.Goal;
+                plan.Description = updatePlanDto.Description;
+              
+                #region ckeck for the name of plan type 
+
+                var planTypeEntity = await _planTypeService.GetPlanTypeByName(updatePlanDto.PlanType);
+                if (planTypeEntity != null)
+                {
+                    if(plan.PlanType.ToLower() != updatePlanDto.PlanType.ToLower())
+                    {
+                        plan.EndDate = plan.StartDate.AddMonths(planTypeEntity.NumOfMonths); // Update end date based on new plan type
+                        plan.Duration = (plan.EndDate - plan.StartDate).Days.ToString(); // Update duration based on new end date
+                        plan.PlanType = updatePlanDto.PlanType;
+                    }                    
+                }
+                else
+                {
+                    return Result<GetPlanDto>.Failure("Invalid plan type provided.");
+                }
+                #endregion
+
+                #region check for the name of status
+
+                var statusEntity = await _statusService.GetStatusByName(updatePlanDto.Status);
+
+                if (statusEntity != null)
+                {
+                    plan.Status = updatePlanDto.Status;
+                }
+                else
+                {
+                    return Result<GetPlanDto>.Failure("Invalid status provided.");
+                }
+
+                #endregion
+
+                #region check for the team id
+
+                var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+                if (checkTeamId.IsSuccess)
+                {
+                    plan.Team_Id = checkTeamId.Value;
+                }
+                else
+                    return Result<GetPlanDto>.Failure(checkTeamId.Error);
+
+                #endregion                
+
+                var result = await _unitOfWork.Entity.UpdateAsync(plan);
+                _unitOfWork.Save();
+
+                var dto = _mapper.Map<GetPlanDto>(result);
+                return Result<GetPlanDto>.Success(dto);
+            }
+
+            return Result<GetPlanDto>.Failure("Invalid Plan Id !");
+        }
+
+        public async Task<IEnumerable<Result<GetPlanDto>>> GetPlansByStatus(string status, string companyId)
+        {
+            var planToRetyrn = new List<Result<GetPlanDto>>();
+            var items = await _unitOfWork.Entity.FindAll((x=>(x.Company_Id==companyId && x.Status==status)));
+
+            if(items != null)
+            {
+                foreach(var item in items)
+                {
+                    var dto = _mapper.Map<GetPlanDto>(item);
+                    planToRetyrn.Add(Result<GetPlanDto>.Success(dto));
+                    return planToRetyrn;
+                }
+            }
+            planToRetyrn.Add(Result<GetPlanDto>.Failure("No plans found with the specified status."));
+            return planToRetyrn;
+        }        
+    }
+}

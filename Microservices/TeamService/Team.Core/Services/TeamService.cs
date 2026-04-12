@@ -46,7 +46,6 @@ namespace Team.Core.Services
             };
         }
 
-
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
@@ -129,6 +128,10 @@ namespace Team.Core.Services
 
             return await _repo.RemoveEmployeeFromTeamAsync(teamId, employeeId);
         }
-    }
 
+        public async Task<bool> IsEmployeeInTeamAsync(string teamId, string employeeId)
+        {
+            return await _repo.FindTeamEmployeeAsync(teamId, employeeId);
+        }
+    }
 }

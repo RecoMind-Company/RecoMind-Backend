@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces
 {
-    public interface IUnitOfWork <T> where T : class
+    public interface IUnitOfWork<T> where T : class
     {
         IGenericRepository<T> Entity { get; }
-        public Task<int> Save();
-        public void Dispose();
+        void Save();
     }
 }

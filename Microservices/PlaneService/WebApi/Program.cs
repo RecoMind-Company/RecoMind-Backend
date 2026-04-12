@@ -1,21 +1,22 @@
-
-using Core.Extentions.ExceptionHandeler;
-using Core.Interfaces;
-using Core.Mapping;
-using Core.Services;
-using Core.Services.Interface;
 using Infrastructure.Data;
-using Infrastructure.Repository;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Models;
-using System.Text;
-using Team.Grpc;  // ✅ أضف هذا السطر
-using WebApi.Grpc;
+using webApi.Grpc;
+using Core.Interfaces;
+using Infrastructure.UnitOfWork;
+using Core.Service.Interface;
+using Core.Service;
+using Core.Mapping;
+using GrpcClients.Team;
+using System;
+using Infrastructure.GrpcClients.Team;
 
-namespace WebApi
+namespace webApi
 {
     public class Program
     {
@@ -23,106 +24,95 @@ namespace WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<PlanDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            builder.Services.AddGrpc();
+
+            builder.Services.AddScoped<PlanServiceImpl>();
+            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UOW<>));
+            builder.Services.AddScoped(typeof(IPlanService),typeof(Core.Service.PlanService));
+            builder.Services.AddScoped(typeof(IPlanType),typeof(PlanType));
+            builder.Services.AddScoped(typeof(IStatus), typeof(Status));
+            builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
+            builder.Services.AddAutoMapper(typeof(PlanMapper));
+
             // Add services to the container.
 
-            // DbContext
-            builder.Services.AddDbContext<PlanServiceDbContext>(options =>
-                    options.UseSqlServer(
-                        builder.Configuration.GetConnectionString("ProdcutionConnection_Plan"),
-                        sqlOptions =>
-                        sqlOptions.MigrationsAssembly(typeof(PlanServiceDbContext).Assembly.FullName)
-                        ));
-
-            //  Configurations for gRPC
-
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
-
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
-
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
-
-            builder.Services.AddSwaggerGen(cfg =>
-            {
-                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                });
-                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-        new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-            },
-            []
-        }
-    });
-            });
-
-            builder.Services.AddAuthentication(config =>
-            {
-                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
-            {
-                options.SaveToken = true;
-                options.RequireHttpsMetadata = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["JwtOptions:Issuer"],
-                    ValidAudience = builder.Configuration["JwtOptions:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
-                };
-            });
-
-
-            builder.Services.AddGrpc(options =>
-            {
-                options.Interceptors.Add<GlobalGrpcExceptionInterceptor>();
-            });
-
-            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
-            {
-                o.Address = new Uri("http://teamservice:8010");            // Team service address
-            });
-
-            builder.Services.AddSingleton<GlobalGrpcExceptionInterceptor>();
-
-            // Controllers
             builder.Services.AddControllers();
+
+            builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
+            {
+                options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl")); //https://localhost:7192
+            });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
-            // Dependency Injection
-            builder.Services.AddScoped<IPlanService, PlanService>();
-            builder.Services.AddAutoMapper(typeof(PlanMapping));
-            builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PlanService", Version = "v1" });
+            });
+
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Services.AddGrpcReflection();
+            }
+
+            //builder.Services.AddSwaggerGen(cfg =>
+            //{
+            //    cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+            //    {
+            //        Name = "Authorization",
+            //        Type = SecuritySchemeType.ApiKey,
+            //        Scheme = "Bearer",
+            //        BearerFormat = "JWT",
+            //        In = ParameterLocation.Header,
+            //    });
+            //    cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
+            //    {
+            //       {
+            //       new OpenApiSecurityScheme
+            //           {
+            //               Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+            //           },
+            //           []
+            //       }
+            //    });
+            //});
+
+            //builder.Services.AddAuthentication(config =>
+            //{
+            //    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            //}).AddJwtBearer(options =>
+            //{
+            //    var jwt = builder.Configuration
+            //    .GetSection("JwtOptions")
+            //    .Get<JwtSettings>()
+            //    ?? throw new Exception("JwtOptions are not configured");
+
+            //    options.SaveToken = true;
+            //    options.RequireHttpsMetadata = true;
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuer = true,
+            //        ValidateAudience = true,
+            //        ValidateIssuerSigningKey = true,
+
+            //        ValidIssuer = jwt.Issuer,
+            //        ValidAudience = jwt.Audience,
+
+            //        IssuerSigningKey = new SymmetricSecurityKey(
+            //         Encoding.UTF8.GetBytes(jwt.SecretKey)
+            //         ),
+
+            //        ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+            //    };
+            //});
 
             builder.Services.AddCors(options =>
             {
@@ -138,20 +128,20 @@ namespace WebApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
-
-
-            app.UseSwagger();
-            app.UseSwaggerUI();
-
-           
-            app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-
-
+            app.UseHttpsRedirection();
 
             app.UseAuthorization();
-             app.UseCors("OpenCors");
+
+            app.UseCors("OpenCors");
+
             app.MapControllers();
+
             app.MapGrpcService<PlanServiceImpl>();
 
             app.Run();
