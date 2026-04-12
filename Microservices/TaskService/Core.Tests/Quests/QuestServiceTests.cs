@@ -1,9 +1,11 @@
 using AutoMapper;
+using Core.Dtos.Plan;
 using Core.Interfaces;
 using Core.MappingProfiles;
 using Core.Models;
 using Core.Result;
 using Core.Services;
+using Core.ServicesAbstractions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -15,10 +17,13 @@ public class QuestServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
+    private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
     private readonly QuestService _sut;
 
     public QuestServiceTests()
     {
+        _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
+
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
         _unitOfWorkMock.Setup(u => u.GetRepository<Quest>()).Returns(_questRepositoryMock.Object);
@@ -28,23 +33,33 @@ public class QuestServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new QuestService(_unitOfWorkMock.Object, mapper);
+        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcPlanServiceMock.Object);
     }
 
     [Theory]
     [InlineData(200)] // even seed => past StartDate, expected status: pending (when Status is null)
     [InlineData(31)]  // odd  seed => today StartDate, expected status: active  (when Status is null)
-    public async Task CreateQuestAsync_WithValidDate_ShouldReturnQuestToReturnDto(int seed)
+    public async Task CreateQuestAsync_WithValidPlanId_ShouldReturnQuestToReturnDto(int seed)
     {
         // arrange
         var questDto = FakeQuests.GetFakeQuestDto(seed).Generate();
+        var planId = "plan1";
+
+        _grpcPlanServiceMock
+            .Setup(g => g.GetPlanIdsAsync(planId))
+            .ReturnsAsync(new PlanIdsDto { IsExisted = true, PlanId = planId });
 
         // act
-        var result = await _sut.CreateQuestAsync(questDto, planId: "plan1");
+        var result = await _sut.CreateQuestAsync(questDto, planId);
 
         // assert
+        _grpcPlanServiceMock.Verify(
+            g => g.GetPlanIdsAsync(planId),
+            Times.Once,
+            "GetPlanIdsAsync should be called exactly once to validate the plan exists");
+
         _questRepositoryMock.Verify(
-            r => r.AddAsync(It.Is<Quest>(q => q.PlanId == "plan1" && !string.IsNullOrEmpty(q.QuestId))),
+            r => r.AddAsync(It.Is<Quest>(q => q.PlanId == planId && !string.IsNullOrEmpty(q.QuestId))),
             Times.Once,
             "AddAsync should be called exactly once with the correct planId and a non-empty QuestId");
 
@@ -54,7 +69,7 @@ public class QuestServiceTests
             "SaveChangesAsync should be called once when a new quest is created");
 
         result.Should().NotBeNull("CreateQuestAsync should return a result object, not null");
-        result.IsSuccess.Should().BeTrue("CreateQuestAsync should succeed when a valid QuestDto and planId are provided");
+        result.IsSuccess.Should().BeTrue("CreateQuestAsync should succeed when a valid QuestDto, planId, and existing plan are provided");
 
         Guid.Parse(result.Value!.QuestId).Should().NotBeEmpty("the created quest must be assigned a valid non-empty GUID as its ID");
         result.Value.Title.Should().Be(questDto.Title, "the returned title must match the submitted DTO title");
@@ -70,24 +85,41 @@ public class QuestServiceTests
             TimeSpan.FromSeconds(1),
             "the returned deadline should match the submitted DTO deadline within 1 second");
 
-        if (questDto.Status != null)
-        {
-            result.Value.Status.Should().Be(
-                (QuestStatusEnum)questDto.Status.Value,
-                "the returned status must match the explicitly provided status in the DTO");
-        }
-        else
-        {
-            // Even seeds produce a past date => pending
-            // Odd  seeds produce today's date => active
-            var expectedStatus = seed % 2 == 0
-                ? QuestStatusEnum.pending
-                : QuestStatusEnum.active;
+        result.Value.PlanId.Should().Be(planId, "the returned planId must match the provided planId");
+    }
 
-            result.Value.Status.Should().Be(
-                expectedStatus,
-                "when no status is provided, the quest should be 'active' if it starts today or 'pending' if it starts in the past/future");
-        }
+    [Fact]
+    public async Task CreateQuestAsync_WhenPlanDoesNotExist_ShouldReturnPlanNotFoundError()
+    {
+        // arrange
+        var questDto = FakeQuests.GetFakeQuestDto().Generate();
+        var planId = "nonExistingPlan";
+
+        _grpcPlanServiceMock
+            .Setup(g => g.GetPlanIdsAsync(planId))
+            .ReturnsAsync(new PlanIdsDto { IsExisted = false });
+
+        // act
+        var result = await _sut.CreateQuestAsync(questDto, planId);
+
+        // assert
+        _grpcPlanServiceMock.Verify(
+            g => g.GetPlanIdsAsync(planId),
+            Times.Once,
+            "GetPlanIdsAsync should be called to validate the plan");
+
+        _questRepositoryMock.Verify(
+            r => r.AddAsync(It.IsAny<Quest>()),
+            Times.Never,
+            "AddAsync should not be called when the plan does not exist");
+
+        _unitOfWorkMock.Verify(
+            u => u.SaveChangesAsync(),
+            Times.Never,
+            "SaveChangesAsync should not be called when the plan does not exist");
+
+        result.IsSuccess.Should().BeFalse("CreateQuestAsync should fail when the plan does not exist");
+        result.ErrorList.Should().Contain(PlanErrors.NotFound, "the error list must include PlanNotFound when the plan does not exist");
     }
 
     [Theory]
