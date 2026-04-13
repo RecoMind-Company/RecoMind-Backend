@@ -33,5 +33,21 @@ namespace webApi.Grpc
                 IsExist = false,
             };
         }
+
+        public async override Task<isOwnerResponse> isOwner(isOwnerRequest request, ServerCallContext context)
+        {
+            var plan = await _unitOfWork.Entity.GetByIdAsync(request.PlanId);
+            if (plan != null && plan.Owner_Id == request.UserId)
+            {
+                return new isOwnerResponse
+                {
+                    IsOwner = true,
+                };
+            }
+            return new isOwnerResponse
+            {
+                IsOwner = false,
+            };
+        }
     }
 }

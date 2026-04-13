@@ -4,11 +4,17 @@ option csharp_namespace = "webApi.Grpc";
 
 service PlanServiceGrpc{
 	rpc GetPlan (PlanRequest) returns (PlanResponse);
+	rpc isOwner(isOwnerRequest) returns (isOwnerResponse);
 }
 
 
 message PlanRequest {
 	string planId = 1;
+}
+
+message isOwnerRequest {
+	string planId = 1;
+	string userId = 2;
 }
 
 message PlanResponse {
@@ -17,4 +23,8 @@ message PlanResponse {
 	string CompanyId = 3;
 	string TeamId = 4 ;
 	string OwnerId = 5;
+}
+
+message isOwnerResponse {
+	bool isOwner = 1;
 }
