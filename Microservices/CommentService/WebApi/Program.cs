@@ -5,6 +5,8 @@ using Core.ServicesAbstraction;
 using Core.Settings;
 using FluentValidation;
 using Infrastructure.Context;
+using Infrastructure.gRPC.Plan;
+using Infrastructure.gRPC.Team;
 using Infrastructure.gRPC.UserQuests;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -93,6 +95,8 @@ builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
+builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
+builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
 
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {
@@ -105,6 +109,31 @@ builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient
         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
     };
 });
+
+builder.Services.AddGrpcClient<PlanServiceGrpc.PlanServiceGrpcClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:PlanServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
+
+builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:TeamServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
