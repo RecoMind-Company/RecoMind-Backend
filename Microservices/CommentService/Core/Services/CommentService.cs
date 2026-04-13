@@ -8,7 +8,9 @@ using Core.ServicesAbstraction;
 namespace Core.Services;
 
 public class CommentService(IUnitOfWork unitOfWork,
-                            IMapper mapper) : ICommentService
+                            IMapper mapper,
+                            IGrpcTeamService grpcTeamService,
+                            IGrpcPlanService grpcPlanService) : ICommentService
 {
     private readonly IGenericRepository<Comment> _commentRepository = unitOfWork.GetRepository<Comment>();
     public async Task<Result<CommentDto>> AddCommentAsync(AddCommentDto addCommentDto)
@@ -16,6 +18,13 @@ public class CommentService(IUnitOfWork unitOfWork,
         // TODO: the main two validation
         // 1- check if plan exists 
         // 2- check if user is in the provided team by (userId) and (teamId) which is related to the plan
+        var plan = await grpcPlanService.GetPlanIdsAsync(addCommentDto.PlanId!);
+        if (!plan.IsExisted)
+            return Result<CommentDto>.Failure(PlanErrors.PlanNotFound);
+        var isUserInTeam = await grpcTeamService.IsUserExist(addCommentDto.UserId!, plan.TeamId!);
+        if (!isUserInTeam)
+            return Result<CommentDto>.Failure(TeamErrors.UserNotInTeam);
+
         var comment = mapper.Map<Comment>(addCommentDto);
         await _commentRepository.AddAsync(comment);
         await unitOfWork.SaveChangesAsync();

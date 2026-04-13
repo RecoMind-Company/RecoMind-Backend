@@ -324,12 +324,38 @@
             text-align: center;
             font-weight: 600;
         }
+        #validationErrors {
+            background: #fff5f5 !important;
+            border: 2px solid #fc8181 !important;
+            border-radius: 4px !important;
+            padding: 15px !important;
+            margin-top: 10px !important;
+            color: #c53030 !important;
+            font-size: 13px !important;
+            position: relative !important;
+            z-index: 1000 !important;
+            box-shadow: 0 2px 8px rgba(245, 101, 101, 0.3) !important;
+        }
+        #validationErrors strong {
+            display: block !important;
+            margin-bottom: 10px !important;
+            font-size: 14px !important;
+        }
+        #validationErrors ul {
+            list-style: disc inside !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        #validationErrors li {
+            margin-bottom: 6px !important;
+            line-height: 1.5 !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>?? SignalR Comment Hub - WhatsApp Style Timestamps</h1>
+            <h1>SignalR Comment Hub - WhatsApp Style Timestamps</h1>
             <p>Messages with date separators, time-only display, and 5-minute edit window</p>
         </div>
 
@@ -370,7 +396,7 @@
                 </div>
 
                 <div class="user-info-box">
-                    <strong>?? Your User Info</strong>
+                    <strong>Your User Info</strong>
                     
                     <div class="user-info-item">
                         <span class="user-info-label">User ID (First 3):</span>
@@ -415,18 +441,19 @@
             <!-- Received Comments Section -->
             <div class="section grid-full">
                 <h2>
-                    ?? Comments (WhatsApp Style)
+                    Comments (WhatsApp Style)
                     <span class="comment-count" id="messageCount">0 messages</span>
                 </h2>
                 
                 <div class="info-box">
-                    <strong>? Features:</strong>
+                    <strong>Features:</strong>
                     <ul style="margin-left: 20px; margin-top: 8px;">
-                        <li>?? <strong>Date separators:</strong> One per day showing date</li>
-                        <li>?? <strong>Time-only display:</strong> Shows HH:MM beside each message</li>
-                        <li>?? <strong>5-minute edit window:</strong> Edit button only available within 5 minutes</li>
-                        <li>?? <strong>Update timestamp:</strong> When edited, time updates to edit time</li>
-                        <li>??? <strong>Delete available:</strong> Always available (no timeout)</li>
+                        <li><strong>Date separators:</strong> One per day showing date</li>
+                        <li><strong>Time-only display:</strong> Shows HH:MM beside each message</li>
+                        <li><strong>5-minute edit window:</strong> Edit button only available within 5 minutes (server enforces this too)</li>
+                        <li><strong>Update timestamp:</strong> When edited, time updates to edit time</li>
+                        <li><strong>Delete available:</strong> Always available (no timeout, but only comment owner can delete)</li>
+                        <li><strong>Plan access check:</strong> Only users that belong to the plan can connect and send comments</li>
                     </ul>
                 </div>
 
@@ -529,13 +556,13 @@
                 const now = Math.floor(Date.now() / 1000);
 
                 if (exp < now) {
-                    alert('? Token expired');
+                    alert('Token expired');
                 } else {
-                    alert(`? Token valid. Expires in ${exp - now}s\n\nUser ID: ${userId}`);
+                    alert(`Token valid. Expires in ${exp - now}s\n\nUser ID: ${userId}`);
                     currentUserId = userId;
                 }
             } catch (error) {
-                alert(`? Error: ${error.message}`);
+                alert(`Error: ${error.message}`);
             }
         }
 
@@ -569,27 +596,32 @@
                     .build();
 
                 connection.on('ReceiveComment', (comment) => {
-                    log(`📨 Comment created by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.createdAt)}`);
+                    log(`Comment created by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.createdAt)}`);
                     addCommentToList(comment);
                 });
 
                 connection.on('ReceiveEditedComment', (comment) => {
-                    log(`📝 Comment edited by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.updatedAt)}`);
+                    log(`Comment edited by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.updatedAt)}`);
                     updateCommentInList(comment);
                 });
 
-                connection.on('ReceiveDeletedComment', (commentId) => {
-                    log(`??? Comment deleted: ${commentId}`);
+                connection.on('ReceiveDeletedComment', (commentId, message) => {
+                    log(`${message} (${commentId})`);
                     deleteCommentFromList(commentId);
                 });
 
-                connection.on('ReceiveValidationErrors', (errors) => {
-                    displayValidationErrors(errors);
+                connection.on('ReceiveErrors', (errors) => {
+                    console.log('ReceiveErrors event fired with payload:', errors);
+                    console.log('Errors type:', typeof errors);
+                    console.log('Is array:', Array.isArray(errors));
+                    log(`Server error received: ${JSON.stringify(errors)}`);
+                    displayServerErrors(errors);
                 });
 
-                connection.on('ReceiveErrors', (errors) => {
-                    log(`? Server error: ${JSON.stringify(errors)}`);
-                    alert(`Error: ${errors[0]?.message || 'Unknown error'}`);
+                connection.on('ReceiveValidationErrors', (errors) => {
+                    console.log('ReceiveValidationErrors event fired:', errors);
+                    log(`Validation errors: ${JSON.stringify(errors)}`);
+                    displayValidationErrors(errors);
                 });
 
                 connection.onclose(() => {
@@ -602,9 +634,9 @@
                 document.getElementById('disconnectBtn').disabled = false;
                 document.getElementById('sendBtn').disabled = false;
 
-                log(`? Connected! User ID (first 3): ${currentUserId.substring(0, 3).toUpperCase()}`);
+                log(`Connected! User ID (first 3): ${currentUserId.substring(0, 3).toUpperCase()}`);
             } catch (error) {
-                alert(`? Connection failed: ${error.message}`);
+                alert(`Connection failed: ${error.message}`);
                 updateConnectionUI(false);
             }
         }
@@ -671,7 +703,7 @@
                 document.getElementById('charCount').textContent = '0/500';
                 document.getElementById('validationErrors').style.display = 'none';
             } catch (error) {
-                log(`? Error: ${error.message}`);
+                log(`Error: ${error.message}`);
             }
         }
 
@@ -725,8 +757,8 @@
                         <div class="edit-form" id="edit-${comment.id}">
                             <textarea id="edit-text-${comment.id}" placeholder="Edit comment...">${escapeHtml(comment.userComment)}</textarea>
                             <div class="edit-buttons">
-                                <button class="btn-save btn-small" onclick="saveEditComment('${comment.id}')">? Save</button>
-                                <button class="btn-cancel btn-small" onclick="cancelEditComment('${comment.id}')">? Cancel</button>
+                                <button class="btn-save btn-small" onclick="saveEditComment('${comment.id}')">Save</button>
+                                <button class="btn-cancel btn-small" onclick="cancelEditComment('${comment.id}')">Cancel</button>
                             </div>
                         </div>
                         <div class="message-actions">
@@ -798,7 +830,7 @@
                 setupEditTimeoutMonitor(comment.id, comment.updatedAt);
             }
 
-            log(`✅ Comment updated in UI: ${comment.id}`);
+            log(`Comment updated in UI: ${comment.id}`);
         }
 
         /// ==================== Edit Timeout Monitor ====================
@@ -851,7 +883,7 @@
                         actionContainer.appendChild(editButton);
                     }
 
-                    log(`✅ Edit button shown for comment: ${commentId}`);
+                    log(`Edit button shown for comment: ${commentId}`);
                 }
 
                 // Remove warning if exists
@@ -864,7 +896,7 @@
                 const editButton = item.querySelector('.btn-edit');
                 if (editButton) {
                     editButton.remove();
-                    log(`⏰ Edit button removed for comment: ${commentId}`);
+                    log(`Edit button removed for comment: ${commentId}`);
                 }
 
                 // Show warning if doesn't exist
@@ -875,7 +907,7 @@
                     warningDiv.textContent = '⚠️ Edit time expired (5 min limit)';
                     messageBody.appendChild(warningDiv);
 
-                    log(`⚠️ Warning shown for comment: ${commentId}`);
+                    log(`Warning shown for comment: ${commentId}`);
                 }
             }
         }
@@ -907,7 +939,7 @@
                 }
             }, 300);
 
-            log(`🗑️ Comment deleted: ${commentId}`);
+            log(`Comment deleted: ${commentId}`);
         }
 
         function startEditComment(commentId) {
@@ -951,7 +983,7 @@
                     userComment: newComment
                 });
 
-                log(`✅ Edit sent for comment: ${commentId}`);
+                log(`Edit sent for comment: ${commentId}`);
                 
                 // Reset button state
                 saveButton.textContent = originalText;
@@ -964,11 +996,11 @@
                 if (contentEl) contentEl.style.display = 'block';
 
             } catch (error) {
-                log(`❌ Error saving edit: ${error.message}`);
+                log(`Error saving edit: ${error.message}`);
                 
                 // Reset button state
                 const saveButton = event.target;
-                saveButton.textContent = '💾 Save';
+                saveButton.textContent = 'Save';
                 saveButton.disabled = false;
 
                 alert(`Error: ${error.message}`);
@@ -994,12 +1026,12 @@
             }
 
             try {
-                log(`??? Deleting comment: ${commentId}`);
+                log(`Deleting comment: ${commentId}`);
                 await connection.invoke('DeleteComment', commentId);
                 
-                log(`? Delete request sent for comment: ${commentId}`);
+                log(`Delete request sent for comment: ${commentId}`);
             } catch (error) {
-                log(`? Error deleting comment: ${error.message}`);
+                log(`Error deleting comment: ${error.message}`);
                 alert(`Error: ${error.message}`);
             }
         }
@@ -1007,9 +1039,53 @@
         function displayValidationErrors(errors) {
             const container = document.getElementById('validationErrors');
             container.style.display = 'block';
-            container.innerHTML = '<strong>? Validation Errors:</strong><ul style="margin-left: 20px; margin-top: 8px;">' +
+            container.innerHTML = '<strong>❌ Validation Errors:</strong><ul style="margin-left: 20px; margin-top: 8px;">' +
                 errors.map(e => `<li>${e.propertyName}: ${e.errorMessage}</li>`).join('') +
                 '</ul>';
+        }
+
+        function displayServerErrors(errors) {
+            console.log('displayServerErrors called with:', errors);
+            const container = document.getElementById('validationErrors');
+            
+            if (!container) {
+                console.error('validationErrors container not found!');
+                return;
+            }
+
+            // Normalize to array
+            let errorArray = Array.isArray(errors) ? errors : [errors];
+            console.log('Normalized error array:', errorArray);
+
+            if (!errorArray || errorArray.length === 0) {
+                container.innerHTML = '<strong>Server Error:</strong><p style="margin-top: 8px;">Unknown error occurred</p>';
+                container.style.display = 'block';
+                return;
+            }
+
+            const errorList = errorArray.map((e, index) => {
+                console.log(`Processing error ${index}:`, e);
+                
+                if (!e) return '<li>Unknown error</li>';
+
+                // Error record has 'code' and 'message' (lowercase)
+                const code = e.code || 'Error';
+                const message = e.message || 'No message provided';
+
+                return `<li><strong>${escapeHtml(code)}:</strong> ${escapeHtml(message)}</li>`;
+            }).join('');
+
+            const html = 
+                '<strong>Server Error:</strong>' +
+                '<ul>' +
+                errorList +
+                '</ul>';
+            
+            console.log('Setting innerHTML to:', html);
+            container.innerHTML = html;
+            container.style.display = 'block';
+            
+            console.log('Container after update:', container);
         }
 
         function clearComments() {
@@ -1026,7 +1102,7 @@
                 document.getElementById('charCount').textContent = `${this.value.length}/500`;
             });
 
-            log('? Page loaded - WhatsApp style timestamps ready');
+            log('Page loaded - WhatsApp style timestamps ready');
         });
     </script>
 </body>
