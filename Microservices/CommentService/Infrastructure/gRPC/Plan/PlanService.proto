@@ -1,0 +1,20 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Infrastructure.gRPC.Plan";
+
+service PlanServiceGrpc{
+	rpc GetPlan (PlanRequest) returns (PlanResponse);
+}
+
+
+message PlanRequest {
+	string planId = 1;
+}
+
+message PlanResponse {
+	bool isExist = 1;
+	string PlanId = 2;
+	string CompanyId = 3;
+	string TeamId = 4 ;
+	string OwnerId = 5;
+}
