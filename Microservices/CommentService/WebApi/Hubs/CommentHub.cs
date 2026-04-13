@@ -9,7 +9,7 @@ namespace WebApi.Hubs;
 [Authorize]
 public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
                         ICommentService commentService,
-                        ILogger<CommentHub> logger) : Hub
+                        ILogger<CommentHub> logger) : Hub<ICommentClient>
 {
     public override async Task OnConnectedAsync()
     {
@@ -54,10 +54,11 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         addCommentDto.UserId = userId;
         addCommentDto.PlanId = Context.Items["planId"] as string;
         var result = await commentService.AddCommentAsync(addCommentDto);
-        if (result.IsSuccess)
-        {
-            await Clients.Group(addCommentDto.PlanId!).SendAsync("ReceiveComment", result.Value);
-        }
+
+        await result.MapAsync(
+            onSuccess: comment => Clients.Group(addCommentDto.PlanId!).ReceiveComment(comment),
+            onFailure: errors => Clients.Caller.ReceiveErrors(errors)
+        );
     }
     public async Task EditComment(UpdateCommentDto updateCommentDto)
     {
@@ -66,8 +67,8 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         updateCommentDto.UserId = userId;
         var result = await commentService.UpdateCommentAsync(updateCommentDto);
         await result.MapAsync(
-            onSuccess: comment => Clients.Group(planId!).SendAsync("ReceiveEditedComment", comment),
-            onFailure: errors => Clients.Caller.SendAsync("ReceiveErrors", errors)
+            onSuccess: comment => Clients.Group(planId!).ReceiveEditedComment(comment),
+            onFailure: errors => Clients.Caller.ReceiveErrors(errors)
         );
     }
     public async Task DeleteComment(string commentId)
@@ -76,8 +77,8 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         var planId = Context.Items["planId"] as string;
         var result = await commentService.DeleteCommentAsync(commentId, userId!);
         await result.MapAsync(
-            onSuccess: _ => Clients.Group(planId!).SendAsync("ReceiveDeletedComment", commentId, "This comment has been deleted."),
-            onFailure: errors => Clients.Caller.SendAsync("ReceiveErrors", errors)
+            onSuccess: _ => Clients.Group(planId!).ReceiveDeletedComment(commentId, "This comment has been deleted."),
+            onFailure: errors => Clients.Caller.ReceiveErrors(errors)
         );
     }
     public override async Task OnDisconnectedAsync(Exception? exception)
