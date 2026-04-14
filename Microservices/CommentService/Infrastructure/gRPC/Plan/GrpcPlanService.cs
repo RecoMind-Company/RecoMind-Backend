@@ -18,4 +18,13 @@ public class GrpcPlanService(PlanServiceGrpc.PlanServiceGrpcClient planServiceGr
             TeamId = result.TeamId
         };
     }
+
+    public async Task<bool> IsOwnerOfPlanAsync(string userId, string planId)
+    {
+        var request = new isOwnerRequest { UserId = userId, PlanId = planId };
+
+        var result = await planServiceGrpcClient.isOwnerAsync(request);
+
+        return result.IsOwner;
+    }
 }

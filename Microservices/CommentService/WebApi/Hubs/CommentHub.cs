@@ -8,6 +8,7 @@ namespace WebApi.Hubs;
 
 [Authorize]
 public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
+                        IGrpcPlanService grpcPlanService,
                         ICommentService commentService,
                         ILogger<CommentHub> logger) : Hub<ICommentClient>
 {
@@ -27,13 +28,13 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
 
         try
         {
-            var isInPlan = await userQuestGrpcService.IsUserInPlan(userId!, planId!);
-
-            if (isInPlan)
+            // Check if the user is the owner of the plan or a member, using short-circuit evaluation to avoid unnecessary gRPC calls
+            if (await grpcPlanService.IsOwnerOfPlanAsync(userId!, planId!) || await userQuestGrpcService.IsUserInPlan(userId!, planId!))
             {
                 Context.Items["planId"] = planId;
                 Context.Items["userId"] = userId;
                 await Groups.AddToGroupAsync(connectionId, planId!);
+                logger.LogInformation("CommentHub connection accepted - User authorized - UserId: {UserId}, PlanId: {PlanId}, ConnectionId: {ConnectionId}", userId, planId, connectionId);
             }
             else
             {
