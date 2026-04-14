@@ -278,4 +278,132 @@ public class CommentServiceTests
     }
 
     #endregion
+
+    #region UpdateCommentAsync Tests
+
+    [Fact]
+    public async Task UpdateCommentAsync_WithValidData_ShouldSucceed()
+    {
+        // Arrange - Even seed generates recent CreatedAt
+        var updateCommentDto = CommentFakers.GetUpdateCommentDto(seed: 0).Generate();
+        var existingComment = CommentFakers.GetComment(seed: 0).Generate();
+        existingComment.CreatedAt = DateTime.UtcNow.AddMinutes(-2); // Within 5-minute window
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(existingComment);
+
+        _commentRepositoryMock
+            .Setup(x => x.Update(It.IsAny<Comment>()));
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.UpdateCommentAsync(updateCommentDto);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.ErrorsList.Should().BeEmpty();
+
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateCommentAsync_CommentNotFound_ShouldFail()
+    {
+        // Arrange
+        var updateCommentDto = CommentFakers.GetUpdateCommentDto(seed: 0).Generate();
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync((Comment?)null);
+
+        // Act
+        var result = await _sut.UpdateCommentAsync(updateCommentDto);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(CommentErrors.NotFound);
+
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateCommentAsync_UserNotOwner_ShouldFail()
+    {
+        // Arrange
+        // using different seeds heare will generate different UserId for updateCommentDto and existingComment.
+        var updateCommentDto = CommentFakers.GetUpdateCommentDto(seed: 4).Generate();
+        var existingComment = CommentFakers.GetComment(seed: 0).Generate();
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(existingComment);
+
+        // Act
+        var result = await _sut.UpdateCommentAsync(updateCommentDto);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(CommentErrors.AccessDenied);
+
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateCommentAsync_EditTimeoutExceeded_ShouldFail()
+    {
+        // Arrange
+        var updateCommentDto = CommentFakers.GetUpdateCommentDto(seed: 3).Generate();
+        var existingComment = CommentFakers.GetComment(seed: 3).Generate(); // this the genrate a comment with CreatedAt in the past
+
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(existingComment);
+
+        // Act
+        var result = await _sut.UpdateCommentAsync(updateCommentDto);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(CommentErrors.EditTimeout);
+
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+    }
+
+    #endregion
 }
