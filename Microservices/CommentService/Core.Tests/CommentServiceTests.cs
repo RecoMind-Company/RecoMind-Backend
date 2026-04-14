@@ -177,4 +177,105 @@ public class CommentServiceTests
     }
 
     #endregion
+
+    #region GetCommentsByPlanIdAsync Tests
+
+    [Fact]
+    public async Task GetCommentsByPlanIdAsync_WithValidPlan_ShouldReturnComments()
+    {
+        // Arrange
+        string planId = "plan-123";
+        var planDto = CommentFakers.GetPlanIdsDto(seed: 0).Generate(); // IsExisted = true
+        var comments = CommentFakers.GetComment(seed: 0).Generate(3);
+
+        _grpcPlanServiceMock
+            .Setup(x => x.GetPlanIdsAsync(planId))
+            .ReturnsAsync(planDto);
+
+        _commentRepositoryMock
+            .Setup(x => x.FindAll(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(comments);
+
+        // Act
+        var result = await _sut.GetCommentsByPlanIdAsync(planId);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Count().Should().Be(3);
+        result.ErrorsList.Should().BeEmpty();
+
+        _commentRepositoryMock.Verify(
+            x => x.FindAll(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetCommentsByPlanIdAsync_WithValidPlan_ShouldReturnEmptyList()
+    {
+        // Arrange
+        string planId = "plan-123";
+        var planDto = CommentFakers.GetPlanIdsDto(seed: 0).Generate(); // IsExisted = true
+
+        _grpcPlanServiceMock
+            .Setup(x => x.GetPlanIdsAsync(planId))
+            .ReturnsAsync(planDto);
+
+        _commentRepositoryMock
+            .Setup(x => x.FindAll(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(Enumerable.Empty<Comment>());
+
+        // Act
+        var result = await _sut.GetCommentsByPlanIdAsync(planId);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Should().BeEmpty();
+        result.ErrorsList.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCommentsByPlanIdAsync_WithInvalidPlan_ShouldFail()
+    {
+        // Arrange
+        string planId = "invalid-plan";
+        var planDto = CommentFakers.GetPlanIdsDto(seed: 1).Generate(); // IsExisted = false
+
+        _grpcPlanServiceMock
+            .Setup(x => x.GetPlanIdsAsync(planId))
+            .ReturnsAsync(planDto);
+
+        // Act
+        var result = await _sut.GetCommentsByPlanIdAsync(planId);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeNull();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(PlanErrors.PlanNotFound);
+
+        _commentRepositoryMock.Verify(
+            x => x.FindAll(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()),
+            Times.Never);
+    }
+
+    #endregion
 }
