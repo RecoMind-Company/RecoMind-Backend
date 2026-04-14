@@ -21,18 +21,26 @@ public class CommentService(IUnitOfWork unitOfWork,
         var plan = await grpcPlanService.GetPlanIdsAsync(addCommentDto.PlanId!);
         if (!plan.IsExisted)
             return Result<CommentDto>.Failure(PlanErrors.PlanNotFound);
-        var isUserInTeam = await grpcTeamService.IsUserExist(addCommentDto.UserId!, plan.TeamId!);
-        if (!isUserInTeam)
-            return Result<CommentDto>.Failure(TeamErrors.UserNotInTeam);
 
-        var comment = mapper.Map<Comment>(addCommentDto);
-        await _commentRepository.AddAsync(comment);
-        await unitOfWork.SaveChangesAsync();
-        var commentDto = mapper.Map<CommentDto>(comment);
-        return Result<CommentDto>.Success(commentDto);
+        if (
+            await grpcPlanService.IsOwnerOfPlanAsync(addCommentDto.UserId!, addCommentDto.PlanId!)
+            ||
+            await grpcTeamService.IsUserExist(addCommentDto.UserId!, plan.TeamId!))
+        {
+            var comment = mapper.Map<Comment>(addCommentDto);
+            await _commentRepository.AddAsync(comment);
+            await unitOfWork.SaveChangesAsync();
+            var commentDto = mapper.Map<CommentDto>(comment);
+            return Result<CommentDto>.Success(commentDto);
+        }
+        return Result<CommentDto>.Failure(CommentErrors.AccessDenied);
     }
     public async Task<Result<IEnumerable<CommentDto>>> GetCommentsByPlanIdAsync(string planId)
     {
+        var isPlanExist = await grpcPlanService.GetPlanIdsAsync(planId);
+        if (!isPlanExist.IsExisted)
+            return Result<IEnumerable<CommentDto>>.Failure(PlanErrors.PlanNotFound);
+
         var comments = await _commentRepository.FindAll(c =>
             c.PlanId == planId,
             orderBy: x => x.OrderByDescending(y => y.CreatedAt)
