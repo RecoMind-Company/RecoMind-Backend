@@ -406,4 +406,102 @@ public class CommentServiceTests
     }
 
     #endregion
+
+    #region DeleteCommentAsync Tests
+
+    [Fact]
+    public async Task DeleteCommentAsync_WithValidData_ShouldSucceed()
+    {
+        // Arrange
+        var comment = CommentFakers.GetComment(seed: 0).Generate();
+        string commentId = comment.Id;
+        string userId = comment.UserId;
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(comment);
+
+        _commentRepositoryMock
+            .Setup(x => x.Delete(It.IsAny<Comment>()));
+
+        _unitOfWorkMock
+            .Setup(x => x.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _sut.DeleteCommentAsync(commentId, userId);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeTrue();
+        result.ErrorsList.Should().BeEmpty();
+
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Once);
+        _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteCommentAsync_CommentNotFound_ShouldFail()
+    {
+        // Arrange
+        string commentId = "non-existent-id";
+        string userId = "user-123";
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync((Comment?)null);
+
+        // Act
+        var result = await _sut.DeleteCommentAsync(commentId, userId);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeFalse();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(CommentErrors.NotFound);
+
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteCommentAsync_UserNotOwner_ShouldFail()
+    {
+        // Arrange
+        var comment = CommentFakers.GetComment(seed: 0).Generate();
+        string commentId = comment.Id;
+        string differentUserId = "different-user-id";
+
+        _commentRepositoryMock
+            .Setup(x => x.Find(
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+            .ReturnsAsync(comment);
+
+        // Act
+        var result = await _sut.DeleteCommentAsync(commentId, differentUserId);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Value.Should().BeFalse();
+        result
+            .ErrorsList
+            .Should()
+            .ContainSingle()
+            .Which
+            .Should()
+            .Be(CommentErrors.AccessDenied);
+
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+    }
+
+    #endregion
 }
