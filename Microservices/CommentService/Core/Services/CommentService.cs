@@ -33,7 +33,10 @@ public class CommentService(IUnitOfWork unitOfWork,
     }
     public async Task<Result<IEnumerable<CommentDto>>> GetCommentsByPlanIdAsync(string planId)
     {
-        var comments = await _commentRepository.FindAll(c => c.PlanId == planId);
+        var comments = await _commentRepository.FindAll(c =>
+            c.PlanId == planId,
+            orderBy: x => x.OrderByDescending(y => y.CreatedAt)
+        );
         var commentDtos = mapper.Map<IEnumerable<CommentDto>>(comments);
         return Result<IEnumerable<CommentDto>>.Success(commentDtos);
     }
