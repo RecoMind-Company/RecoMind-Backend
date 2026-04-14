@@ -1,8 +1,8 @@
 ﻿namespace Core.Result;
 
-internal static class CommentErrors
+public static class CommentErrors
 {
-    internal static Error NotFound => new("Comment.NotFound", "Comment isn't found");
-    internal static Error AccessDenied => new("Comment.AccessDenied", "You aren't allowed to perform this action on the comment");
-    internal static Error EditTimeout => new("Comment.EditTimeout", "you can't edit this comment now");
+    public static Error NotFound => new("Comment.NotFound", "Comment isn't found");
+    public static Error AccessDenied => new("Comment.AccessDenied", "You aren't allowed to perform this action on the comment");
+    public static Error EditTimeout => new("Comment.EditTimeout", "you can't edit this comment now");
 }
