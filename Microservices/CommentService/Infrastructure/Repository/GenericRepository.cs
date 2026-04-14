@@ -17,12 +17,18 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         }
         return await query.FirstOrDefaultAsync(predicate);
     }
-    public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+    public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate,
+                                              Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+                                              params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = _dbset;
         foreach (var include in includes)
         {
             query = query.Include(include);
+        }
+        if (orderBy != null)
+        {
+            query = orderBy(query);
         }
         return await query.Where(predicate).ToListAsync();
     }
