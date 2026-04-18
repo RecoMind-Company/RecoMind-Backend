@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Notification.Core.DTOs;
 using Notification.Core.Interfaces;
+using Notification.Core.Models;
+using System.Security.Claims;
 
 namespace Notification.WebApi.Controllers
 {
@@ -10,36 +13,41 @@ namespace Notification.WebApi.Controllers
     {
         private readonly INotificationService _notificationService;
 
+        private string UserId => User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
         public NotificationsController(INotificationService notificationService)
         {
             _notificationService = notificationService;
         }
 
-        // جلب كل الإشعارات
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetHistory(string userId)
+        [HttpPost("send-test")]
+        public async Task<IActionResult> SendTestNotification([FromBody] NotificationEventDto model)
         {
-            var result = await _notificationService.GetUserHistoryAsync(userId);
+            await _notificationService.SendNotificationAsync(model);
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetHistory()
+        {
+            var result = await _notificationService.GetUserHistoryAsync(UserId);
             return Ok(result);
         }
 
-        // فلترة الإشعارات (مقروءة أو غير مقروءة)
-        [HttpGet("user/{userId}/filter")]
-        public async Task<IActionResult> GetByStatus(string userId, [FromQuery] bool isRead)
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetByStatus([FromQuery] bool isRead)
         {
-            var result = await _notificationService.GetByStatusAsync(userId, isRead);
+            var result = await _notificationService.GetByStatusAsync(UserId, isRead);
             return Ok(result);
         }
 
-        // جلب عدد غير المقروء (للرقم اللي فوق الجرس)
-        [HttpGet("user/{userId}/unread-count")]
-        public async Task<IActionResult> GetUnreadCount(string userId)
+        [HttpGet("unread-count")]
+        public async Task<IActionResult> GetUnreadCount()
         {
-            var count = await _notificationService.GetUnreadCountAsync(userId);
+            var count = await _notificationService.GetUnreadCountAsync(UserId);
             return Ok(new { count });
         }
 
-        // فتح إشعار وتعليمه كمقروء
         [HttpPatch("{id}/mark-as-read")]
         public async Task<IActionResult> MarkAsRead(string id)
         {
@@ -48,7 +56,6 @@ namespace Notification.WebApi.Controllers
             return Ok(result);
         }
 
-        // حذف إشعار
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
