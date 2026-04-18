@@ -14,6 +14,7 @@ namespace Notification.Core.Mapper
         public NotificationProfile()
         {
             CreateMap<NotificationModel, NotificationResponseDto>();
+            CreateMap<NotificationEventDto, NotificationModel>();
         }
     }
 }

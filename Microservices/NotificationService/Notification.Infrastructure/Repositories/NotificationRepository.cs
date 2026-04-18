@@ -14,9 +14,8 @@ namespace Notification.Infrastructure.Repositories
     {
         private readonly NotificationDbContext _context;
         public NotificationRepository(NotificationDbContext context)
-        {
-            _context = context;
-        }
+            => _context = context;
+
         public async Task AddAsync(NotificationModel notification)
         {
             await _context.Notifications.AddAsync(notification);
@@ -28,12 +27,12 @@ namespace Notification.Infrastructure.Repositories
             return await _context.Notifications.FindAsync(id);
         }
 
-        public async Task<IEnumerable<NotificationModel>> GetByReceiverIdAsync(string receiverId)
+        public async Task<IEnumerable<NotificationModel>> GetUserNotificationsAsync(string receiverId)
         {
             return await _context.Notifications
                         .AsNoTracking()
                         .Where(n => n.ReceiverId == receiverId)
-                        .OrderByDescending(n => n.CreatedAt) // sort by most recent first
+                        .OrderByDescending(n => n.CreatedAt)
                         .ToListAsync();
         }
 
@@ -57,7 +56,7 @@ namespace Notification.Infrastructure.Repositories
             var notification = await 
                 _context.Notifications.FindAsync(id);
 
-            if (notification == null) return;
+            if (notification == null || notification.IsRead) return;
 
             notification.IsRead = true;
             await _context.SaveChangesAsync();
@@ -66,16 +65,16 @@ namespace Notification.Infrastructure.Repositories
 
         public async Task MarkAllAsReadAsync(string receiverId)
         {
-            var unreadNotifications = await _context.Notifications
-                        .Where(n => n.ReceiverId == receiverId && !n.IsRead)
-                        .ToListAsync();
+            await _context.Notifications
+                .Where(n => n.ReceiverId == receiverId && !n.IsRead)
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
+        }
 
-            foreach (var notification in unreadNotifications)
-            {
-                notification.IsRead = true;
-            }
-
-            await _context.SaveChangesAsync();
+        public async Task DeleteAsync(string id)
+        {
+            await _context.Notifications
+                .Where(n => n.Id == id)
+                .ExecuteDeleteAsync();
         }
     }
 }

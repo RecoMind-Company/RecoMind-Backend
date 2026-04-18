@@ -10,9 +10,9 @@ namespace Notification.Core.Interfaces
 {
     public interface INotificationService
     {
-        Task<NotificationResponseDto> SendNotificationAsync(NotificationModel notification);
+        Task SendNotificationAsync(NotificationEventDto notification);
         Task<IEnumerable<NotificationResponseDto>> GetUserHistoryAsync(string userId);
-        Task<IEnumerable<NotificationResponseDto>> GetByStatusAsync(string userId, bool isRead); // notification filter
+        Task<IEnumerable<NotificationResponseDto>> GetByStatusAsync(string userId, bool isRead);
         Task<NotificationResponseDto?> GetAndMarkAsReadAsync(string id);
         Task<bool> MarkAllAsReadAsync(string userId);
         Task<bool> DeleteNotificationAsync(string id);

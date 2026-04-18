@@ -13,37 +13,38 @@ namespace Notification.Core.Services
     public class NotificationService : INotificationService
     {
         private readonly INotificationRepository _repository;
-        //private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationHubContext _hubContext;
         private readonly IMapper _mapper;
 
         public NotificationService(
-            //IHubContext<NotificationHub> hubContext,
+            INotificationHubContext hubContext,
             INotificationRepository repository,
             IMapper mapper)
         {
-            //_hubContext = hubContext;
+            _hubContext = hubContext;
             _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<NotificationResponseDto> SendNotificationAsync(NotificationModel notification)
+        public async Task SendNotificationAsync(NotificationEventDto dto)
         {
-            // 1. الحفظ في الداتا بيز
+            var notification = _mapper.Map<NotificationModel>(dto);
+            notification.Id = Guid.NewGuid().ToString();
+            notification.CreatedAt = DateTime.UtcNow;
+            notification.IsRead = false;
+
+            // Save to database
             await _repository.AddAsync(notification);
 
-            // 2. تحويل لـ DTO للإرسال
             var response = _mapper.Map<NotificationResponseDto>(notification);
 
-            // 3. إرسال Real-time للمستخدم
-            //await _hubContext.Clients.User(notification.receiverId)
-            //    .SendAsync("ReceiveNotification", response);
-
-            return response;
+            // Send real-time notification
+            await _hubContext.SendNotificationAsync(notification.ReceiverId, response);
         }
 
         public async Task<IEnumerable<NotificationResponseDto>> GetUserHistoryAsync(string userId)
         {
-            var notifications = await _repository.GetByReceiverIdAsync(userId);
+            var notifications = await _repository.GetUserNotificationsAsync(userId);
             return _mapper.Map<IEnumerable<NotificationResponseDto>>(notifications);
         }
 
@@ -56,12 +57,12 @@ namespace Notification.Core.Services
         public async Task<NotificationResponseDto?> GetAndMarkAsReadAsync(string id)
         {
             var notification = await _repository.GetByIdAsync(id);
-            if (notification == null) return null;
+            if (notification is null) return null;
 
             if (!notification.IsRead)
             {
                 await _repository.MarkAsReadAsync(id);
-                notification.IsRead = true; // تحديث الحالة في الأوبجكت الراجع
+                notification.IsRead = true;
             }
 
             return _mapper.Map<NotificationResponseDto>(notification);
@@ -79,8 +80,10 @@ namespace Notification.Core.Services
 
         public async Task<bool> DeleteNotificationAsync(string id)
         {
-            // ملحوظة: تأكد من إضافة DeleteAsync في الـ Repository interface بتاعك
-            // await _repository.DeleteAsync(id);
+            var notification = await _repository.GetByIdAsync(id);
+            if (notification is null) return false;
+
+            await _repository.DeleteAsync(id);
             return true;
         }
 
