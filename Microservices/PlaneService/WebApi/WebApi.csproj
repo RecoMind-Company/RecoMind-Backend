@@ -13,6 +13,9 @@
 
   <ItemGroup>
     <Protobuf Include="GrpcServer\TeamService.proto" GrpcServices="Server" />
+	  <Protobuf Include="GrpcServer\PlanService.proto" GrpcServices="Server" >
+		  <protoRoot>GrpcServer</protoRoot>
+	  </Protobuf>
   </ItemGroup>
 
   <ItemGroup>

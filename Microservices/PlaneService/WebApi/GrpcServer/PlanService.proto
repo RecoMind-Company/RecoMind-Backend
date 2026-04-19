@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "webApi.Grpc";
+
+service PlanServiceGrpc{
+	rpc GetPlan (PlanRequest) returns (PlanResponse);
+	rpc isOwner(isOwnerRequest) returns (isOwnerResponse);
+}
+
+
+message PlanRequest {
+	string planId = 1;
+}
+
+message isOwnerRequest {
+	string planId = 1;
+	string userId = 2;
+}
+
+message PlanResponse {
+	bool isExist = 1;
+	string PlanId = 2;
+	string CompanyId = 3;
+	string TeamId = 4 ;
+	string OwnerId = 5;
+}
+
+message isOwnerResponse {
+	bool isOwner = 1;
+}

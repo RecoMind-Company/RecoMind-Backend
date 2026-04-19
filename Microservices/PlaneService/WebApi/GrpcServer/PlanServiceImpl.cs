@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace webApi.Grpc
 {
     public class PlanServiceImpl : PlanService.PlanServiceBase
+    public class PlanServiceImpl : PlanServiceGrpc.PlanServiceGrpcBase
     {
         public IUnitOfWork<Plan> _unitOfWork;
         public PlanServiceImpl(IUnitOfWork<Plan> unitOfWork)
@@ -25,11 +26,28 @@ namespace webApi.Grpc
                     CompanyId = plan.Company_Id,
                     OwnerId = plan.Owner_Id,
                     TeamId = plan.Team_Id,
+                    PlanId = plan.Id,
                 };
             }
             return new PlanResponse
             {
                 IsExist = false,
+            };
+        }
+
+        public async override Task<isOwnerResponse> isOwner(isOwnerRequest request, ServerCallContext context)
+        {
+            var plan = await _unitOfWork.Entity.GetByIdAsync(request.PlanId);
+            if (plan != null && plan.Owner_Id == request.UserId)
+            {
+                return new isOwnerResponse
+                {
+                    IsOwner = true,
+                };
+            }
+            return new isOwnerResponse
+            {
+                IsOwner = false,
             };
         }
     }

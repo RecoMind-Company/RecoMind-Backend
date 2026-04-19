@@ -1,0 +1,7 @@
+syntax = "proto3";
+import "GrpcUserQuestsMessages.proto";
+option csharp_namespace = "Infrastructure.gRPC.UserQuests";
+
+service GrpcUserQuestsService {
+	rpc IsUserInAnyQuestWithinPlan(IsUserInPlanRequest) returns (IsUserInPlanResponse);
+}

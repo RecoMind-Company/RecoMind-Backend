@@ -30,5 +30,15 @@ namespace Team.WebApi.GrpcServices
                 TeamName = info.TeamName
             };
         }
+
+        public override async Task<UserExistResponse> UserExist(
+            UserExistRequest request,
+            ServerCallContext context)
+        {
+            var exist = await _teamService
+                .IsEmployeeInTeamAsync(request.TeamId, request.UserId);
+
+            return new UserExistResponse { Exist = exist };
+        }
     }
 }

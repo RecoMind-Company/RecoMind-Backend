@@ -6,4 +6,5 @@ option csharp_namespace = "Team.WebApi.Protos";
 
 service TeamGrpcService {
   rpc GetTeamByTeamLeader (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
+  rpc UserExist(UserExistRequest) returns (UserExistResponse);
 }

@@ -110,5 +110,4 @@ namespace Team.Infrastructure.Repositories
             return true;
         }
     }
-
 }

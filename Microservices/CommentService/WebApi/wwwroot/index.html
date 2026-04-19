@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalR Comment Hub - WhatsApp Style Timestamps</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        .content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 30px; }
+        @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
+        .section {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-weight: 500; font-size: 13px; }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .button-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-danger { background: #f56565; color: white; }
+        .btn-danger:hover:not(:disabled) {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+        }
+        .btn-danger:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-secondary { background: #e2e8f0; color: #333; }
+        .btn-secondary:hover { background: #cbd5e0; }
+        .btn-small { padding: 6px 12px; font-size: 11px; }
+        .btn-edit { background: #4299e1; color: white; }
+        .btn-edit:hover { background: #3182ce; }
+        .btn-delete { background: #f56565; color: white; }
+        .btn-delete:hover { background: #e53e3e; }
+        .btn-save { background: #48bb78; color: white; }
+        .btn-save:hover { background: #38a169; }
+        .btn-cancel { background: #cbd5e0; color: #333; }
+        .btn-cancel:hover { background: #a0aec0; }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-connected { background: #48bb78; animation: pulse 2s infinite; }
+        .status-disconnected { background: #f56565; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+        .status-box {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .status-box.success { border-color: #48bb78; background: #f0fff4; }
+        .status-box.error { border-color: #f56565; background: #fff5f5; }
+        .user-info-box {
+            background: #f0f7ff;
+            border: 2px solid #4299e1;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .user-info-box strong { color: #2c5282; display: block; margin-bottom: 10px; font-size: 14px; }
+        .user-info-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .user-info-label { font-weight: 600; color: #2c5282; min-width: 100px; font-size: 12px; }
+        .user-info-value {
+            background: white;
+            border: 1px solid #bee3f8;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            flex-grow: 1;
+            color: #1a365d;
+            font-weight: 500;
+        }
+        .messages-list {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        /* Date Separator */
+        .date-separator {
+            display: flex;
+            align-items: center;
+            margin: 15px 0 10px 0;
+            opacity: 0.7;
+        }
+        .date-separator::before,
+        .date-separator::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+        .date-separator-text {
+            color: #999;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        /* Message Item - WhatsApp Style */
+        .message-item {
+            padding: 10px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            transition: background 0.2s ease;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .message-item.edited {
+            border-left-color: #4299e1;
+            background: #eff6ff;
+        }
+        .message-item.deleting {
+            animation: fadeOut 0.3s ease forwards;
+        }
+        .message-item:last-child { margin-bottom: 0; }
+        .message-meta-small {
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            min-width: 50px;
+        }
+        .message-meta-small .user-badge {
+            font-weight: 700;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .message-meta-small .time-badge {
+            font-weight: 500;
+            color: #666;
+            font-size: 11px;
+        }
+        .message-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .message-header {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+        .username-badge {
+            font-weight: 600;
+            color: white;
+            background: #667eea;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .edited-badge {
+            background: #bee3f8;
+            color: #2c5282;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .message-content {
+            color: #333;
+            font-size: 13px;
+            line-height: 1.4;
+            background: white;
+            padding: 8px;
+            border-radius: 3px;
+            word-break: break-word;
+            margin-bottom: 6px;
+        }
+        .edit-form {
+            display: none;
+            background: white;
+            padding: 8px;
+            border-radius: 3px;
+            border: 2px solid #4299e1;
+            margin-bottom: 6px;
+        }
+        .edit-form.active {
+            display: block;
+        }
+        .edit-form textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 6px;
+            resize: vertical;
+            min-height: 50px;
+        }
+        .edit-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .message-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .message-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 10px;
+            color: #999;
+            flex-wrap: wrap;
+        }
+        .meta-item { 
+            display: flex;
+            gap: 3px;
+        }
+        .meta-label { font-weight: 600; }
+        .meta-value { font-family: 'Courier New', monospace; }
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #4299e1;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+        .grid-full { grid-column: 1 / -1; }
+        .comment-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .edit-timeout-warning {
+            background: #fff5f5;
+            color: #c53030;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin-top: 4px;
+            text-align: center;
+            font-weight: 600;
+        }
+        #validationErrors {
+            background: #fff5f5 !important;
+            border: 2px solid #fc8181 !important;
+            border-radius: 4px !important;
+            padding: 15px !important;
+            margin-top: 10px !important;
+            color: #c53030 !important;
+            font-size: 13px !important;
+            position: relative !important;
+            z-index: 1000 !important;
+            box-shadow: 0 2px 8px rgba(245, 101, 101, 0.3) !important;
+        }
+        #validationErrors strong {
+            display: block !important;
+            margin-bottom: 10px !important;
+            font-size: 14px !important;
+        }
+        #validationErrors ul {
+            list-style: disc inside !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        #validationErrors li {
+            margin-bottom: 6px !important;
+            line-height: 1.5 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SignalR Comment Hub - WhatsApp Style Timestamps</h1>
+            <p>Messages with date separators, time-only display, and 5-minute edit window</p>
+        </div>
+
+        <div class="content">
+            <!-- Configuration Section -->
+            <div class="section">
+                <h2>Configuration</h2>
+                
+                <div class="form-group">
+                    <label for="planId">Plan ID:</label>
+                    <input type="text" id="planId" value="plan-001" placeholder="Enter Plan ID">
+                </div>
+
+                <div class="form-group">
+                    <label for="serverUrl">Server URL:</label>
+                    <input type="text" id="serverUrl" value="https://localhost:7264" placeholder="Server URL">
+                </div>
+
+                <div class="form-group">
+                    <label for="jwtToken">JWT Token:</label>
+                    <input type="text" id="jwtToken" placeholder="Paste JWT token">
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-secondary" onclick="testTokenValidation()">Validate Token</button>
+                    <button class="btn-primary" onclick="connect()">Connect</button>
+                    <button class="btn-danger" onclick="disconnect()" disabled id="disconnectBtn">Disconnect</button>
+                </div>
+            </div>
+
+            <!-- User Connection Info -->
+            <div class="section">
+                <h2>Connection Information</h2>
+                
+                <div class="status-box" id="connectionStatusBox">
+                    <span class="status-indicator status-disconnected"></span>
+                    <strong>Status:</strong> <span id="connectionStatus">Disconnected</span>
+                </div>
+
+                <div class="user-info-box">
+                    <strong>Your User Info</strong>
+                    
+                    <div class="user-info-item">
+                        <span class="user-info-label">User ID (First 3):</span>
+                        <div class="user-info-value" style="background: #fef3c7; color: #92400e; font-weight: bold; text-transform: uppercase;" id="displayUserIdShort">N/A</div>
+                    </div>
+
+                    <div class="user-info-item">
+                        <span class="user-info-label">Full User ID:</span>
+                        <div class="user-info-value" id="displayUserId">N/A</div>
+                    </div>
+
+                    <div class="user-info-item">
+                        <span class="user-info-label">Plan ID:</span>
+                        <div class="user-info-value" id="displayPlanId">N/A</div>
+                    </div>
+
+                    <div class="user-info-item">
+                        <span class="user-info-label">Connection ID:</span>
+                        <div class="user-info-value" id="displayConnId">N/A</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Comment Section -->
+            <div class="section grid-full">
+                <h2>Create Comment</h2>
+                
+                <div class="form-group">
+                    <label for="userComment">Comment (max 500 characters):</label>
+                    <textarea id="userComment" placeholder="Enter your comment" rows="3"></textarea>
+                    <small id="charCount" style="color: #999; font-size: 11px;">0/500</small>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="sendComment()" disabled id="sendBtn">Send Comment</button>
+                    <button class="btn-secondary" onclick="clearComments()">Clear All Messages</button>
+                </div>
+
+                <div id="validationErrors" style="display: none; background: #fff5f5; border: 1px solid #fc8181; border-radius: 4px; padding: 10px; margin-top: 10px; color: #c53030; font-size: 12px;"></div>
+            </div>
+
+            <!-- Received Comments Section -->
+            <div class="section grid-full">
+                <h2>
+                    Comments (WhatsApp Style)
+                    <span class="comment-count" id="messageCount">0 messages</span>
+                </h2>
+                
+                <div class="info-box">
+                    <strong>Features:</strong>
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li><strong>Date separators:</strong> One per day showing date</li>
+                        <li><strong>Time-only display:</strong> Shows HH:MM beside each message</li>
+                        <li><strong>5-minute edit window:</strong> Edit button only available within 5 minutes (server enforces this too)</li>
+                        <li><strong>Update timestamp:</strong> When edited, time updates to edit time</li>
+                        <li><strong>Delete available:</strong> Always available (no timeout, but only comment owner can delete)</li>
+                        <li><strong>Plan access check:</strong> Only users that belong to the plan can connect and send comments</li>
+                    </ul>
+                </div>
+
+                <div class="messages-list" id="commentsList">
+                    <div style="color: #999; text-align: center; padding: 20px;">No comments yet - send one to start...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script>
+        let connection = null;
+        let currentUserId = null;
+        let currentPlanId = null;
+        let messageCount = 0;
+        const commentsMap = new Map();
+        let lastDateSeparator = null;
+
+        // ==================== Utility Functions ====================
+
+        function log(message) {
+            console.log(`[${new Date().toLocaleTimeString()}] ${message}`);
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return 'N/A';
+            try {
+                const date = new Date(isoString);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                const isToday = date.toDateString() === today.toDateString();
+                const isYesterday = date.toDateString() === yesterday.toDateString();
+
+                if (isToday) return 'Today';
+                if (isYesterday) return 'Yesterday';
+
+                const options = { month: 'short', day: 'numeric', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined };
+                return date.toLocaleDateString('en-US', options);
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        function formatTime(isoString) {
+            if (!isoString) return 'N/A';
+            try {
+                const date = new Date(isoString);
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        function getDateKey(isoString) {
+            if (!isoString) return null;
+            try {
+                const date = new Date(isoString);
+                return date.toDateString();
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function isEditableWithinTimeout(createdAtIso) {
+            try {
+                const createdAt = new Date(createdAtIso);
+                const now = new Date();
+                const diffMinutes = (now - createdAt) / (1000 * 60);
+                return diffMinutes < 5;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ==================== Token Functions ====================
+
+        function testTokenValidation() {
+            const token = document.getElementById('jwtToken').value.trim();
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) throw new Error('Invalid format');
+                const payload = JSON.parse(atob(parts[1]));
+                const userId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                const exp = payload.exp;
+                const now = Math.floor(Date.now() / 1000);
+
+                if (exp < now) {
+                    alert('Token expired');
+                } else {
+                    alert(`Token valid. Expires in ${exp - now}s\n\nUser ID: ${userId}`);
+                    currentUserId = userId;
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // ==================== Connection Functions ====================
+
+        async function connect() {
+            const planId = document.getElementById('planId').value.trim();
+            const serverUrl = document.getElementById('serverUrl').value.trim();
+            const token = document.getElementById('jwtToken').value.trim();
+
+            if (!planId || !token) {
+                alert('Please fill in Plan ID and JWT token');
+                return;
+            }
+
+            currentPlanId = planId;
+
+            try {
+                const parts = token.split('.');
+                const payload = JSON.parse(atob(parts[1]));
+                currentUserId = payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+                const hubUrl = `${serverUrl}/hubs/comments?planId=${encodeURIComponent(planId)}`;
+
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl(hubUrl, {
+                        accessTokenFactory: () => token,
+                        withCredentials: true
+                    })
+                    .withAutomaticReconnect()
+                    .build();
+
+                connection.on('ReceiveComment', (comment) => {
+                    log(`Comment created by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.createdAt)}`);
+                    addCommentToList(comment);
+                });
+
+                connection.on('ReceiveEditedComment', (comment) => {
+                    log(`Comment edited by User ${comment.userId.substring(0, 3).toUpperCase()} at ${formatTime(comment.updatedAt)}`);
+                    updateCommentInList(comment);
+                });
+
+                connection.on('ReceiveDeletedComment', (commentId, message) => {
+                    log(`${message} (${commentId})`);
+                    deleteCommentFromList(commentId);
+                });
+
+                connection.on('ReceiveErrors', (errors) => {
+                    console.log('ReceiveErrors event fired with payload:', errors);
+                    console.log('Errors type:', typeof errors);
+                    console.log('Is array:', Array.isArray(errors));
+                    log(`Server error received: ${JSON.stringify(errors)}`);
+                    displayServerErrors(errors);
+                });
+
+                connection.on('ReceiveValidationErrors', (errors) => {
+                    console.log('ReceiveValidationErrors event fired:', errors);
+                    log(`Validation errors: ${JSON.stringify(errors)}`);
+                    displayValidationErrors(errors);
+                });
+
+                connection.onclose(() => {
+                    updateConnectionUI(false);
+                });
+
+                await connection.start();
+
+                updateConnectionUI(true);
+                document.getElementById('disconnectBtn').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+
+                log(`Connected! User ID (first 3): ${currentUserId.substring(0, 3).toUpperCase()}`);
+            } catch (error) {
+                alert(`Connection failed: ${error.message}`);
+                updateConnectionUI(false);
+            }
+        }
+
+        async function disconnect() {
+            if (!connection) return;
+
+            try {
+                await connection.stop();
+                updateConnectionUI(false);
+                document.getElementById('disconnectBtn').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        function updateConnectionUI(isConnected) {
+            const statusBox = document.getElementById('connectionStatusBox');
+            
+            if (isConnected) {
+                statusBox.className = 'status-box success';
+                statusBox.innerHTML = `
+                    <span class="status-indicator status-connected"></span>
+                    <strong>Status:</strong> Connected to Plan ${currentPlanId}
+                `;
+
+                document.getElementById('displayUserIdShort').textContent = currentUserId.substring(0, 3).toUpperCase();
+                document.getElementById('displayUserId').textContent = currentUserId;
+                document.getElementById('displayPlanId').textContent = currentPlanId;
+                document.getElementById('displayConnId').textContent = connection.connectionId;
+            } else {
+                statusBox.className = 'status-box error';
+                statusBox.innerHTML = `
+                    <span class="status-indicator status-disconnected"></span>
+                    <strong>Status:</strong> Disconnected
+                `;
+
+                document.getElementById('displayUserIdShort').textContent = 'N/A';
+                document.getElementById('displayUserId').textContent = 'N/A';
+                document.getElementById('displayPlanId').textContent = 'N/A';
+                document.getElementById('displayConnId').textContent = 'N/A';
+            }
+        }
+
+        // ==================== Comment Functions ====================
+
+        async function sendComment() {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+                alert('Not connected');
+                return;
+            }
+
+            const comment = document.getElementById('userComment').value.trim();
+            if (!comment) {
+                alert('Please enter a comment');
+                return;
+            }
+
+            try {
+                await connection.invoke('CreateComment', { userComment: comment });
+
+                document.getElementById('userComment').value = '';
+                document.getElementById('charCount').textContent = '0/500';
+                document.getElementById('validationErrors').style.display = 'none';
+            } catch (error) {
+                log(`Error: ${error.message}`);
+            }
+        }
+
+        function addCommentToList(comment) {
+            const list = document.getElementById('commentsList');
+
+            if (list.children.length === 1 && list.children[0].textContent.includes('No comments')) {
+                list.innerHTML = '';
+                lastDateSeparator = null;
+            }
+
+            messageCount++;
+            document.getElementById('messageCount').textContent = `${messageCount} message${messageCount !== 1 ? 's' : ''}`;
+
+            commentsMap.set(comment.id, comment);
+
+            const userIdShort = comment.userId ? comment.userId.substring(0, 3).toUpperCase() : 'N/A';
+            const isOwnComment = comment.userId === currentUserId;
+            const createdTime = formatTime(comment.createdAt);
+            const dateKey = getDateKey(comment.createdAt);
+            const dateDisplay = formatDate(comment.createdAt);
+            const canEdit = isOwnComment && isEditableWithinTimeout(comment.createdAt);
+
+            // Add date separator if needed
+            let dateSeparatorHTML = '';
+            if (dateKey && dateKey !== lastDateSeparator) {
+                dateSeparatorHTML = `<div class="date-separator"><span class="date-separator-text">${dateDisplay}</span></div>`;
+                lastDateSeparator = dateKey;
+            }
+
+            const actionButtonsHTML = isOwnComment ? `
+                ${canEdit ? `<button class="btn-edit btn-small" onclick="startEditComment('${comment.id}')">✏️ Edit</button>` : ''}
+                <button class="btn-delete btn-small" onclick="deleteComment('${comment.id}')">🗑️ Delete</button>
+            ` : '';
+
+            const editTimeoutWarning = isOwnComment && !canEdit ? `<div class="edit-timeout-warning">Edit time expired (5 min limit)</div>` : '';
+
+            const itemHTML = `
+                ${dateSeparatorHTML}
+                <div class="message-item" id="comment-${comment.id}">
+                    <div class="message-meta-small">
+                        <div class="user-badge">${userIdShort}</div>
+                        <div class="time-badge" id="time-${comment.id}">${createdTime}</div>
+                    </div>
+                    <div class="message-body">
+                        <div class="message-header">
+                            <span class="username-badge">User ${userIdShort}</span>
+                            ${comment.isUpdated ? '<span class="edited-badge">[EDITED]</span>' : ''}
+                        </div>
+                        <div class="message-content" id="content-${comment.id}">${escapeHtml(comment.userComment)}</div>
+                        <div class="edit-form" id="edit-${comment.id}">
+                            <textarea id="edit-text-${comment.id}" placeholder="Edit comment...">${escapeHtml(comment.userComment)}</textarea>
+                            <div class="edit-buttons">
+                                <button class="btn-save btn-small" onclick="saveEditComment('${comment.id}')">Save</button>
+                                <button class="btn-cancel btn-small" onclick="cancelEditComment('${comment.id}')">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="message-actions">
+                            ${actionButtonsHTML}
+                        </div>
+                        ${editTimeoutWarning}
+                        <div class="message-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">ID:</span>
+                                <span class="meta-value">${comment.id.substring(0, 8)}...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = itemHTML;
+            while (tempDiv.firstChild) {
+                list.insertBefore(tempDiv.firstChild, list.firstChild);
+            }
+
+            // ✅ Setup edit timeout monitor for this comment
+            if (isOwnComment) {
+                setupEditTimeoutMonitor(comment.id, comment.createdAt);
+            }
+        }
+
+        function updateCommentInList(comment) {
+            const item = document.getElementById(`comment-${comment.id}`);
+            if (!item) {
+                log(`Comment not found in UI: ${comment.id}`);
+                return;
+            }
+
+            // Update the comment content
+            const contentEl = document.getElementById(`content-${comment.id}`);
+            if (contentEl) {
+                contentEl.textContent = comment.userComment;
+            }
+
+            // Update the timestamp to the edited time
+            const timeEl = document.getElementById(`time-${comment.id}`);
+            if (timeEl) {
+                const updatedTime = formatTime(comment.updatedAt);
+                timeEl.textContent = updatedTime;
+            }
+
+            // Add the edited badge if not already present
+            const messageHeader = item.querySelector('.message-header');
+            if (messageHeader && !item.querySelector('.edited-badge')) {
+                const editedBadge = document.createElement('span');
+                editedBadge.className = 'edited-badge';
+                editedBadge.textContent = '[EDITED]';
+                messageHeader.appendChild(editedBadge);
+            }
+
+            // Mark item as edited for styling
+            item.classList.add('edited');
+
+            // Close the edit form
+            const editForm = document.getElementById(`edit-${comment.id}`);
+            const contentDisplay = document.getElementById(`content-${comment.id}`);
+            if (editForm) editForm.classList.remove('active');
+            if (contentDisplay) contentDisplay.style.display = 'block';
+
+            // Restart the edit timeout monitor with the new timestamp
+            if (comment.userId === currentUserId) {
+                setupEditTimeoutMonitor(comment.id, comment.updatedAt);
+            }
+
+            log(`Comment updated in UI: ${comment.id}`);
+        }
+
+        /// ==================== Edit Timeout Monitor ====================
+
+        const editTimeoutIntervals = new Map(); // Track intervals for each comment
+
+        function setupEditTimeoutMonitor(commentId, createdAtIso) {
+            // Clear any existing interval for this comment
+            if (editTimeoutIntervals.has(commentId)) {
+                clearInterval(editTimeoutIntervals.get(commentId));
+            }
+
+            // Check every second
+            const intervalId = setInterval(() => {
+                const canEdit = isEditableWithinTimeout(createdAtIso);
+                updateEditButtonState(commentId, canEdit);
+
+                // Stop checking after 5+ minutes
+                if (!canEdit) {
+                    clearInterval(intervalId);
+                    editTimeoutIntervals.delete(commentId);
+                    log(`⏰ Edit timeout expired for comment: ${commentId}`);
+                }
+            }, 1000); // Check every 1 second
+
+            editTimeoutIntervals.set(commentId, intervalId);
+        }
+
+        function updateEditButtonState(commentId, canEdit) {
+            const item = document.getElementById(`comment-${commentId}`);
+            if (!item) return;
+
+            const actionContainer = item.querySelector('.message-actions');
+            const warningContainer = item.querySelector('.edit-timeout-warning') || 
+                                    item.querySelector('.message-body').lastElementChild;
+            
+            if (canEdit) {
+                // Edit button should be visible
+                if (!item.querySelector('.btn-edit')) {
+                    const editButton = document.createElement('button');
+                    editButton.className = 'btn-edit btn-small';
+                    editButton.onclick = () => startEditComment(commentId);
+                    editButton.innerHTML = '✏️ Edit';
+                    
+                    // Insert before delete button
+                    const deleteButton = actionContainer.querySelector('.btn-delete');
+                    if (deleteButton) {
+                        deleteButton.parentNode.insertBefore(editButton, deleteButton);
+                    } else {
+                        actionContainer.appendChild(editButton);
+                    }
+
+                    log(`Edit button shown for comment: ${commentId}`);
+                }
+
+                // Remove warning if exists
+                const existingWarning = item.querySelector('.edit-timeout-warning');
+                if (existingWarning) {
+                    existingWarning.remove();
+                }
+            } else {
+                // Edit button should be hidden
+                const editButton = item.querySelector('.btn-edit');
+                if (editButton) {
+                    editButton.remove();
+                    log(`Edit button removed for comment: ${commentId}`);
+                }
+
+                // Show warning if doesn't exist
+                if (!item.querySelector('.edit-timeout-warning')) {
+                    const messageBody = item.querySelector('.message-body');
+                    const warningDiv = document.createElement('div');
+                    warningDiv.className = 'edit-timeout-warning';
+                    warningDiv.textContent = '⚠️ Edit time expired (5 min limit)';
+                    messageBody.appendChild(warningDiv);
+
+                    log(`Warning shown for comment: ${commentId}`);
+                }
+            }
+        }
+
+        // ==================== Cleanup on Comment Delete ====================
+
+        function deleteCommentFromList(commentId) {
+            // Clear the timeout monitor interval
+            if (editTimeoutIntervals.has(commentId)) {
+                clearInterval(editTimeoutIntervals.get(commentId));
+                editTimeoutIntervals.delete(commentId);
+            }
+
+            const item = document.getElementById(`comment-${commentId}`);
+            if (!item) return;
+
+            commentsMap.delete(commentId);
+            item.classList.add('deleting');
+
+            setTimeout(() => {
+                item.remove();
+                messageCount--;
+                document.getElementById('messageCount').textContent = `${messageCount} message${messageCount !== 1 ? 's' : ''}`;
+
+                const list = document.getElementById('commentsList');
+                if (list.children.length === 0) {
+                    list.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No comments yet...</div>';
+                    lastDateSeparator = null;
+                }
+            }, 300);
+
+            log(`Comment deleted: ${commentId}`);
+        }
+
+        function startEditComment(commentId) {
+            const contentEl = document.getElementById(`content-${commentId}`);
+            const editForm = document.getElementById(`edit-${commentId}`);
+            const textArea = document.getElementById(`edit-text-${commentId}`);
+
+            if (contentEl) contentEl.style.display = 'none';
+            if (editForm) editForm.classList.add('active');
+            if (textArea) textArea.focus();
+        }
+
+        async function saveEditComment(commentId) {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+                alert('Not connected');
+                return;
+            }
+
+            const textArea = document.getElementById(`edit-text-${commentId}`);
+            const newComment = textArea.value.trim();
+
+            if (!newComment) {
+                alert('Comment cannot be empty');
+                return;
+            }
+
+            if (newComment.length > 500) {
+                alert('Comment must be 500 characters or less');
+                return;
+            }
+
+            try {
+                // Show loading state
+                const saveButton = event.target;
+                const originalText = saveButton.textContent;
+                saveButton.textContent = '⏳ Saving...';
+                saveButton.disabled = true;
+
+                await connection.invoke('EditComment', {
+                    commentId: commentId,
+                    userComment: newComment
+                });
+
+                log(`Edit sent for comment: ${commentId}`);
+                
+                // Reset button state
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
+
+                // Close the edit form (will be properly updated via ReceiveEditedComment event)
+                const editForm = document.getElementById(`edit-${commentId}`);
+                const contentEl = document.getElementById(`content-${commentId}`);
+                if (editForm) editForm.classList.remove('active');
+                if (contentEl) contentEl.style.display = 'block';
+
+            } catch (error) {
+                log(`Error saving edit: ${error.message}`);
+                
+                // Reset button state
+                const saveButton = event.target;
+                saveButton.textContent = 'Save';
+                saveButton.disabled = false;
+
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        function cancelEditComment(commentId) {
+            const contentEl = document.getElementById(`content-${commentId}`);
+            const editForm = document.getElementById(`edit-${commentId}`);
+
+            if (contentEl) contentEl.style.display = 'block';
+            if (editForm) editForm.classList.remove('active');
+        }
+
+        async function deleteComment(commentId) {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+                alert('Not connected');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to delete this comment?')) {
+                return;
+            }
+
+            try {
+                log(`Deleting comment: ${commentId}`);
+                await connection.invoke('DeleteComment', commentId);
+                
+                log(`Delete request sent for comment: ${commentId}`);
+            } catch (error) {
+                log(`Error deleting comment: ${error.message}`);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        function displayValidationErrors(errors) {
+            const container = document.getElementById('validationErrors');
+            container.style.display = 'block';
+            container.innerHTML = '<strong>❌ Validation Errors:</strong><ul style="margin-left: 20px; margin-top: 8px;">' +
+                errors.map(e => `<li>${e.propertyName}: ${e.errorMessage}</li>`).join('') +
+                '</ul>';
+        }
+
+        function displayServerErrors(errors) {
+            console.log('displayServerErrors called with:', errors);
+            const container = document.getElementById('validationErrors');
+            
+            if (!container) {
+                console.error('validationErrors container not found!');
+                return;
+            }
+
+            // Normalize to array
+            let errorArray = Array.isArray(errors) ? errors : [errors];
+            console.log('Normalized error array:', errorArray);
+
+            if (!errorArray || errorArray.length === 0) {
+                container.innerHTML = '<strong>Server Error:</strong><p style="margin-top: 8px;">Unknown error occurred</p>';
+                container.style.display = 'block';
+                return;
+            }
+
+            const errorList = errorArray.map((e, index) => {
+                console.log(`Processing error ${index}:`, e);
+                
+                if (!e) return '<li>Unknown error</li>';
+
+                // Error record has 'code' and 'message' (lowercase)
+                const code = e.code || 'Error';
+                const message = e.message || 'No message provided';
+
+                return `<li><strong>${escapeHtml(code)}:</strong> ${escapeHtml(message)}</li>`;
+            }).join('');
+
+            const html = 
+                '<strong>Server Error:</strong>' +
+                '<ul>' +
+                errorList +
+                '</ul>';
+            
+            console.log('Setting innerHTML to:', html);
+            container.innerHTML = html;
+            container.style.display = 'block';
+            
+            console.log('Container after update:', container);
+        }
+
+        function clearComments() {
+            document.getElementById('commentsList').innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No comments yet...</div>';
+            messageCount = 0;
+            document.getElementById('messageCount').textContent = '0 messages';
+            commentsMap.clear();
+            lastDateSeparator = null;
+        }
+
+        // Character counter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userComment')?.addEventListener('input', function() {
+                document.getElementById('charCount').textContent = `${this.value.length}/500`;
+            });
+
+            log('Page loaded - WhatsApp style timestamps ready');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="gRPC\Plan\PlanService.proto" />
+    <None Remove="gRPC\Team\teamMessages.proto" />
+    <None Remove="gRPC\Team\TeamService.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.34.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.78.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.24" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.24" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.24">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="gRPC\Plan\PlanService.proto" GrpcServices="Client" />
+	  <Protobuf Include="gRPC\Team\teamMessages.proto" GrpcServices="None">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
+	  <Protobuf Include="gRPC\Team\TeamService.proto" GrpcServices="Client">
+		  <ProtoRoot>gRPC\Team</ProtoRoot>
+	  </Protobuf>
+  </ItemGroup>
+
+</Project>

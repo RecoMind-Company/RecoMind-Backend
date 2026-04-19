@@ -50,7 +50,6 @@ namespace Team.WebApi
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
-            //builder.Services.AddScoped<IGrpcAuthService, GrpcAuthService>();
             builder.Services.AddGrpc();
 
 
