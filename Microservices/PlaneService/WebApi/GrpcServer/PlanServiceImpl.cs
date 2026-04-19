@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace webApi.Grpc
 {
+    public class PlanServiceImpl : PlanService.PlanServiceBase
     public class PlanServiceImpl : PlanServiceGrpc.PlanServiceGrpcBase
     {
         public IUnitOfWork<Plan> _unitOfWork;
