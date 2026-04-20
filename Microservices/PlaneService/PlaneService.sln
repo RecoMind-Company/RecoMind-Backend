@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{04349886-E3A5-4ED4-A460-8517C3496751}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webApi", "webApi\WebApi.csproj", "{7AE34213-11CD-4649-98F1-E63E48DD15D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webApi", "WebApi\WebApi.csproj", "{7AE34213-11CD-4649-98F1-E63E48DD15D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
