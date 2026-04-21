@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UserSecretsId>65e0616e-eaa0-4c4d-a370-ebf399be2f4d</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     
   </PropertyGroup>
 
@@ -12,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Protobuf Include="GrpcServer\PlanService.proto" GrpcServices="Server" >
+	  <Protobuf Include="GrpcServer\PlanService.proto" GrpcServices="Server">
 		  <protoRoot>GrpcServer</protoRoot>
 	  </Protobuf>
   </ItemGroup>
@@ -35,6 +36,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
   </ItemGroup>
 
