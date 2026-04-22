@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
 using Core.DTOs.PlanDtos;
 using Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Mapping
 {
@@ -23,8 +18,8 @@ namespace Core.Mapping
                 .ReverseMap();
 
             CreateMap<Plan, GetPlanDto>()
-                .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType.ToString()))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ReverseMap();
         }
     }
