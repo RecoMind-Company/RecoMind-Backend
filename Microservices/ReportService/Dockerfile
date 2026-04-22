@@ -1,34 +1,35 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
+# 1. مرحلة البناء (Build Stage)
+# نستخدم نسخة الـ SDK الكبيرة فقط لعمل Compile للكود
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy csproj files
+# نسخ ملفات الـ csproj أولاً لعمل Restore (هذا يحسن الـ Caching)
 COPY ["WebApi/WebApi.csproj", "WebApi/"]
 COPY ["Core/Core.csproj", "Core/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
 
-# Restore dependencies
+# تنفيذ الـ Restore
 RUN dotnet restore "WebApi/WebApi.csproj"
 
-# Copy all source code
+# نسخ باقي ملفات المشروع بالكامل
 COPY . .
 
-# Build project
+# الانتقال لمجلد المشروع الرئيسي وعمل Publish
 WORKDIR "/src/WebApi"
-RUN dotnet build "WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "WebApi.csproj" -c Release -o /app/build
+RUN dotnet publish "WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Publish project
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# Final stage
-FROM base AS final
+# 2. مرحلة التشغيل (Runtime Stage)
+# نستخدم نسخة الـ ASP.NET الرفيعة (Runtime) لتصغير حجم الصورة للأمان والسرعة
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+# فتح المنفذ 80 و 443 (اختياري حسب إعداداتك)
+EXPOSE 80
+EXPOSE 443
+
+# نسخ الملفات النهائية فقط من مرحلة البناء
+COPY --from=build /app/publish .
+
+# تحديد نقطة الانطلاق (اسم الـ DLL الخاص بمشروعك)
 ENTRYPOINT ["dotnet", "WebApi.dll"]

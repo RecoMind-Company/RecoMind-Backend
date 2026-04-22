@@ -1,32 +1,35 @@
-# See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
-
-# This stage is used to build the service project
+# 1. مرحلة البناء (Build Stage)
+# نستخدم نسخة الـ SDK الكبيرة فقط لعمل Compile للكود
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+# نسخ ملفات الـ csproj أولاً لعمل Restore (هذا يحسن الـ Caching)
 COPY ["WebApi/WebApi.csproj", "WebApi/"]
 COPY ["Core/Core.csproj", "Core/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
-RUN dotnet restore "./WebApi/WebApi.csproj"
+
+# تنفيذ الـ Restore
+RUN dotnet restore "WebApi/WebApi.csproj"
+
+# نسخ باقي ملفات المشروع بالكامل
 COPY . .
+
+# الانتقال لمجلد المشروع الرئيسي وعمل Publish
 WORKDIR "/src/WebApi"
-RUN dotnet build "./WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "WebApi.csproj" -c Release -o /app/build
+RUN dotnet publish "WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# This stage is used to publish the service project to be copied to the final stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM base AS final
+# 2. مرحلة التشغيل (Runtime Stage)
+# نستخدم نسخة الـ ASP.NET الرفيعة (Runtime) لتصغير حجم الصورة للأمان والسرعة
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+
+# فتح المنفذ 80 و 443 (اختياري حسب إعداداتك)
+EXPOSE 80
+EXPOSE 443
+
+# نسخ الملفات النهائية فقط من مرحلة البناء
+COPY --from=build /app/publish .
+
+# تحديد نقطة الانطلاق (اسم الـ DLL الخاص بمشروعك)
 ENTRYPOINT ["dotnet", "WebApi.dll"]
