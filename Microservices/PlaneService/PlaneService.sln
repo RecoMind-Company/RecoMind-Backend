@@ -8,12 +8,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{04349886-E3A5-4ED4-A460-8517C3496751}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{7AE34213-11CD-4649-98F1-E63E48DD15D7}"
-<<<<<<< Updated upstream
-=======
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Test\Tests.csproj", "{D47F7961-CE4E-40C5-A98E-148DA374C7AE}"
->>>>>>> Stashed changes
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,17 +52,10 @@ Global
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Debug|x86.Build.0 = Debug|Any CPU
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|Any CPU.Build.0 = Release|Any CPU
-<<<<<<< Updated upstream
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|x64.ActiveCfg = Release|Any CPU
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|x64.Build.0 = Release|Any CPU
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|x86.ActiveCfg = Release|Any CPU
 		{7AE34213-11CD-4649-98F1-E63E48DD15D7}.Release|x86.Build.0 = Release|Any CPU
-=======
-		{D47F7961-CE4E-40C5-A98E-148DA374C7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D47F7961-CE4E-40C5-A98E-148DA374C7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D47F7961-CE4E-40C5-A98E-148DA374C7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D47F7961-CE4E-40C5-A98E-148DA374C7AE}.Release|Any CPU.Build.0 = Release|Any CPU
->>>>>>> Stashed changes
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
