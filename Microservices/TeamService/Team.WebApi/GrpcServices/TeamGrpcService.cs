@@ -35,7 +35,7 @@ namespace Team.WebApi.GrpcServices
             GetUserTeamInfoRequest request,
             ServerCallContext context)
         {
-            var info = await _teamService.(request.UserId);
+            var info = await _teamService.GetTeamByEmployeeIdAsync(request.UserId);
 
             if (info == null)
                 throw new RpcException(
