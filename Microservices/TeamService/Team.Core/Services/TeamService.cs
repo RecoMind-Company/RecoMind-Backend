@@ -16,13 +16,9 @@ namespace Team.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<UserTeamInfoDto?> GetUserTeamInfoAsync(string userId)
+        private UserTeamInfoDto? MapToUserTeamInfo(TeamModel? team)
         {
-            var team = await _repo.GetTeamByEmployeeIdAsync(userId);
-
-            if (team == null)
-                return null;
-
+            if (team == null) return null;
             return new UserTeamInfoDto
             {
                 CompanyId = team.CompanyId,
@@ -32,19 +28,11 @@ namespace Team.Core.Services
         }
 
         public async Task<UserTeamInfoDto?> GetTeamByTeamLeadIdAsync(string teamLeadId)
-        {
-            var team = await _repo.GetTeamByTeamLeadIdAsync(teamLeadId);
+            => MapToUserTeamInfo(await _repo.GetTeamByTeamLeadIdAsync(teamLeadId));
 
-            if (team == null)
-                return null;
+        public async Task<UserTeamInfoDto?> GetTeamByEmployeeIdAsync(string employeeId)
+            => MapToUserTeamInfo(await _repo.GetTeamByEmployeeIdAsync(employeeId));
 
-            return new UserTeamInfoDto
-            {
-                CompanyId = team.CompanyId,
-                TeamId = team.Id,
-                TeamName = team.Name
-            };
-        }
 
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
@@ -74,7 +62,6 @@ namespace Team.Core.Services
             team.Id = Guid.NewGuid().ToString();
             team.CompanyId = companyId;
             team.CreatedAt = DateTime.UtcNow;
-            team.UpdatedAt = DateTime.UtcNow;
 
             await _repo.CreateAsync(team);
             return _mapper.Map<TeamResponseDto>(team);
@@ -84,12 +71,12 @@ namespace Team.Core.Services
         {
             var team = await _repo.GetByIdAsync(teamId);
             if (team == null || team.CompanyId != companyId)
-                throw new Exception("Team not found.");
+                throw new KeyNotFoundException("Team not found.");
 
             if (!string.IsNullOrWhiteSpace(dto.Name) && dto.Name != team.Name)
             {
                 if (await _repo.ExistsByNameAsync(companyId, dto.Name))
-                    throw new Exception("Another team with the same name exists.");
+                    throw new InvalidOperationException("Another team with the same name exists.");
             }
 
             _mapper.Map(dto, team);
@@ -111,10 +98,11 @@ namespace Team.Core.Services
         public async Task<bool> AddEmployeeAsync(string teamId, string companyId, string employeeId)
         {
             var team = await _repo.GetByIdAsync(teamId);
+
             if (team == null || team.CompanyId != companyId)
                 return false;
 
-            if (team.TeamEmployees.Any(e => e.EmployeeId == employeeId))
+            if (await _repo.IsEmployeeInTeam(teamId, employeeId))
                 return false;
 
             return await _repo.AddEmployeeToTeamAsync(teamId, employeeId);
@@ -131,7 +119,7 @@ namespace Team.Core.Services
 
         public async Task<bool> IsEmployeeInTeamAsync(string teamId, string employeeId)
         {
-            return await _repo.FindTeamEmployeeAsync(teamId, employeeId);
+            return await _repo.IsEmployeeInTeam(teamId, employeeId);
         }
     }
 }
