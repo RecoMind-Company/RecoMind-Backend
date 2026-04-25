@@ -31,6 +31,25 @@ namespace Team.WebApi.GrpcServices
             };
         }
 
+        public override async Task<UserTeamInfoResponse> GetTeamByEmployee(
+            GetUserTeamInfoRequest request,
+            ServerCallContext context)
+        {
+            var info = await _teamService.(request.UserId);
+
+            if (info == null)
+                throw new RpcException(
+                    new Status(StatusCode.NotFound, "User team info not found"));
+
+            return new UserTeamInfoResponse
+            {
+                CompanyId = info.CompanyId,
+                TeamId = info.TeamId,
+                TeamName = info.TeamName
+            };
+        }
+
+
         public override async Task<UserExistResponse> UserExist(
             UserExistRequest request,
             ServerCallContext context)
