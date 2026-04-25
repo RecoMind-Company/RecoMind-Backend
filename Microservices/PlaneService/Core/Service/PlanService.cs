@@ -35,7 +35,9 @@ namespace Core.Service
 
         public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
         {
-            Plan plan = _mapper.Map<Plan>(createPlanDto);
+            
+            Plan plan = new Plan();
+            plan = _mapper.Map<Plan>(createPlanDto);
 
             plan.Id = Guid.NewGuid().ToString();
             plan.Owner_Id = userId;
@@ -44,7 +46,8 @@ namespace Core.Service
             plan.IsApproved = false;                                         // Default approval status for new plans            
             plan.StartDate = DateTime.UtcNow;                                // Default start date for new plans
 
-            var checkEndDate = GetPlanEndDate(plan.PlanType).Result;         // Calculate end date based on plan type
+            var checkEndDate = await GetPlanEndDate(plan.PlanType);         // Calculate end date based on plan type
+
             if (checkEndDate.IsSuccess) 
             {
                 plan.EndDate = checkEndDate.Value;
@@ -72,11 +75,17 @@ namespace Core.Service
         
         public async Task<Result<DateTime>> GetPlanEndDate(string planType)
         {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(planType))
+            {
+                return Result<DateTime>.Failure("Invalid plan type provided.");
+            }
+
             // Implement logic to calculate end date based on plan type
             // For example, if planType is "Monthly", add 30 days to the current date
             planType = planType.ToLower();
             DateTime endDate = DateTime.UtcNow;
-            
+
             // find the plantype
             var planTypeEntity = await _planTypeService.GetPlanTypeByName(planType);
             if (planTypeEntity == null)
@@ -147,19 +156,22 @@ namespace Core.Service
               
                 #region ckeck for the name of plan type 
 
-                var planTypeEntity = await _planTypeService.GetPlanTypeByName(updatePlanDto.PlanType);
-                if (planTypeEntity != null)
+                if (!string.IsNullOrWhiteSpace(updatePlanDto.PlanType))
                 {
-                    if(plan.PlanType.ToLower() != updatePlanDto.PlanType.ToLower())
+                    var planTypeEntity = await _planTypeService.GetPlanTypeByName(updatePlanDto.PlanType);
+                    if (planTypeEntity != null)
                     {
-                        plan.EndDate = plan.StartDate.AddMonths(planTypeEntity.NumOfMonths); // Update end date based on new plan type
-                        plan.Duration = (plan.EndDate - plan.StartDate).Days.ToString(); // Update duration based on new end date
-                        plan.PlanType = updatePlanDto.PlanType;
-                    }                    
-                }
-                else
-                {
-                    return Result<GetPlanDto>.Failure("Invalid plan type provided.");
+                        if (!string.Equals(plan.PlanType, updatePlanDto.PlanType, StringComparison.OrdinalIgnoreCase))
+                        {
+                            plan.EndDate = plan.StartDate.AddMonths(planTypeEntity.NumOfMonths); // Update end date based on new plan type
+                            plan.Duration = (plan.EndDate - plan.StartDate).Days.ToString(); // Update duration based on new end date
+                            plan.PlanType = updatePlanDto.PlanType;
+                        }
+                    }
+                    else
+                    {
+                        return Result<GetPlanDto>.Failure("Invalid plan type provided.");
+                    }
                 }
                 #endregion
 
