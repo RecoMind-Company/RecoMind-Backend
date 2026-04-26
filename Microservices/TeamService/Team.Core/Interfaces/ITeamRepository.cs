@@ -21,7 +21,7 @@ namespace Team.Core.Interfaces
         Task<bool> ExistsByNameAsync(string companyId, string name);
 
         Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId);
-        Task<bool> FindTeamEmployeeAsync(string teamId, string employeeId);
+        Task<bool> IsEmployeeInTeam(string teamId, string employeeId);
         Task<bool> RemoveEmployeeFromTeamAsync(string teamId, string employeeId);
     }
 }

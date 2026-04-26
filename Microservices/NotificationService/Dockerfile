@@ -4,20 +4,20 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # نسخ ملفات الـ csproj أولاً لعمل Restore (هذا يحسن الـ Caching)
-COPY ["DatabaseSetting.WebApi/DatabaseSetting.WebApi.csproj", "DatabaseSetting.WebApi/"]
-COPY ["DatabaseSetting.Core/DatabaseSetting.Core.csproj", "DatabaseSetting.Core/"]
-COPY ["DatabaseSetting.Infrastructure/DatabaseSetting.Infrastructure.csproj", "DatabaseSetting.Infrastructure/"]
+COPY ["Notification.WebApi/Notification.WebApi.csproj", "Notification.WebApi/"]
+COPY ["Notification.Core/Notification.Core.csproj", "Notification.Core/"]
+COPY ["Notification.Infrastructure/Notification.Infrastructure.csproj", "Notification.Infrastructure/"]
 
 # تنفيذ الـ Restore
-RUN dotnet restore "DatabaseSetting.WebApi/DatabaseSetting.WebApi.csproj"
+RUN dotnet restore "Notification.WebApi/Notification.WebApi.csproj"
 
 # نسخ باقي ملفات المشروع بالكامل
 COPY . .
 
 # الانتقال لمجلد المشروع الرئيسي وعمل Publish
-WORKDIR "/src/DatabaseSetting.WebApi"
-RUN dotnet build "DatabaseSetting.WebApi.csproj" -c Release -o /app/build
-RUN dotnet publish "DatabaseSetting.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/Notification.WebApi"
+RUN dotnet build "Notification.WebApi.csproj" -c Release -o /app/build
+RUN dotnet publish "Notification.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # 2. مرحلة التشغيل (Runtime Stage)
 # نستخدم نسخة الـ ASP.NET الرفيعة (Runtime) لتصغير حجم الصورة للأمان والسرعة
@@ -32,4 +32,4 @@ EXPOSE 443
 COPY --from=build /app/publish .
 
 # تحديد نقطة الانطلاق (اسم الـ DLL الخاص بمشروعك)
-ENTRYPOINT ["dotnet", "DatabaseSetting.WebApi.dll"]
+ENTRYPOINT ["dotnet", "Notification.WebApi.dll"]

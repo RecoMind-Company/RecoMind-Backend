@@ -13,7 +13,7 @@ namespace Team.Core.Interfaces
         Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId);
         Task<TeamResponseDto?> GetByIdAsync(string teamId);
         Task<List<TeamResponseDto>> GetByCompanyIdAsync(string companyId);
-        Task<UserTeamInfoDto> GetUserTeamInfoAsync(string userId);
+        Task<UserTeamInfoDto?> GetTeamByEmployeeIdAsync(string employeeId);
         Task<UserTeamInfoDto?> GetTeamByTeamLeadIdAsync(string teamLeadId);
 
 

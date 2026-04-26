@@ -4,20 +4,20 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # نسخ ملفات الـ csproj أولاً لعمل Restore (هذا يحسن الـ Caching)
-COPY ["DatabaseSetting.WebApi/DatabaseSetting.WebApi.csproj", "DatabaseSetting.WebApi/"]
-COPY ["DatabaseSetting.Core/DatabaseSetting.Core.csproj", "DatabaseSetting.Core/"]
-COPY ["DatabaseSetting.Infrastructure/DatabaseSetting.Infrastructure.csproj", "DatabaseSetting.Infrastructure/"]
+COPY ["Data-Mapping.WebApi/Data-Mapping.WebApi.csproj", "Data-Mapping.WebApi/"]
+COPY ["Data-Mapping.Core/Data-Mapping.Core.csproj", "Data-Mapping.Core/"]
+COPY ["Data-Mapping.Infrastructure/Data-Mapping.Infrastructure.csproj", "Data-Mapping.Infrastructure/"]
 
 # تنفيذ الـ Restore
-RUN dotnet restore "DatabaseSetting.WebApi/DatabaseSetting.WebApi.csproj"
+RUN dotnet restore "Data-Mapping.WebApi/Data-Mapping.WebApi.csproj"
 
 # نسخ باقي ملفات المشروع بالكامل
 COPY . .
 
 # الانتقال لمجلد المشروع الرئيسي وعمل Publish
-WORKDIR "/src/DatabaseSetting.WebApi"
-RUN dotnet build "DatabaseSetting.WebApi.csproj" -c Release -o /app/build
-RUN dotnet publish "DatabaseSetting.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/Data-Mapping.WebApi"
+RUN dotnet build "Data-Mapping.WebApi.csproj" -c Release -o /app/build
+RUN dotnet publish "Data-Mapping.WebApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # 2. مرحلة التشغيل (Runtime Stage)
 # نستخدم نسخة الـ ASP.NET الرفيعة (Runtime) لتصغير حجم الصورة للأمان والسرعة
@@ -32,4 +32,4 @@ EXPOSE 443
 COPY --from=build /app/publish .
 
 # تحديد نقطة الانطلاق (اسم الـ DLL الخاص بمشروعك)
-ENTRYPOINT ["dotnet", "DatabaseSetting.WebApi.dll"]
+ENTRYPOINT ["dotnet", "Data-Mapping.WebApi.dll"]
