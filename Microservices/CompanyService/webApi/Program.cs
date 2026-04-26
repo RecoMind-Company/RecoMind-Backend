@@ -29,7 +29,7 @@ namespace Campany.API
 
             builder.Services.AddDbContext<CompanyDbContext>(options =>
                     options.UseSqlServer(
-                        builder.Configuration.GetConnectionString("ProdcutionConnection_Company"),
+                        builder.Configuration.GetConnectionString("ProductionConnection_Company"),
                         sqlOptions =>
                         sqlOptions.MigrationsAssembly(typeof(CompanyDbContext).Assembly.FullName)
                         ));

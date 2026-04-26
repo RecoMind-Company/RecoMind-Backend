@@ -4,6 +4,8 @@ using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Core.Service.Interface;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Core.Service
@@ -13,50 +15,53 @@ namespace Core.Service
         private readonly IUnitOfWork<SubscriptionCompany> _unitOfWork;
         private readonly ISubscriptionTypeService _subscriptionTypeService;
         private readonly IMapper _mapper;
-        public SubscriptionCompanyService(IUnitOfWork<SubscriptionCompany> unitOfWork , IMapper mapper , ISubscriptionTypeService subscriptionTypeService) 
+
+        public SubscriptionCompanyService(
+            IUnitOfWork<SubscriptionCompany> unitOfWork,
+            IMapper mapper,
+            ISubscriptionTypeService subscriptionTypeService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _subscriptionTypeService = subscriptionTypeService;
-        }   
+        }
 
         public async Task<GetSubscriptionCompanyDto> CreateSubscription(CreateSubscriptionCompanyDto subscriptionDto)
         {
-            if (subscriptionDto == null) throw new ArgumentNullException("Pleas Enter Subscribion Information ");
+            if (subscriptionDto == null)
+                throw new ArgumentNullException(nameof(subscriptionDto), "Please Enter Subscription Information");
 
-            var item = new SubscriptionCompany();
-
-            item.Id = Guid.NewGuid().ToString();
-
-            item.BillingCycle = checkBillingCycle(subscriptionDto.BillingCycle);
-
-            item.SubscriptionTypeId = await _subscriptionTypeService.GetId(subscriptionDto.PlanName);
-           
-            item.Price = await SetPrice(subscriptionDto.BillingCycle, subscriptionDto.PlanName);
+            var item = new SubscriptionCompany
+            {
+                Id = Guid.NewGuid().ToString(),
+                BillingCycle = checkBillingCycle(subscriptionDto.BillingCycle),
+                SubscriptionTypeId = await _subscriptionTypeService.GetId(subscriptionDto.PlanName),
+                Price = await SetPrice(subscriptionDto.BillingCycle, subscriptionDto.PlanName),
+                StartDate = DateTime.UtcNow
+            };
 
             item.EndDate = SetEndDate(subscriptionDto.BillingCycle);
-
-            item.StartDate = DateTime.Now;
-
-            item.IsActive = item.EndDate > item.StartDate ? true : false;
+            item.IsActive = item.EndDate > item.StartDate;
 
             await _unitOfWork.Entity.AddAsync(item);
             await _unitOfWork.Save();
+
             return _mapper.Map<GetSubscriptionCompanyDto>(item);
-        }        
+        }
 
         public async Task<DeleteSubscriptionCompanyDto> DeleteSubscription(string subscriptionId)
         {
-            if (string.IsNullOrEmpty(subscriptionId)) 
-                throw new ArgumentNullException("Please Enter Subscribtion Id");
+            if (string.IsNullOrWhiteSpace(subscriptionId))
+                throw new ArgumentNullException(nameof(subscriptionId), "Please Enter Subscription Id");
 
             var item = await _unitOfWork.Entity.GetByIdAsync(subscriptionId);
 
             if (item == null)
-                throw new KeyNotFoundException("Subscribtion Not Found ");
+                throw new KeyNotFoundException("Subscription Not Found");
 
             _unitOfWork.Entity.Delete(item);
             await _unitOfWork.Save();
+
             return _mapper.Map<DeleteSubscriptionCompanyDto>(item);
         }
 
@@ -68,94 +73,66 @@ namespace Core.Service
 
         public async Task<GetSubscriptionCompanyDto> GetSubscriptionById(string subscriptionId)
         {
-            if (string.IsNullOrEmpty(subscriptionId)) throw new ArgumentNullException("Please Enter Subscribtion Id");
+            if (string.IsNullOrWhiteSpace(subscriptionId))
+                throw new ArgumentNullException(nameof(subscriptionId), "Please Enter Subscription Id");
 
             var item = await _unitOfWork.Entity.GetByIdAsync(subscriptionId);
-            if (item == null) throw new KeyNotFoundException("Subscribtion Not Found");
+
+            if (item == null)
+                throw new KeyNotFoundException("Subscription Not Found");
 
             return _mapper.Map<GetSubscriptionCompanyDto>(item);
-        }        
+        }
 
         public async Task<GetSubscriptionCompanyDto> UpdateSubscription(string subscriptionId, CreateSubscriptionCompanyDto subscriptionDto)
         {
-            if (string.IsNullOrEmpty( subscriptionId) || subscriptionDto == null ) 
-                throw new ArgumentNullException("Please Enter Required Feald");
+            if (string.IsNullOrWhiteSpace(subscriptionId) || subscriptionDto == null)
+                throw new ArgumentNullException("Please Enter Required Field");
 
-            var item =await  _unitOfWork.Entity.GetByIdAsync(subscriptionId);
+            var item = await _unitOfWork.Entity.GetByIdAsync(subscriptionId);
 
-            if (item == null) throw new KeyNotFoundException("Subscribtion Not Found");
-
-            item.BillingCycle = checkBillingCycle(subscriptionDto.BillingCycle);
-
-            item.SubscriptionTypeId = await _subscriptionTypeService.GetId(subscriptionDto.PlanName);
-
-            item.Price = await SetPrice(subscriptionDto.BillingCycle, subscriptionDto.PlanName);
+            if (item == null)
+                throw new KeyNotFoundException("Subscription Not Found");
 
             _mapper.Map(subscriptionDto, item);
+
+            item.BillingCycle = checkBillingCycle(subscriptionDto.BillingCycle);
+            item.SubscriptionTypeId = await _subscriptionTypeService.GetId(subscriptionDto.PlanName);
+            item.Price = await SetPrice(subscriptionDto.BillingCycle, subscriptionDto.PlanName);
+
             _unitOfWork.Entity.Update(item);
             await _unitOfWork.Save();
 
             return _mapper.Map<GetSubscriptionCompanyDto>(item);
-        }       
-
-        public async Task<double> SetPrice ( string billingCycle , string PlaneName  ) 
-        {
-            var price = await _subscriptionTypeService.GetPrice(PlaneName);
-
-            switch (billingCycle.ToLower()) {
-                case "monthly":
-                    return price;
-
-                case "annual":
-                    return price * 12;
-
-                case "semiannual":
-                    return price * 6;
-
-                default:
-                    throw new ArgumentException(" Invalid Plane Name ");
-            }
         }
 
-        public DateTime SetEndDate(string BillingCycle)
+        public async Task<double> SetPrice(BillingCycle billingCycle, string planName)
         {
-            switch (BillingCycle.ToLower())
+            var price = await _subscriptionTypeService.GetPrice(planName);
+
+            return billingCycle switch
             {
-                case "monthly":
-                    return DateTime.Now.AddMonths(1);
+                BillingCycle.Monthly => price,
+                BillingCycle.Annual => price * 12,
+                BillingCycle.SemiAnnual => price * 6,
+                _ => throw new ArgumentOutOfRangeException(nameof(billingCycle))
+            };
+        }
 
-                case "semiAnnual":
-                    return DateTime.Now.AddMonths(6);
-
-                case "annual":
-                    return DateTime.Now.AddYears(1);
-
-                default:
-                    throw new ArgumentException(" Invalid Billing Cycle ");
-            }
-        }        
-        public string checkBillingCycle(string billingCycle)
+        public DateTime SetEndDate(BillingCycle billingCycle)
         {
-            if (string.IsNullOrWhiteSpace(billingCycle))
+            return billingCycle switch
             {
-                throw new ArgumentException("Billing cycle cannot be empty.", nameof(billingCycle));
-            }
+                BillingCycle.Monthly => DateTime.UtcNow.AddMonths(1),
+                BillingCycle.SemiAnnual => DateTime.UtcNow.AddMonths(6),
+                BillingCycle.Annual => DateTime.UtcNow.AddYears(1),
+                _ => throw new ArgumentException("Invalid Billing Cycle")
+            };
+        }
 
-            BillingCycle result;
-
-            bool isValid = Enum.TryParse(billingCycle, ignoreCase: true, out result);
-
-            if (isValid)
-            {                
-                return result.ToString();                
-            }
-
-            var validNames = string.Join(", ", Enum.GetNames(typeof(BillingCycle)));
-
-            throw new ArgumentException(
-                $"Invalid Billing Cycle: '{billingCycle}'. Must be one of: {validNames} ",
-                nameof(billingCycle));
+        public BillingCycle checkBillingCycle(BillingCycle billingCycle)
+        {
+            return billingCycle;
         }
     }
-
 }

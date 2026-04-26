@@ -8,7 +8,7 @@ namespace Core.DTOs.Chatbot
 {
     public class GetHistoryDto
     {
-        string Query { get; set; }
-        string ResponseMessage { get; set; }
+        public string Query { get; set; }
+        public string ResponseMessage { get; set; }
     }
 }

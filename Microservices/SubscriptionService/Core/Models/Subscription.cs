@@ -15,11 +15,11 @@ namespace Core.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsActive { get; set; }               
-        public string BillingCycle { get; set; }
+        public BillingCycle BillingCycle { get; set; }
 
         [ForeignKey("subscriptionId")]
         public string SubscriptionTypeId { get; set; } 
-        public SubscriptionType? subscriptionType { get; set; }
+        public virtual SubscriptionType? subscriptionType { get; set; }
     }
 
     public class SubscriptionType

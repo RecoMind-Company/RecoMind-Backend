@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Consts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,6 @@ namespace Core.DTOs
     public class CreateSubscriptionCompanyDto
     {
         public string PlanName { get; set; }
-        public string BillingCycle { get; set; }
+        public BillingCycle BillingCycle { get; set; }
     }
 }

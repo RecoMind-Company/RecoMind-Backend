@@ -13,13 +13,22 @@ namespace Infrastructure.UnitOfWork
     public class UnitOfWork<T> : IUnitOfWork<T> where T : class
     {
         private readonly SubscriptionDbContext _context;
-        private readonly IGenericRepository<T>? _repository;
+        private IGenericRepository<T>? _repository;
         public UnitOfWork(SubscriptionDbContext context )
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public IGenericRepository<T> Entity => _repository ?? new GenericRepo<T>(_context);
 
+        public IGenericRepository<T> Entity
+        {
+            get
+            {
+                if (_repository == null)
+                    _repository = new GenericRepo<T>(_context);
+
+                return _repository;
+            }
+        }
         public async Task Save()
         {
             await _context.SaveChangesAsync();

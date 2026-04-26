@@ -11,7 +11,7 @@ namespace Core.Service.Interface
     {
         Task<GetDto> AddSubscriptionPlan(CreateDto planType);
         Task<IEnumerable<GetDto>> GetAllSubscriptionPlan();
-        Task<DeleteDto> DleteSubscriptionType(string PlanName);
+        Task<DeleteDto> DeleteSubscriptionType(string PlanName);
         Task<GetDto> UpdateSubscriptionType(string Id , CreateDto planType);
         Task<string> GetId(string PlanNeme);
         Task<double> GetPrice(string PlanName);

@@ -26,7 +26,7 @@ namespace WebApi
 
             builder.Services.AddDbContext<ChatbotDbContext>(options =>
                    options.UseSqlServer(
-                       builder.Configuration.GetConnectionString("ProdcutionConnection_Chatbot"),
+                       builder.Configuration.GetConnectionString("ProductionConnection_Chatbot"),
                        sqlOptions =>
                        sqlOptions.MigrationsAssembly(typeof(ChatbotDbContext).Assembly.FullName)
                        ));

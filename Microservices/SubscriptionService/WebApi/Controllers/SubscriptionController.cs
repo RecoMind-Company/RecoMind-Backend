@@ -150,7 +150,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                await _subscriptionTypeService.DleteSubscriptionType(PlanName);
+                await _subscriptionTypeService.DeleteSubscriptionType(PlanName);
                 return Ok();
             }
             catch (Exception ex)
