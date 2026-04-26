@@ -12,7 +12,7 @@ using Notification.Core.Infrastructure.Data;
 namespace Notification.Infrastructure.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20260414231606_InitialCreate")]
+    [Migration("20260426112439_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
