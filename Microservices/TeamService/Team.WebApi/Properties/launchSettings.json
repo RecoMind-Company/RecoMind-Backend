@@ -5,17 +5,21 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "GRPC_PORT": "5010",
+        "HTTP_PORT": "8001"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:5264"
+      "applicationUrl": "http://localhost:8001"
     },
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "GRPC_PORT": "5010",
+        "HTTP_PORT": "8001"
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7192;http://localhost:5264"

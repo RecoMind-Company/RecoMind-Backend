@@ -12,7 +12,7 @@ using Team.Infrastructure.Data;
 namespace Team.Infrastructure.Migrations
 {
     [DbContext(typeof(TeamDbContext))]
-    [Migration("20251214145914_InitialCreate")]
+    [Migration("20260426112824_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

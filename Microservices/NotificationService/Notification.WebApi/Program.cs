@@ -151,6 +151,18 @@ namespace Notification.WebApi
                 });
             });
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
+
+                options.ListenAnyIP(httpPort);
+            });
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
