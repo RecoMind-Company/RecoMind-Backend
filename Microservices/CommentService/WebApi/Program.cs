@@ -89,7 +89,7 @@ builder.Services.AddSignalR(option =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("CommentDbConnectionString"));
 });
 builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);

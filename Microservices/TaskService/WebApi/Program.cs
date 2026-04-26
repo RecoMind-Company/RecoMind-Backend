@@ -65,7 +65,7 @@ builder.Services.AddAuthentication(config =>
 });
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("TaskDbConnectionString"));
 });
 builder.Services.AddAutoMapper(cfg => { }, typeof(QuestProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, includeInternalTypes: true);

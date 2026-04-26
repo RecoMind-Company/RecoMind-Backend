@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 [ApiController]
-[Route("api")]
+[Route("api/[Controller]")]
 [Authorize]
 public class CommentController(ICommentService commentService) : BaseApiController
 {
-    [HttpGet("plans/{planId}/comments/get-all")]
+    [HttpGet("plans/{planId}")]
     [ProducesResponseType(typeof(IEnumerable<CommentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<CommentDto>>> GetCommentsByPlanId([FromRoute] string planId)
