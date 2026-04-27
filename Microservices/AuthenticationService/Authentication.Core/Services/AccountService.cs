@@ -103,7 +103,7 @@ public class AccountService : IAccountService
             profileToReturn.Photo = photoSettings.BaseUrl?.TrimEnd('/') + "/" + user.PhotoUrl.TrimStart('/');
 
         profileToReturn.Phone = user.PhoneNumber ?? string.Empty;
-        profileToReturn.JobTitle = userJobTitle.JobTitle ?? string.Empty;
+        profileToReturn.JobTitle = userJobTitle?.JobTitle ?? string.Empty;
         return profileToReturn;
 
     }
