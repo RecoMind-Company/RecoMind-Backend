@@ -1,11 +1,13 @@
 using Core.Interfaces;
 using Core.Mapping;
+using Core.Models;
 using Core.Service;
 using Core.Service.Interface;
 using GrpcClients.Team;
 using Infrastructure.Data;
 using Infrastructure.GrpcClients.Team;
 using Infrastructure.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -13,8 +15,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
+using System.Text;
 using webApi.Grpc;
 
 namespace webApi
@@ -35,8 +39,8 @@ namespace webApi
             builder.Services.AddScoped<PlanServiceImpl>();
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UOW<>));
             builder.Services.AddScoped(typeof(IPlanService),typeof(Core.Service.PlanService));
-            builder.Services.AddScoped(typeof(IPlanType),typeof(PlanType));
-            builder.Services.AddScoped(typeof(IStatus), typeof(Status));
+            builder.Services.AddScoped(typeof(IPlanType),typeof(Core.Service.PlanType));
+            builder.Services.AddScoped(typeof(IStatus), typeof(Core.Service.Status));
             builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
             builder.Services.AddAutoMapper(typeof(PlanMapper));
 
@@ -62,58 +66,58 @@ namespace webApi
                 builder.Services.AddGrpcReflection();
             }
 
-            //builder.Services.AddSwaggerGen(cfg =>
-            //{
-            //    cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
-            //    {
-            //        Name = "Authorization",
-            //        Type = SecuritySchemeType.ApiKey,
-            //        Scheme = "Bearer",
-            //        BearerFormat = "JWT",
-            //        In = ParameterLocation.Header,
-            //    });
-            //    cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
-            //    {
-            //       {
-            //       new OpenApiSecurityScheme
-            //           {
-            //               Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
-            //           },
-            //           []
-            //       }
-            //    });
-            //});
+            builder.Services.AddSwaggerGen(cfg =>
+            {
+                cfg.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                });
+                cfg.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                   {
+                   new OpenApiSecurityScheme
+                       {
+                           Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "BearerAuth" }
+                       },
+                       []
+                   }
+                });
+            });
 
-            //builder.Services.AddAuthentication(config =>
-            //{
-            //    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            //}).AddJwtBearer(options =>
-            //{
-            //    var jwt = builder.Configuration
-            //    .GetSection("JwtOptions")
-            //    .Get<JwtSettings>()
-            //    ?? throw new Exception("JwtOptions are not configured");
+            builder.Services.AddAuthentication(config =>
+            {
+                config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                config.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                var jwt = builder.Configuration
+                .GetSection("JwtOptions")
+                .Get<JwtSettings>()
+                ?? throw new Exception("JwtOptions are not configured");
 
-            //    options.SaveToken = true;
-            //    options.RequireHttpsMetadata = true;
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateIssuerSigningKey = true,
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
 
-            //        ValidIssuer = jwt.Issuer,
-            //        ValidAudience = jwt.Audience,
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
 
-            //        IssuerSigningKey = new SymmetricSecurityKey(
-            //         Encoding.UTF8.GetBytes(jwt.SecretKey)
-            //         ),
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                     Encoding.UTF8.GetBytes(jwt.SecretKey)
+                     ),
 
-            //        ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
-            //    };
-            //});
+                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                };
+            });
 
 
             builder.WebHost.ConfigureKestrel(options =>
