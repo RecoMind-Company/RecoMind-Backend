@@ -54,7 +54,7 @@ namespace Campany.API
 
             builder.Services.AddGrpcClient<subscriptionService.subscriptionServiceClient>(o =>
             {
-                o.Address = new Uri("http://subscriptionservice:5004");              // Subscription service address
+                o.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:SubscriptionServiceUrl"));              // Subscription service address
             });
 
             //Configure Kestrel to listen on a specific port for gRPC

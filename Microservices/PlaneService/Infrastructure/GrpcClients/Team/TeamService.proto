@@ -3,7 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "GrpcClients.Team";
 
 service TeamGrpcService {
-  rpc GetTeamByTeamLeader (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
+  rpc  GetTeamByEmployee (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
 }
 
 message GetUserTeamInfoRequest {

@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.GrpcClients.Team
 {
-    public class TeamGrpcClientImpl( TeamGrpcService.TeamGrpcServiceClient _GrpcServiceClient ) : ITeamGrpcClient
+    public class TeamGrpcClientImpl(TeamGrpcService.TeamGrpcServiceClient _GrpcServiceClient) : ITeamGrpcClient
     {
-        public async Task<Result<string>> GetTeamNameById(string userId )
+        public async Task<Result<string>> GetTeamNameById(string userId)
         {
             try
             {
-                var result = await _GrpcServiceClient.GetTeamByTeamLeaderAsync(new GetUserTeamInfoRequest { UserId = userId });
+                var result = await _GrpcServiceClient.GetTeamByEmployeeAsync(new GetUserTeamInfoRequest { UserId = userId });
 
                 if (result != null)
                 {
