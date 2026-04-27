@@ -319,7 +319,7 @@ public class AuthenticationService : IAuthenticationService
             issuer: jwtSettings.Issuer,
             audience: jwtSettings.Audience,
             claims: Claims,
-            expires: DateTime.Now.AddHours(jwtSettings.DurationInHours),
+            expires: DateTime.UtcNow.AddHours(jwtSettings.DurationInHours),
             signingCredentials: crd);
 
         return token;
