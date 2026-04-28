@@ -24,3 +24,16 @@ message BaseMessage{
 message DeleteMessage{
 	string id = 1;
 }
+
+message GetJobTitlesListRequest{
+	repeated string Ids = 1;
+}
+
+message JobTitlesList{
+	string userId = 1;
+	string jobTitle = 2;
+}
+
+message GetJobTitlesListResponse{
+	repeated JobTitlesList jobTitlesList = 1;
+}

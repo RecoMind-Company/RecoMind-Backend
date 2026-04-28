@@ -13,6 +13,7 @@ public interface IAccountService
     Task<BaseToReturnDto> EditProfile(ProfileDto profile, string email);
     Task<ProfileToReturnDto?> GetProfile(string email);
     Task<BaseToReturnDto> DeleteUser(string id);
+    Task<IEnumerable<JobTitlesDto>> GetUsersJobTitle(IEnumerable<string> userIds);
 }
 
 public class AccountService : IAccountService
@@ -152,5 +153,14 @@ public class AccountService : IAccountService
         if (!result.Succeeded)
             return new BaseToReturnDto { Message = string.Join(',', result.Errors) };
         return new BaseToReturnDto { Success = true, Message = "User deleted successfully" };
+    }
+
+    public async Task<IEnumerable<JobTitlesDto>> GetUsersJobTitle(IEnumerable<string> userIds)
+    {
+        var usersJobTitle = await jobTitleRepo.FindAll(x => userIds.Contains(x.UserId));
+
+        var jobTitlesDto = usersJobTitle.Select(x => new JobTitlesDto { UserId = x.UserId, JobTitle = x.JobTitle }).ToList();
+
+        return jobTitlesDto;
     }
 }

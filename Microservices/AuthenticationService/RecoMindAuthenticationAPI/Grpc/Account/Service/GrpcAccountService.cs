@@ -2,12 +2,10 @@
 using Authentication.Core.Services;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace RecoMindAuthenticationAPI.Grpc.Account.Service;
 
-[Authorize]
 public class GrpcAccountService(IAccountService accountService) : AccountService.AccountServiceBase
 {
     public override async Task<BaseMessage> UpdateProfile(ProfileMessage request, ServerCallContext context)
@@ -64,6 +62,23 @@ public class GrpcAccountService(IAccountService accountService) : AccountService
             IsSuccess = response.Success,
             Message = response.Message
         };
+    }
+
+    public override async Task<GetJobTitlesListResponse> GetJobTitlesList(GetJobTitlesListRequest request, ServerCallContext context)
+    {
+        var userIds = request.Ids;
+
+        var jobTitles = await accountService.GetUsersJobTitle(userIds);
+
+        var response = new GetJobTitlesListResponse();
+
+        response.JobTitlesList.AddRange(jobTitles.Select(x => new JobTitlesList
+        {
+            UserId = x.UserId,
+            JobTitle = x.JobTitle
+        }));
+
+        return response;
     }
 }
 
