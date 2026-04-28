@@ -29,6 +29,8 @@ namespace webApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Configuration.AddEnvironmentVariables();
+
             builder.Services.AddDbContext<PlanDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Plan"));
