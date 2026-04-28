@@ -63,7 +63,7 @@ namespace Data_Mapping.WebApi.Controllers
             return Ok(new { success = result });
         }
 
-        [HttpPost("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> RemoveFromDept([FromBody] MappingRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
