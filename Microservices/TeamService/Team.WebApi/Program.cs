@@ -37,9 +37,9 @@ namespace Team.WebApi
                 options.AddPolicy("OpenCors", policy =>
                 {
                     policy
-                        .AllowAnyOrigin()     // يسمح بأي دومين
-                        .AllowAnyHeader()     // يسمح بأي هيدر
-                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
 
@@ -47,6 +47,7 @@ namespace Team.WebApi
             // Add services to the container.
             builder.Services.AddControllers();
 
+            builder.Configuration.AddEnvironmentVariables();
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
@@ -96,14 +97,13 @@ namespace Team.WebApi
                     ValidIssuer = builder.Configuration["JwtOptions:Issuer"],
                     ValidAudience = builder.Configuration["JwtOptions:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
 
 
             builder.WebHost.ConfigureKestrel(options =>
             {
-                // اقرأ من environment أولاً (أولوية أعلى)
                 var httpPort = int.Parse(
                     Environment.GetEnvironmentVariable("HTTP_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
@@ -115,36 +115,29 @@ namespace Team.WebApi
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
+                    "5010"
                 );
 
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
-
             var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
             authorizationBuilder.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
-            authorizationBuilder.AddPolicy("TeamLeadership", p => p.RequireRole("admin", "manager", "teamleader"));
+            authorizationBuilder.AddPolicy("Leadership", p => p.RequireRole("admin", "manager", "teamleader"));
             authorizationBuilder.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
-            authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
-            // app.UseHttpsRedirection();
+            app.UseCors("OpenCors");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors("OpenCors");
-
             app.MapGrpcService<TeamGrpcServiceImpl>();
-
             app.MapControllers();
 
             app.Run();

@@ -13,40 +13,24 @@ namespace Team.WebApi.GrpcServices
             _teamService = teamService;
         }
 
-        public override async Task<UserTeamInfoResponse> GetTeamByTeamLeader(
-            GetUserTeamInfoRequest request,
-            ServerCallContext context)
-        {
-            var info = await _teamService.GetTeamByTeamLeadIdAsync(request.UserId);
-
-            if (info == null)
-                throw new RpcException(
-                    new Status(StatusCode.NotFound, "User team info not found"));
-
-            return new UserTeamInfoResponse
-            {
-                CompanyId = info.CompanyId,
-                TeamId = info.TeamId,
-                TeamName = info.TeamName
-            };
-        }
-
         public override async Task<UserTeamInfoResponse> GetTeamByEmployee(
             GetUserTeamInfoRequest request,
             ServerCallContext context)
         {
-            var info = await _teamService.GetTeamByEmployeeIdAsync(request.UserId);
+            var result = await _teamService.GetTeamByEmployeeIdAsync(request.UserId);
 
-            if (info == null)
-                throw new RpcException(
-                    new Status(StatusCode.NotFound, "User team info not found"));
+            if (!result.IsSuccess)
+                result = await _teamService.GetTeamByTeamLeadIdAsync(request.UserId);
 
-            return new UserTeamInfoResponse
-            {
-                CompanyId = info.CompanyId,
-                TeamId = info.TeamId,
-                TeamName = info.TeamName
-            };
+            return result.Map(
+                info => new UserTeamInfoResponse
+                {
+                    CompanyId = info.CompanyId,
+                    TeamId = info.TeamId,
+                    TeamName = info.TeamName
+                },
+                error => throw new RpcException(new Status(StatusCode.NotFound, error.Message))
+            );
         }
 
 

@@ -13,43 +13,29 @@ namespace Team.WebApi.Controllers
     public class TeamController : ControllerBase
     {
         private readonly ITeamService _service;
-        public TeamController(ITeamService service)
+        public TeamController(ITeamService service) => _service = service;
+
+        private string companyId => User.FindFirstValue("CompanyId") ?? string.Empty;
+
+
+        [HttpGet("company/{company_id}")]
+        public async Task<IActionResult> GetTeamsForAI(string company_id)
         {
-            _service = service;
-        }
+            var teams = await _service.GetForAiAsync(company_id);
+            if (teams == null || teams.Count == 0)
+                return NotFound("No teams found for the specified company.");
 
-
-        [HttpGet("company/{companyId}")]
-        public async Task<IActionResult> GetByCompanyId(string companyId)
-        {
-            var teams = await _service.GetForAiAsync(companyId);
-            if (teams == null) return NotFound();
-
-            return Ok(teams);
-        }
-
-        [HttpGet("for-ai")]
-        [Authorize(Policy = "Ai")]
-        public async Task<IActionResult> GetTeamsForAI()
-        {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
-
-            var teams = await _service.GetForAiAsync(companyId);
             return Ok(teams);
         }
 
         [HttpGet("get-all")]
-        [Authorize(Policy = "Management")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetTeamsForCompany()
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
-
             var teams = await _service.GetByCompanyIdAsync(companyId);
+            if (teams == null || teams.Count == 0)
+                return NotFound("No teams found for the specified company.");
+
             return Ok(teams);
         }
 
@@ -57,95 +43,89 @@ namespace Team.WebApi.Controllers
         [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetById(string teamId)
         {
-            var team = await _service.GetByIdAsync(teamId);
-            if (team == null) return NotFound();
+            var result = await _service.GetByIdAsync(teamId);
 
-            return Ok(team);
+            return result.Map(
+                team => Ok(team),
+                error => (IActionResult)NotFound()
+            );
         }
 
-
         [HttpPost("create")]
-        [Authorize(Policy = "Management")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> CreateTeam(CreateTeamDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
-
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            if (string.IsNullOrWhiteSpace(companyId))
+            if (string.IsNullOrWhiteSpace(companyId)) 
                 return BadRequest("CompanyId claim is missing.");
 
-            try
-            {
-                var team = await _service.CreateTeamAsync(companyId, dto);
-                return Ok(team);
-            }
-            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+            var result = await _service.CreateTeamAsync(companyId, dto);
+
+            return result.Map(
+                team => (IActionResult)Ok(team),
+                error => BadRequest(new { message = error.Message })
+            );
         }
 
         [HttpPut("update/{teamId}")]
-        [Authorize(Policy = "Management")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> UpdateTeam(string teamId, UpdateTeamDto dto)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            var result = await _service.UpdateTeamAsync(teamId, companyId, dto);
 
-            try
-            {
-                var team = await _service.UpdateTeamAsync(teamId, companyId, dto);
-                return Ok(team);
-            }
-            catch (Exception ex) { return BadRequest(new { message = ex.Message }); }
+            return result.Map(
+                team => Ok(team),
+                error => error.Code == "Team.NotFound"
+                    ? (IActionResult)NotFound()
+                    : BadRequest(new { message = error.Message })
+            );
         }
+
 
         [HttpDelete("delete/{teamId}")]
-        [Authorize(Policy = "Management")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> DeleteTeam(string teamId)
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            var result = await _service.DeleteTeamAsync(teamId, companyId);
 
-            var success = await _service.DeleteTeamAsync(teamId, companyId);
-            if (!success) return NotFound();
-
-            return NoContent();
+            return result.Map(
+                success => NoContent(),
+                error => (IActionResult)NotFound()
+            );
         }
 
-
         [HttpPost("{teamId}/employees")]
-        [Authorize(Policy = "TeamLeadership")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> AddEmployee(string teamId, AddEmployeeDto emp)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
-            var companyId = User.FindFirst("CompanyId")?.Value;
+            var result = await _service.AddEmployeeAsync(teamId, companyId, emp.EmployeeId);
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
-
-            var success = await _service.AddEmployeeAsync(teamId, companyId, emp.EmployeeId);
-            if (!success) return BadRequest(new { message = "Cannot add employee to team." });
-
-            return Ok();
+            return result.Map<IActionResult>(
+                success => Ok(),
+                error => BadRequest(new { message = "Cannot add employee to team." })
+            );
         }
 
         [HttpDelete("{teamId}/employees/{employeeId}")]
-        [Authorize(Policy = "TeamLeadership")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> RemoveEmployee(string teamId, string employeeId)
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            var result = await _service.RemoveEmployeeAsync(teamId, companyId, employeeId);
 
-            var success = await _service.RemoveEmployeeAsync(teamId, companyId, employeeId);
-            if (!success) return BadRequest(new { message = "Cannot remove employee from team." });
-
-            return NoContent();
+            return result.Map<IActionResult>(
+                success => NoContent(),
+                error => BadRequest(new { message = "Cannot remove employee from team." })
+            );
         }
     }
 }

@@ -2,6 +2,7 @@
 using Team.Core.DTOs;
 using Team.Core.Interfaces;
 using Team.Core.Models;
+using Team.Core.Result;
 
 namespace Team.Core.Services
 {
@@ -16,9 +17,11 @@ namespace Team.Core.Services
             _mapper = mapper;
         }
 
-        private UserTeamInfoDto? MapToUserTeamInfo(TeamModel? team)
+        #region Helper Methos
+        private Result<UserTeamInfoDto> MapToUserTeamInfo(TeamModel? team)
         {
-            if (team == null) return null;
+            if (team == null) return TeamErrors.NotFound;
+
             return new UserTeamInfoDto
             {
                 CompanyId = team.CompanyId,
@@ -26,37 +29,44 @@ namespace Team.Core.Services
                 TeamName = team.Name
             };
         }
+        #endregion
 
-        public async Task<UserTeamInfoDto?> GetTeamByTeamLeadIdAsync(string teamLeadId)
-            => MapToUserTeamInfo(await _repo.GetTeamByTeamLeadIdAsync(teamLeadId));
+        #region Read Operations
+        public async Task<Result<UserTeamInfoDto>> GetTeamByTeamLeadIdAsync(string teamLeadId)
+        => MapToUserTeamInfo(await _repo.GetTeamByTeamLeadIdAsync(teamLeadId));
 
-        public async Task<UserTeamInfoDto?> GetTeamByEmployeeIdAsync(string employeeId)
+        public async Task<Result<UserTeamInfoDto>> GetTeamByEmployeeIdAsync(string employeeId)
             => MapToUserTeamInfo(await _repo.GetTeamByEmployeeIdAsync(employeeId));
 
 
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
-            return _mapper.Map<List<TeamResponseForAiDto>>(teams);
+            return teams == null ? new List<TeamResponseForAiDto>()
+                : _mapper.Map<List<TeamResponseForAiDto>>(teams);
         }
 
         public async Task<List<TeamResponseDto>> GetByCompanyIdAsync(string companyId)
         {
             var teams = await _repo.GetByCompanyIdAsync(companyId);
-            return _mapper.Map<List<TeamResponseDto>>(teams);
+            return teams == null ? new List<TeamResponseDto>()
+                : _mapper.Map<List<TeamResponseDto>>(teams);
         }
-        public async Task<TeamResponseDto?> GetByIdAsync(string teamId)
+
+        public async Task<Result<TeamResponseDto>> GetByIdAsync(string teamId)
         {
             var team = await _repo.GetByIdAsync(teamId);
-            if (team == null) return null;
+            if (team == null) return TeamErrors.NotFound;
 
             return _mapper.Map<TeamResponseDto>(team);
         }
+        #endregion
 
-        public async Task<TeamResponseDto> CreateTeamAsync(string companyId, CreateTeamDto dto)
+        #region Write Operations
+        public async Task<Result<TeamResponseDto>> CreateTeamAsync(string companyId, CreateTeamDto dto)
         {
             if (await _repo.ExistsByNameAsync(companyId, dto.Name))
-                throw new Exception("Team with the same name already exists.");
+                return TeamErrors.NameAlreadyExists;
 
             var team = _mapper.Map<TeamModel>(dto);
             team.Id = Guid.NewGuid().ToString();
@@ -67,16 +77,16 @@ namespace Team.Core.Services
             return _mapper.Map<TeamResponseDto>(team);
         }
 
-        public async Task<TeamResponseDto> UpdateTeamAsync(string teamId, string companyId, UpdateTeamDto dto)
+        public async Task<Result<TeamResponseDto>> UpdateTeamAsync(string teamId, string companyId, UpdateTeamDto dto)
         {
             var team = await _repo.GetByIdAsync(teamId);
             if (team == null || team.CompanyId != companyId)
-                throw new KeyNotFoundException("Team not found.");
+                return TeamErrors.NotFound;
 
             if (!string.IsNullOrWhiteSpace(dto.Name) && dto.Name != team.Name)
             {
                 if (await _repo.ExistsByNameAsync(companyId, dto.Name))
-                    throw new InvalidOperationException("Another team with the same name exists.");
+                    return TeamErrors.NameAlreadyExists;
             }
 
             _mapper.Map(dto, team);
@@ -86,40 +96,42 @@ namespace Team.Core.Services
             return _mapper.Map<TeamResponseDto>(team);
         }
 
-        public async Task<bool> DeleteTeamAsync(string teamId, string companyId)
+        public async Task<Result<bool>> DeleteTeamAsync(string teamId, string companyId)
         {
             var team = await _repo.GetByIdAsync(teamId);
             if (team == null || team.CompanyId != companyId)
-                return false;
+                return TeamErrors.NotFound;
 
             return await _repo.DeleteAsync(teamId);
         }
+        #endregion
 
-        public async Task<bool> AddEmployeeAsync(string teamId, string companyId, string employeeId)
+        #region Employee Management
+
+        public async Task<Result<bool>> AddEmployeeAsync(string teamId, string companyId, string employeeId)
         {
             var team = await _repo.GetByIdAsync(teamId);
-
             if (team == null || team.CompanyId != companyId)
-                return false;
+                return TeamErrors.NotFound;
 
             if (await _repo.IsEmployeeInTeam(teamId, employeeId))
-                return false;
+                return TeamErrors.EmployeeAlreadyInTeam;
 
             return await _repo.AddEmployeeToTeamAsync(teamId, employeeId);
         }
 
-        public async Task<bool> RemoveEmployeeAsync(string teamId, string companyId, string employeeId)
+        public async Task<Result<bool>> RemoveEmployeeAsync(string teamId, string companyId, string employeeId)
         {
             var team = await _repo.GetByIdAsync(teamId);
             if (team == null || team.CompanyId != companyId)
-                return false;
+                return TeamErrors.NotFound;
 
-            return await _repo.RemoveEmployeeFromTeamAsync(teamId, employeeId);
+            var success = await _repo.RemoveEmployeeFromTeamAsync(teamId, employeeId);
+            return success;
         }
 
         public async Task<bool> IsEmployeeInTeamAsync(string teamId, string employeeId)
-        {
-            return await _repo.IsEmployeeInTeam(teamId, employeeId);
-        }
+            => await _repo.IsEmployeeInTeam(teamId, employeeId);
+        #endregion
     }
 }
