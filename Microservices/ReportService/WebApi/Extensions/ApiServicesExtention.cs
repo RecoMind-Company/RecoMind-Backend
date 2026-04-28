@@ -15,7 +15,7 @@ public static class ApiServicesExtention
     public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
 
-
+        builder.Configuration.AddEnvironmentVariables();
         builder.WebHost.ConfigureKestrel(options =>
             {
                 // اقرأ من environment أولاً (أولوية أعلى)

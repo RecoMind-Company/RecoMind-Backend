@@ -12,6 +12,7 @@ public static class ApiServiceExtention
 {
     public static void AddPresentationServices(this WebApplicationBuilder builder, IConfiguration configuration)
     {
+        builder.Configuration.AddEnvironmentVariables();
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(cfg =>
