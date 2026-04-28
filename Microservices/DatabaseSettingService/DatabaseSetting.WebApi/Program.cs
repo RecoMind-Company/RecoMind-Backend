@@ -32,19 +32,12 @@ namespace DatabaseSetting.WebApi
                 )
             );
 
-            builder.Configuration.AddEnvironmentVariables();
-
-            // Add services to the container.
             builder.Services.AddControllers();
-
-            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
-            authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
-            authorizationBuilder.AddPolicy("Ai", p => p.RequireRole("admin"));
-
             builder.Services.AddScoped<IDbSettingRepository, DbSettingRepository>();
             builder.Services.AddScoped<IDbSettingService, DbSettingService>();
             builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
             builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+            builder.Configuration.AddEnvironmentVariables();
             builder.Services.AddGrpc();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -88,14 +81,12 @@ namespace DatabaseSetting.WebApi
                     ValidIssuer = builder.Configuration["JwtOptions:Issuer"],
                     ValidAudience = builder.Configuration["JwtOptions:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtOptions:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero, // ONLY FOR TESTING
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
 
-
             builder.WebHost.ConfigureKestrel(options =>
             {
-                // اقرأ من environment أولاً (أولوية أعلى)
                 var httpPort = int.Parse(
                     Environment.GetEnvironmentVariable("HTTP_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
@@ -107,46 +98,38 @@ namespace DatabaseSetting.WebApi
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
+                    "5003"
                 );
 
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
 
-
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("OpenCors", policy =>
                 {
                     policy
-                        .AllowAnyOrigin()     // يسمح بأي دومين
-                        .AllowAnyHeader()     // يسمح بأي هيدر
-                        .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
             });
 
-
-            
-            // [Authorize(Policy = "ManagerRole")]
-
+            var authorizationBuilder = builder.Services.AddAuthorizationBuilder();
+            authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
 
             var app = builder.Build();
+            
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
-            // Configure the HTTP request pipeline.
-            
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
-            
-            // app.UseHttpsRedirection();
+            app.UseCors("OpenCors");
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors("OpenCors");
-            app.MapGrpcService<DbSettingGrpcServiceImpl>();
-            app.MapControllers();
 
+            app.MapGrpcService<DbSettingGrpcServiceImpl>();
             app.MapControllers();
 
             app.Run();

@@ -13,11 +13,7 @@ namespace DatabaseSetting.Infrastructure.Repositories
     public class DbSettingRepository : IDbSettingRepository
     {
         private readonly AppDbContext _context;
-
-        public DbSettingRepository(AppDbContext context) 
-        {
-            _context = context;
-        }
+        public DbSettingRepository(AppDbContext context) => _context = context;
 
         public async Task<DbSettingModel?> GetByCompanyIdAsync(string companyId)
         {
@@ -55,6 +51,5 @@ namespace DatabaseSetting.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
-
     }
 }

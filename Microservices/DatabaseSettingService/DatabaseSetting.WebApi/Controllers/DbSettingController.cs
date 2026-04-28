@@ -2,6 +2,7 @@
 using DatabaseSetting.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DatabaseSetting.WebApi.Controllers
 {
@@ -10,83 +11,65 @@ namespace DatabaseSetting.WebApi.Controllers
     public class DbSettingController : ControllerBase
     {
         private readonly IDbSettingService _service;
-        public DbSettingController(IDbSettingService service)
-        {
-            _service = service;
-        }
+        public DbSettingController(IDbSettingService service) => _service = service;
+
+        private string companyId => User.FindFirstValue("CompanyId") ?? string.Empty;
 
 
         [HttpGet("company/{companyId}")]
         public async Task<IActionResult> GetByCompanyId(string companyId)
         {
             var result = await _service.GetByCompanyIdForAiAsync(companyId);
-            if (result == null) return NotFound();
 
-            return Ok(result);
+            return result.Map<IActionResult>(
+                res => Ok(res),
+                error => NotFound()
+            );
         }
-
-        [HttpGet("for-ai")]
-        [Authorize(Policy = "Ai")]
-        public async Task<IActionResult> GetForAiAsync()
-        {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
-
-            var result = await _service.GetByCompanyIdForAiAsync(companyId);
-            if (result == null)  return NotFound();
-
-            return Ok(result);
-        }
-
 
         [HttpGet]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetForCompanyAsync()
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.GetByCompanyIdAsync(companyId);
-            if (result == null) return NotFound();
 
-            return Ok(result);
+            return result.Map<IActionResult>(
+                res => Ok(res),
+                error => NotFound()
+            );
         }
 
         [HttpGet("{id}")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> GetById(string id)
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.GetByIdAsync(id, companyId);
-            if (result == null) return NotFound();
 
-            return Ok(result);
+            return result.Map<IActionResult>(
+                res => Ok(res),
+                error => NotFound()
+            );
         }
-
 
         [HttpPost("create")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Create([FromBody] CreateDbSettingDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.CreateAsync(request, companyId);
-            if (result == null) return BadRequest("Failed to create DbSetting.");
 
-            return Ok(result);
+            return result.Map<IActionResult>(
+                res => Ok(res),
+                error => BadRequest(new { message = error.Message })
+            );
         }
 
         [HttpPut("update/{id}")]
@@ -94,31 +77,28 @@ namespace DatabaseSetting.WebApi.Controllers
         public async Task<IActionResult> Update(string id, [FromBody] UpdateDbSettingDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var companyId = User.FindFirst("CompanyId")?.Value;
-
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
             var result = await _service.UpdateAsync(id, companyId, request);
-            if (result == null) return NotFound("Invalid data");
 
-            return Ok(result);
+            return result.Map<IActionResult>(
+                res => Ok(res),
+                error => NotFound(new { message = "Invalid data" })
+            );
         }
 
         [HttpDelete("delete/{id}")]
         [Authorize(Policy = "ManagerRole")]
         public async Task<IActionResult> Delete(string id)
         {
-            var companyId = User.FindFirst("CompanyId")?.Value;
+            if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId claim is missing.");
+            var result = await _service.DeleteAsync(id, companyId);
 
-            var success = await _service.DeleteAsync(id, companyId);
-            if (!success) return NotFound();
-
-            return NoContent();
+            return result.Map<IActionResult>(
+                success => NoContent(),
+                error => NotFound()
+            );
         }
     }
 }

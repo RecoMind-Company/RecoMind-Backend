@@ -19,7 +19,7 @@ namespace Team.WebApi
 
             // Add DbContext
             builder.Services.AddDbContext<TeamDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"),
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"),// "DefaultConnection"),
 
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
@@ -29,7 +29,6 @@ namespace Team.WebApi
             );
 
             builder.Configuration.AddEnvironmentVariables();
-
 
             // Configure CORS Policy
             builder.Services.AddCors(options =>
@@ -42,7 +41,6 @@ namespace Team.WebApi
                         .AllowAnyMethod();
                 });
             });
-
 
             // Add services to the container.
             builder.Services.AddControllers();
