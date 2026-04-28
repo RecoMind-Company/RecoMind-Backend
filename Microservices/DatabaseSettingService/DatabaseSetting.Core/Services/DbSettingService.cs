@@ -2,6 +2,7 @@
 using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Entities;
 using DatabaseSetting.Core.Interfaces;
+using DatabaseSetting.Core.Result;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
@@ -27,12 +28,10 @@ namespace DatabaseSetting.Core.Services
             _mapper = mapper;
         }
 
-
-        public async Task<DbSettingResponseForAiDto?> GetByCompanyIdForAiAsync(string companyId)
+        public async Task<Result<DbSettingResponseForAiDto>> GetByCompanyIdForAiAsync(string companyId)
         {
             var entity = await _repository.GetByCompanyIdAsync(companyId);
-            if (entity == null)
-                return null;
+            if (entity == null) return DbSettingErrors.NotFound;
 
             var response = _mapper.Map<DbSettingResponseForAiDto>(entity);
             response.Password = _encryp.Decrypt(entity.Password);
@@ -40,27 +39,28 @@ namespace DatabaseSetting.Core.Services
             return response;
         }
 
-        public async Task<DbSettingResponseDto?> GetByCompanyIdAsync(string companyId)
+        public async Task<Result<DbSettingResponseDto>> GetByCompanyIdAsync(string companyId)
         {
             var entity = await _repository.GetByCompanyIdAsync(companyId);
-            if (entity == null)
-                return null;
+            if (entity == null) return DbSettingErrors.NotFound;
 
             return _mapper.Map<DbSettingResponseDto>(entity);
         }
-        
-        public async Task<DbSettingResponseDto?> GetByIdAsync(string id, string companyId)
+
+        public async Task<Result<DbSettingResponseDto>> GetByIdAsync(string id, string companyId)
         {
             var entity = await _repository.GetByIdAsync(id);
-            if (entity == null || entity.CompanyId != companyId) 
-                return null;
+            if (entity == null || entity.CompanyId != companyId)
+                return DbSettingErrors.NotFound;
 
             return _mapper.Map<DbSettingResponseDto>(entity);
         }
 
-
-        public async Task<DbSettingResponseDto> CreateAsync(CreateDbSettingDto request, string companyId)
+        public async Task<Result<DbSettingResponseDto>> CreateAsync(CreateDbSettingDto request, string companyId)
         {
+            var existing = await _repository.GetByCompanyIdAsync(companyId);
+            if (existing != null) return DbSettingErrors.AlreadyExists;
+
             var model = _mapper.Map<DbSettingModel>(request);
 
             model.Id = Guid.NewGuid().ToString();
@@ -73,11 +73,11 @@ namespace DatabaseSetting.Core.Services
             return _mapper.Map<DbSettingResponseDto>(saved);
         }
 
-        public async Task<DbSettingResponseDto?> UpdateAsync(string id, string companyId, UpdateDbSettingDto request)
+        public async Task<Result<DbSettingResponseDto>> UpdateAsync(string id, string companyId, UpdateDbSettingDto request)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null || entity.CompanyId != companyId)
-                return null;
+                return DbSettingErrors.NotFound;
 
             _mapper.Map(request, entity);
 
@@ -89,13 +89,14 @@ namespace DatabaseSetting.Core.Services
             return _mapper.Map<DbSettingResponseDto>(saved);
         }
 
-        public async Task<bool> DeleteAsync(string id, string companyId)
+        public async Task<Result<bool>> DeleteAsync(string id, string companyId)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity == null || entity.CompanyId != companyId)
-                return false;
+                return DbSettingErrors.NotFound;
 
-            return await _repository.DeleteAsync(entity);
+            var success = await _repository.DeleteAsync(entity);
+            return success;
         }
     }
 }

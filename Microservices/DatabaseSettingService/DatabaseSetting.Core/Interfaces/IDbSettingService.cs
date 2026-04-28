@@ -1,5 +1,6 @@
 ﻿using DatabaseSetting.Core.DTOs;
 using DatabaseSetting.Core.Entities;
+using DatabaseSetting.Core.Result;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +11,12 @@ namespace DatabaseSetting.Core.Services
 {
     public interface IDbSettingService
     {
-        Task<DbSettingResponseForAiDto> GetByCompanyIdForAiAsync(string companyId);
-        Task<DbSettingResponseDto> GetByCompanyIdAsync(string companyId);
-        Task<DbSettingResponseDto> GetByIdAsync(string id, string companyId);
+        Task<Result<DbSettingResponseForAiDto>> GetByCompanyIdForAiAsync(string companyId);
+        Task<Result<DbSettingResponseDto>> GetByCompanyIdAsync(string companyId);
+        Task<Result<DbSettingResponseDto>> GetByIdAsync(string id, string companyId);
 
-        Task<DbSettingResponseDto> CreateAsync(CreateDbSettingDto request, string companyId);
-        Task<DbSettingResponseDto> UpdateAsync(string id, string companyId, UpdateDbSettingDto request);
-        Task<bool> DeleteAsync(string id, string companyId);
-
+        Task<Result<DbSettingResponseDto>> CreateAsync(CreateDbSettingDto request, string companyId);
+        Task<Result<DbSettingResponseDto>> UpdateAsync(string id, string companyId, UpdateDbSettingDto request);
+        Task<Result<bool>> DeleteAsync(string id, string companyId);
     }
 }
