@@ -49,8 +49,8 @@ namespace Notification.WebApi
 
                     cfg.Host(rabbitSettings["Host"] ?? "localhost", h =>
                     {
-                        h.Username(rabbitSettings["Username"] ?? "guest");
-                        h.Password(rabbitSettings["Password"] ?? "guest");
+                        h.Username(rabbitSettings["Username"] ?? "recomind");
+                        h.Password(rabbitSettings["Password"] ?? "recomind");
                     });
 
                     cfg.ReceiveEndpoint("notification-queue", e =>
