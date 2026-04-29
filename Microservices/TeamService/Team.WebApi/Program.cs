@@ -7,6 +7,7 @@ using System.Text;
 using Team.Core.Interfaces;
 using Team.Core.Mapper;
 using Team.Infrastructure.Data;
+using Team.Infrastructure.gRPC;
 using Team.Infrastructure.Repositories;
 using Team.WebApi.GrpcServices;
 namespace Team.WebApi
@@ -49,8 +50,22 @@ namespace Team.WebApi
             builder.Services.AddAutoMapper(typeof(TeamProfile));
             builder.Services.AddScoped<ITeamRepository, TeamRepository>();
             builder.Services.AddScoped<ITeamService, Core.Services.TeamService>();
-            builder.Services.AddGrpc();
+            builder.Services.AddScoped<IAuthGrpcService, AuthGrpcService>();
 
+            builder.Services.AddGrpc();
+            builder.Services.AddGrpcReflection();
+            // 2. تسجيل الـ gRPC Client (ده الأهم)
+            builder.Services.AddGrpcClient<AccountService.AccountServiceClient>(options =>
+            {
+                var url = builder.Configuration["Urls:AuthServiceUrl"];
+                options.Address = new Uri(url!);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                return new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+            });
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -113,7 +128,7 @@ namespace Team.WebApi
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5010"
+                    "5001"
                 );
 
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);

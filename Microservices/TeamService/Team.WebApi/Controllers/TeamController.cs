@@ -5,6 +5,7 @@ using System.ComponentModel.Design;
 using System.Security.Claims;
 using Team.Core.DTOs;
 using Team.Core.Interfaces;
+using Team.Core.Services;
 
 namespace Team.WebApi.Controllers
 {
@@ -17,6 +18,16 @@ namespace Team.WebApi.Controllers
 
         private string companyId => User.FindFirstValue("CompanyId") ?? string.Empty;
 
+
+        [HttpGet("{teamId}/company/{company_id}")]
+        public async Task<IActionResult> GetTeamJobTitlesAsync(string teamId, string company_id)
+        {
+            var jobTitles = await _service.GetTeamMemberJobTitlesAsync(teamId, company_id);
+            if (jobTitles == null || jobTitles.Count == 0)
+                return NotFound("Team not found or has no employees.");
+
+            return Ok(jobTitles);
+        }
 
         [HttpGet("company/{company_id}")]
         public async Task<IActionResult> GetTeamsForAI(string company_id)
@@ -84,7 +95,6 @@ namespace Team.WebApi.Controllers
             );
         }
 
-
         [HttpDelete("delete/{teamId}")]
         [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> DeleteTeam(string teamId)
@@ -101,7 +111,7 @@ namespace Team.WebApi.Controllers
 
         [HttpPost("{teamId}/employees")]
         [Authorize(Policy = "AllEmployees")]
-        public async Task<IActionResult> AddEmployee(string teamId, AddEmployeeDto emp)
+        public async Task<IActionResult> AddEmployee(string teamId, EmployeeDto emp)
         {
             if (!ModelState.IsValid) return ValidationProblem(ModelState);
             if (string.IsNullOrWhiteSpace(companyId)) return BadRequest("CompanyId claim is missing.");

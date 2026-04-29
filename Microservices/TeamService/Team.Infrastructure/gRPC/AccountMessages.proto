@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option csharp_namespace = "Team.Infrastructure.gRPC";
+
+message ProfileMessage {
+	string name = 1;
+	string email = 2;
+	string phone = 3;
+	bytes photo_content = 4;
+	string photoFileName = 5;
+}
+message ProfileToReturnMessage {
+	string name = 1;
+	string email = 2;
+	string phone = 3;
+	string photo = 4;
+}
+
+message BaseMessage{
+	bool isSuccess = 1;
+	string message = 2;
+}
+
+message DeleteMessage{
+	string id = 1;
+}
+
+message GetJobTitlesListRequest{
+	repeated string Ids = 1;
+}
+
+message JobTitlesList{
+	string userId = 1;
+	string jobTitle = 2;
+}
+
+message GetJobTitlesListResponse{
+	repeated JobTitlesList jobTitlesList = 1;
+}
