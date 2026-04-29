@@ -177,18 +177,16 @@ namespace Notification.WebApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseCors("OpenCors");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // 7. Map Endpoints & Hubs
             //app.MapHub<NotificationHub>("/hubs/notifications");
             app.MapHub<NotificationHub>("/hubs/notifications").AllowAnonymous();
-
             app.MapControllers();
 
             app.Run();

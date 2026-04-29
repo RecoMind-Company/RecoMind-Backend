@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Core.DTOs;
 using Notification.Core.Interfaces;
@@ -20,48 +21,60 @@ namespace Notification.WebApi.Controllers
             _notificationService = notificationService;
         }
 
-        [HttpPost("send-test")]
-        public async Task<IActionResult> SendTestNotification([FromBody] NotificationEventDto model)
-        {
-            await _notificationService.SendNotificationAsync(model);
-            return Ok();
-        }
-
         [HttpGet]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetHistory()
         {
             var result = await _notificationService.GetUserHistoryAsync(UserId);
-            return Ok(result);
+            return result.Map<IActionResult>(
+                Ok, BadRequest);
         }
 
         [HttpGet("filter")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetByStatus([FromQuery] bool isRead)
         {
             var result = await _notificationService.GetByStatusAsync(UserId, isRead);
-            return Ok(result);
+            return result.Map<IActionResult>(
+                Ok, BadRequest);
         }
 
         [HttpGet("unread-count")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> GetUnreadCount()
         {
-            var count = await _notificationService.GetUnreadCountAsync(UserId);
-            return Ok(new { count });
+            var result = await _notificationService.GetUnreadCountAsync(UserId);
+            return result.Map<IActionResult>(
+                count => Ok(new { count })
+                , BadRequest);
         }
 
         [HttpPatch("{id}/mark-as-read")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> MarkAsRead(string id)
         {
             var result = await _notificationService.GetAndMarkAsReadAsync(id);
-            if (result == null) return NotFound();
-            return Ok(result);
+
+            return result.Map<IActionResult>(
+                onSuccess: notification => Ok(notification),
+                onFailure: error => error.Code == "Notification.NotFound"
+                    ? NotFound(error)
+                    : BadRequest(error)
+            );
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AllEmployees")]
         public async Task<IActionResult> Delete(string id)
         {
-            var success = await _notificationService.DeleteNotificationAsync(id);
-            if (!success) return BadRequest();
-            return NoContent();
+            var result = await _notificationService.DeleteNotificationAsync(id);
+
+            return result.Map<IActionResult>(
+                onSuccess: _ => NoContent(),
+                onFailure: error => error.Code == "Notification.NotFound"
+                    ? NotFound(error)
+                    : BadRequest(error)
+            );
         }
     }
 }

@@ -2,6 +2,7 @@
 using Notification.Core.DTOs;
 using Notification.Core.Interfaces;
 using Notification.Core.Models;
+using Notification.Core.Result;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +27,10 @@ namespace Notification.Core.Services
             _mapper = mapper;
         }
 
-        public async Task SendNotificationAsync(NotificationEventDto dto)
+        public async Task<Result<bool>> SendNotificationAsync(NotificationEventDto dto)
         {
+            if (dto == null) return new Error("Notification.BadRequest", "Notification data is required.");
+
             var notification = _mapper.Map<NotificationModel>(dto);
             notification.Id = Guid.NewGuid().ToString();
             notification.CreatedAt = DateTime.UtcNow;
@@ -40,24 +43,35 @@ namespace Notification.Core.Services
 
             // Send real-time notification
             await _hubContext.SendNotificationAsync(notification.ReceiverId, response);
+            return true;
         }
 
-        public async Task<IEnumerable<NotificationResponseDto>> GetUserHistoryAsync(string userId)
+        public async Task<Result<IEnumerable<NotificationResponseDto>>> GetUserHistoryAsync(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId)) return NotificationErrors.InvalidUserId;
+
             var notifications = await _repository.GetUserNotificationsAsync(userId);
-            return _mapper.Map<IEnumerable<NotificationResponseDto>>(notifications);
+            var response = _mapper.Map<IEnumerable<NotificationResponseDto>>(notifications);
+
+            return Result<IEnumerable<NotificationResponseDto>>.Success(response);
         }
 
-        public async Task<IEnumerable<NotificationResponseDto>> GetByStatusAsync(string userId, bool isRead)
+        public async Task<Result<IEnumerable<NotificationResponseDto>>> GetByStatusAsync(string userId, bool isRead)
         {
+            if (string.IsNullOrWhiteSpace(userId)) return NotificationErrors.InvalidUserId;
+
             var notifications = await _repository.GetByReadStatusAsync(userId, isRead);
-            return _mapper.Map<IEnumerable<NotificationResponseDto>>(notifications);
+            var response = _mapper.Map<IEnumerable<NotificationResponseDto>>(notifications);
+
+            return Result<IEnumerable<NotificationResponseDto>>.Success(response);
         }
 
-        public async Task<NotificationResponseDto?> GetAndMarkAsReadAsync(string id)
+        public async Task<Result<NotificationResponseDto>> GetAndMarkAsReadAsync(string id)
         {
+            if (string.IsNullOrWhiteSpace(id)) return NotificationErrors.InvalidId;
+
             var notification = await _repository.GetByIdAsync(id);
-            if (notification is null) return null;
+            if (notification is null) return NotificationErrors.NotFound(id);
 
             if (!notification.IsRead)
             {
@@ -68,24 +82,31 @@ namespace Notification.Core.Services
             return _mapper.Map<NotificationResponseDto>(notification);
         }
 
-        public async Task<bool> MarkAllAsReadAsync(string userId)
+        public async Task<Result<bool>> MarkAllAsReadAsync(string userId)
         {
-            if(string.IsNullOrEmpty(userId)) return false;
+            if (string.IsNullOrWhiteSpace(userId)) return NotificationErrors.InvalidUserId;
+
             await _repository.MarkAllAsReadAsync(userId);
             return true;
         }
 
-        public async Task<int> GetUnreadCountAsync(string userId) 
-            => await _repository.GetUnreadCountAsync(userId);
-
-        public async Task<bool> DeleteNotificationAsync(string id)
+        public async Task<Result<int>> GetUnreadCountAsync(string userId)
         {
+            if (string.IsNullOrWhiteSpace(userId)) return NotificationErrors.InvalidUserId;
+
+            var count = await _repository.GetUnreadCountAsync(userId);
+            return count;
+        }
+
+        public async Task<Result<bool>> DeleteNotificationAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return NotificationErrors.InvalidId;
+
             var notification = await _repository.GetByIdAsync(id);
-            if (notification is null) return false;
+            if (notification is null) return NotificationErrors.NotFound(id);
 
             await _repository.DeleteAsync(id);
             return true;
         }
-
     }
 }
