@@ -19,7 +19,7 @@ namespace Core.Mapping
                         .ForPath(dest => dest.Result.Sql_Query, opt => opt.MapFrom(src => src.ResponseDetails.SqlQuery))
 
                 .ForMember(dest => dest.TaskId, opt => opt.MapFrom(src => src.TaskId));
-
+            CreateMap<ChatMessage, GetHistoryDto>();
             CreateMap<HistoryEntry, GetHistoryDto>()
                 .ReverseMap();            
 
