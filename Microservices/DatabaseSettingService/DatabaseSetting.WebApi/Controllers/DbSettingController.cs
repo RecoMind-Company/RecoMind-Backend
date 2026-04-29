@@ -16,10 +16,10 @@ namespace DatabaseSetting.WebApi.Controllers
         private string companyId => User.FindFirstValue("CompanyId") ?? string.Empty;
 
 
-        [HttpGet("company/{companyId}")]
-        public async Task<IActionResult> GetByCompanyId(string companyId)
+        [HttpGet("company/{company_Id}")]
+        public async Task<IActionResult> GetByCompanyId(string company_Id)
         {
-            var result = await _service.GetByCompanyIdForAiAsync(companyId);
+            var result = await _service.GetByCompanyIdForAiAsync(company_Id);
 
             return result.Map<IActionResult>(
                 res => Ok(res),
