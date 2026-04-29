@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Team.Core.Result
+namespace Notification.Core.Result
 {
     public record Error(string Code, string Message);
+
 }
