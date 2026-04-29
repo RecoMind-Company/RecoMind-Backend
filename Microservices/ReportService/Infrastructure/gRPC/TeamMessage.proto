@@ -6,9 +6,16 @@ option csharp_namespace = "Infrastructure.gRPC";
 message GetUserTeamInfoRequest {
   string userId = 1;
 }
+message UserExistRequest {
+  string userId = 1;
+  string teamId = 2;
+}
 
 message UserTeamInfoResponse {
   string companyId = 1;
   string teamId = 2;
   string teamName = 3;
+}
+message UserExistResponse {
+  bool exist = 1;
 }
