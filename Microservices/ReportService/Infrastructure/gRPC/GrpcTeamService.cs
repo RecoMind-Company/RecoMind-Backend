@@ -12,7 +12,7 @@ public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient grpcServiceCl
         var request = new GetUserTeamInfoRequest { UserId = userId ?? string.Empty };
         try
         {
-            var response = await grpcServiceClient.GetTeamByTeamLeaderAsync(request);
+            var response = await grpcServiceClient.GetTeamByEmployeeAsync(request);
             var teamToReturnDto = new TeamToReturnDto
             {
                 TeamName = response.TeamName,
