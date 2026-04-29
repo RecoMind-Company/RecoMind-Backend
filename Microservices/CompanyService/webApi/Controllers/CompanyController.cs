@@ -4,6 +4,7 @@ using Core.Service.Interface;
 using Core.Service.Protos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 
 namespace Company.API.Controllers
@@ -43,18 +44,21 @@ namespace Company.API.Controllers
         public async Task<IActionResult> GetByAdminId()
         {
             var AdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (AdminId == null)
+            { return BadRequest(new { Message = "Admin ID not found in token." }); }
+
             try
             {
-                var item = await _companyService.GetCompanyByAdminId(AdminId);
-                return Ok(item);
+                var items = await _companyService.GetCompanyByAdminId(AdminId);
+
+                if (!items.Any())
+                    return NotFound(new { Message = $"No companies found for admin ID '{AdminId}'." });
+
+                return Ok(items);
             }
-            catch (KeyNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(new { Message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest("Try again later.");
             }
         }
 
@@ -70,11 +74,15 @@ namespace Company.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { Message = ex.Message });
+                return NotFound("Company not found.");
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest("Invalid company ID.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Try again later.");
             }
         }
 
@@ -86,19 +94,33 @@ namespace Company.API.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            // call subscription service to validate subscription id
-
-            if (!string.IsNullOrEmpty(dto.SubscriptionId))
+            try
             {
-                var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
+                // call subscription service to validate subscription id
 
-                if (subscription == null)
-                    throw new ArgumentException($"Subscription with ID {dto.SubscriptionId} not found.");
+                if (!string.IsNullOrEmpty(dto.SubscriptionId))
+                {
+                    try
+                    {
+                        var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
+
+                        if (subscription == null)
+                            return NotFound(new { Message = $"Subscription with ID {dto.SubscriptionId} not found." });
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(new { Message = $"Error validating subscription:" });
+                    }
+                }
+
+                var AdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var result2 = await _companyService.CreateCompanyAsync(dto, AdminId);
+                return Ok(result2);
             }
-             
-            var AdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var result2 = await _companyService.CreateCompanyAsync(dto , AdminId);
-            return Ok(result2);
+            catch (Exception ex)
+            {
+                return BadRequest("Try again later.");
+            }
         }
 
         [HttpPut("Update/{id}")]
@@ -113,30 +135,30 @@ namespace Company.API.Controllers
             {
                 if (!string.IsNullOrEmpty(dto.SubscriptionId))
                 {
-                    var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
+                    try
+                    {
+                        var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = dto.SubscriptionId });
 
-                    if (subscription == null)
-                        throw new ArgumentException($"Subscription with ID {dto.SubscriptionId} not found.");
+                        if (subscription == null)
+
+                            return NotFound(new { Message = $"Subscription with ID {dto.SubscriptionId} not found." });
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(new { Message = $"Error validating subscription:" });
+                    }
                 }
-                var AdminId = User.FindFirstValue(ClaimTypes.NameIdentifier)??string.Empty;
-                var result = await _companyService.UpdateCompanyAsync(id , AdminId , dto);
+                var AdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (AdminId == null)
+                    return BadRequest(new { Message = "Admin ID not found in token." });
+
+                var result = await _companyService.UpdateCompanyAsync(id, AdminId, dto);
                 return Ok(result);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { Message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { Message = ex.Message });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest("Try again later.");
             }
         }
 
@@ -152,11 +174,11 @@ namespace Company.API.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { Message = ex.Message });
+                return NotFound("Company not found.");
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest("Try again later.");
             }
         }
 
@@ -181,7 +203,7 @@ namespace Company.API.Controllers
 
                 company.SubscriptionId = Dto.subscriptionId;
 
-                
+
                 var result = await _Repo.Entity.UpdateAsync(company);
 
                 _Repo.Save();
@@ -199,13 +221,13 @@ namespace Company.API.Controllers
                 };
                 return Ok(updateCompanyDTO);
             }
-            catch(KeyNotFoundException ex) 
+            catch (KeyNotFoundException ex)
             {
                 return BadRequest(new { Message = ex.Message });
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
-                return BadRequest(new { Message = ex.Message });
+                return BadRequest("Try again later.");
             }
         }
     }

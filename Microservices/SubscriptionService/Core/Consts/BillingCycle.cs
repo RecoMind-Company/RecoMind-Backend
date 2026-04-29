@@ -8,8 +8,8 @@ namespace Core.Consts
 {
     public enum BillingCycle
     {
-        Monthly = 1,       
-        SemiAnnual = 6,
-        Annual = 12
+        Monthly ,       
+        SemiAnnual ,
+        Annual 
     }
 }

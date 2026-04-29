@@ -62,6 +62,10 @@ namespace Infrastructure.Repository
         {
            return await _dbSet.Where(predicate).FirstOrDefaultAsync();
         }
+        public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.Where(predicate).ToListAsync();
+        }
     }
 
 }
