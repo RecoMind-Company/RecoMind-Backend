@@ -7,7 +7,6 @@ using DatabaseSetting.WebApi.GrpcServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -98,7 +97,7 @@ namespace DatabaseSetting.WebApi
                     Environment.GetEnvironmentVariable("GRPC_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Grpc__Port") ??
                     builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5003"
+                    "5001"
                 );
 
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
@@ -120,7 +119,7 @@ namespace DatabaseSetting.WebApi
             authorizationBuilder.AddPolicy("ManagerRole", p => p.RequireRole("admin", "manager"));
 
             var app = builder.Build();
-            
+
             app.UseSwagger();
             app.UseSwaggerUI();
 
