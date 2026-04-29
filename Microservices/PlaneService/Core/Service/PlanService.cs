@@ -226,7 +226,7 @@ namespace Core.Service
                     return planToRetyrn;
                 }
             }
-            planToRetyrn.Add(Result<GetPlanDto>.Failure("No plans found with the specified status."));
+            planToRetyrn.Add(Result<GetPlanDto>.Failure($"No plans found with the specified status : {status}"));
             return planToRetyrn;
         }        
     }

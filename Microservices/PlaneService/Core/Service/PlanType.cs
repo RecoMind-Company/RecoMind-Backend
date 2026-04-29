@@ -32,16 +32,15 @@ namespace Core.Service
 
         public async Task<bool> DeletePlanType(string planType)
         {
-            var isExist = GetPlanTypeByName(planType);
-
+            var isExist = await _unitOfWork.Entity.Find(x => x.Name.ToLower() == planType.ToLower());
             if (isExist != null)
             {
-                var plantype = new Core.Models.PlanType { Name=isExist.Result.Name };
-                _unitOfWork.Entity.Delete(plantype);
+                _unitOfWork.Entity.Delete(isExist);
                 _unitOfWork.Save();
                 return true;
             }
-            return false;
+            else
+                return false;            
         }
 
         public async Task<IEnumerable<GetPlanTypeDto>> GetAllPlanTypes()

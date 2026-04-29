@@ -31,17 +31,15 @@ namespace Core.Service
 
         public async Task<bool> DeleteStatus(string status)
         {
-            var statusName = await GetStatusByName(status);
+            var isExist = await _unitOfWork.Entity.Find(x => x.Name.ToLower() == status.ToLower());
 
-            if (statusName != null)
+            if (isExist != null)
             {
-                _unitOfWork.Entity.Delete(new Core.Models.Status { Name = statusName });
+                _unitOfWork.Entity.Delete(isExist);
                 _unitOfWork.Save();
-
                 return true;
             }
-
-            return false; // Status not found
+            return false;
         }
 
         public async Task<IEnumerable<string>> GetAllStatuses()
@@ -65,12 +63,12 @@ namespace Core.Service
         {
             var statusEntity = await _unitOfWork.Entity.Find(s => s.Name.ToLower() == status.ToLower());
 
-            if (statusEntity == null)
+            if (statusEntity != null)
             {
-                return null;     // Return null if no status is found
+                return statusEntity.Name;
             }
 
-            return statusEntity.Name;
+            return null;
         }
     }
 }

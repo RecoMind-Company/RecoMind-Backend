@@ -4,6 +4,8 @@ using Core.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace webApi.Controllers
@@ -63,14 +65,17 @@ namespace webApi.Controllers
 
             var plans = await _planService.GetPlansByStatus( status , companyId );
 
-            return Ok(plans);
+            if(plans.Any(x => x.IsFailure))
+                return NotFound(plans.Any(x => x.IsFailure ));
+            else
+                return Ok(plans);
         }
 
         [HttpPost("CreatePlan")]
         public async Task<IActionResult> CreatePlan([FromBody] AddPlanDto createPlanDto)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
-            var userId = User.FindFirst("UserId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest(" CompanyId Not Found !");
@@ -90,7 +95,7 @@ namespace webApi.Controllers
         public async Task<IActionResult> UpdatePlan( [FromBody] UpdatePlanDto updatePlanDto)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
-            var userId = User.FindFirst("UserId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest(" CompanyId Not Found !");
@@ -139,11 +144,19 @@ namespace webApi.Controllers
         public async Task<IActionResult> GetAllPlanTypes()
         {
             var result = await _planTypeService.GetAllPlanTypes();
-            return Ok(result);
+
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return NotFound("No plan types found.");
+            }
         }
 
-        [HttpDelete("PlanType/Remove")]
-        public async Task<IActionResult> DeletePlanType([FromQuery] string PlanTypeName)
+        [HttpDelete("PlanType/Remove/{PlanTypeName}")]
+        public async Task<IActionResult> DeletePlanType([FromRoute] string PlanTypeName)
         {
             var item = await _planTypeService.DeletePlanType(PlanTypeName);
             if (item)
@@ -159,7 +172,7 @@ namespace webApi.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Status/Add/Name")]
+        [HttpPost("Status/Add/{Name}")]
         public async Task<IActionResult> AddStatus([FromRoute]string Name) 
         {
             var Check = await _statusService.AddStatus(Name);
@@ -168,13 +181,13 @@ namespace webApi.Controllers
             return BadRequest(" Try Again ");
         }
 
-        [HttpDelete("Status/Remove/Name")]
+        [HttpDelete("Status/Remove/{Name}")]
         public async Task<IActionResult> DeleteStatuse([FromRoute] string Name)
         {
             var Check = await _statusService.DeleteStatus(Name);
             if (Check)
                 return Ok(" Deleted Successfuly ");
-            return BadRequest(" Try Again ");
+            return BadRequest(" Status Not Found ");
         }
     }
 }
