@@ -11,6 +11,7 @@ using Notification.Core.Services;
 using Notification.Infrastructure;
 using Notification.Infrastructure.Repositories;
 using Notification.WebApi.Hubs;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace Notification.WebApi
@@ -31,6 +32,8 @@ namespace Notification.WebApi
                     errorNumbersToAdd: null)
                 )
             );
+
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
             // 2. Add Services & Repositories
             builder.Services.AddScoped<INotificationService, NotificationService>();
