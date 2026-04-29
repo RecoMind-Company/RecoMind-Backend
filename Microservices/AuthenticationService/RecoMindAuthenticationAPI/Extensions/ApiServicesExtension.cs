@@ -56,6 +56,7 @@ namespace RecoMindAuthenticationAPI.Extensions
                 options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
                 options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
             });
+
             builder.Services.AddGrpc();
             builder.Services.AddGrpcReflection();
             builder.Services.AddGrpcClient<InvitationService.InvitationServiceClient>(c =>
