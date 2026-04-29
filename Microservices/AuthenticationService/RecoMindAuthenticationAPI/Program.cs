@@ -2,6 +2,7 @@
 using Authentication.Infrastructure;
 using Authentication.Infrastructure.Extensions;
 using RecoMindAuthenticationAPI.Extensions;
+using RecoMindAuthenticationAPI.Grpc.Account.Service;
 using RecoMindAuthenticationAPI.Grpc.Authentication.Service;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,5 +44,6 @@ app.UseAuthorization();
 app.UseCors("OpenCors");
 app.MapControllers();
 app.MapGrpcService<GrpcAuthenticationService>();
+app.MapGrpcService<GrpcAccountService>();
 app.MapGrpcReflectionService();
 app.Run();
