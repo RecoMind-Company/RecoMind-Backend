@@ -63,8 +63,6 @@ namespace RecoMindAuthenticationAPI.Extensions
                 c.Address = new Uri(configuration["Urls:InvitationServiceUrl"]);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
-
-
                 return new HttpClientHandler
                 {
                     ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator

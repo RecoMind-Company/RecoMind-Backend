@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "AccountMessages.proto";
+import "google/protobuf/empty.proto";
+option csharp_namespace = "Team.Infrastructure.gRPC";
+service AccountService{
+	rpc GetProfile(google.protobuf.Empty) returns (ProfileToReturnMessage);
+	rpc UpdateProfile(ProfileMessage) returns (BaseMessage);
+	rpc DeleteUser(DeleteMessage) returns (BaseMessage);
+	rpc GetJobTitlesList(GetJobTitlesListRequest) returns (GetJobTitlesListResponse);
+}

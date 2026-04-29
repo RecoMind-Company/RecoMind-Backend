@@ -16,6 +16,7 @@ namespace Team.Core.Interfaces
         Task<Result<TeamResponseDto>> GetByIdAsync(string teamId);
         Task<Result<UserTeamInfoDto>> GetTeamByEmployeeIdAsync(string employeeId);
         Task<Result<UserTeamInfoDto>> GetTeamByTeamLeadIdAsync(string teamLeadId);
+        Task<List<string>> GetTeamMemberJobTitlesAsync(string teamId, string companyId);
 
         Task<Result<TeamResponseDto>> CreateTeamAsync(string companyId, CreateTeamDto dto);
         Task<Result<TeamResponseDto>> UpdateTeamAsync(string teamId, string companyId, UpdateTeamDto dto);

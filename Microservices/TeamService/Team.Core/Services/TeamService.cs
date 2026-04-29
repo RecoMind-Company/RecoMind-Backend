@@ -8,13 +8,15 @@ namespace Team.Core.Services
 {
     public class TeamService : ITeamService
     {
+        private readonly IAuthGrpcService _authGrpcService;
         private readonly ITeamRepository _repo;
         private readonly IMapper _mapper;
 
-        public TeamService(ITeamRepository repo, IMapper mapper)
+        public TeamService(IAuthGrpcService authGrpcService, ITeamRepository repo, IMapper mapper)
         {
-            _repo = repo;
+            _authGrpcService = authGrpcService;
             _mapper = mapper;
+            _repo = repo;
         }
 
         #region Helper Methos
@@ -22,12 +24,12 @@ namespace Team.Core.Services
         {
             if (team == null) return TeamErrors.NotFound;
 
-            return new UserTeamInfoDto
+            return Result<UserTeamInfoDto>.Success(new UserTeamInfoDto
             {
                 CompanyId = team.CompanyId,
                 TeamId = team.Id,
                 TeamName = team.Name
-            };
+            });
         }
         #endregion
 
@@ -37,7 +39,6 @@ namespace Team.Core.Services
 
         public async Task<Result<UserTeamInfoDto>> GetTeamByEmployeeIdAsync(string employeeId)
             => MapToUserTeamInfo(await _repo.GetTeamByEmployeeIdAsync(employeeId));
-
 
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
@@ -59,6 +60,26 @@ namespace Team.Core.Services
             if (team == null) return TeamErrors.NotFound;
 
             return _mapper.Map<TeamResponseDto>(team);
+        }
+
+        public async Task<List<string>> GetTeamMemberJobTitlesAsync(string teamId, string companyId)
+        {
+            var teamExist = await _repo.IsTeamBelongsToCompanyAsync(teamId, companyId);
+            var employeeIds = await _repo.GetTeamMemberIdsAsync(teamId);
+
+            if (!teamExist || employeeIds == null || !employeeIds.Any())
+                return new List<string>();
+
+            var grpcResult = await _authGrpcService.GetTeamEmployeesJobTitlesAsync(employeeIds);
+
+            if (!grpcResult.IsSuccess || grpcResult.Value == null)
+                return new List<string>();
+
+            return grpcResult.Value
+                .Select(x => x.JobTitle)
+                .Where(title => !string.IsNullOrWhiteSpace(title))
+                .Distinct()
+                .ToList();
         }
         #endregion
 

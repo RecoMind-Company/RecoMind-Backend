@@ -5,6 +5,7 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Team.Core.DTOs;
 using Team.Core.Interfaces;
 using Team.Core.Models;
 using Team.Infrastructure.Data;
@@ -32,6 +33,11 @@ namespace Team.Infrastructure.Repositories
         public async Task<List<TeamModel>> GetByCompanyIdAsync(string companyId)
             => await GetTeamsQuery().Where(t => t.CompanyId == companyId).Include(t => t.TeamEmployees).ToListAsync();
 
+        public async Task<List<string>> GetTeamMemberIdsAsync(string teamId)
+            => await _context.TeamEmployees.Where(te => te.TeamId == teamId)
+                    .Select(te => te.EmployeeId)
+                    .ToListAsync();
+
         public async Task CreateAsync(TeamModel team)
         {
             team.Id ??= Guid.NewGuid().ToString();
@@ -50,6 +56,9 @@ namespace Team.Infrastructure.Repositories
 
         public async Task<bool> ExistsByNameAsync(string companyId, string name)
             => await _context.Teams.AnyAsync(t => t.CompanyId == companyId && t.Name == name);
+
+        public async Task<bool> IsTeamBelongsToCompanyAsync(string teamId, string companyId)
+            => await _context.Teams.AnyAsync(t => t.Id == teamId && t.CompanyId == companyId);
 
         // عمليات الموظفين (Simplified)
         public async Task<bool> AddEmployeeToTeamAsync(string teamId, string employeeId)
