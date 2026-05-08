@@ -18,7 +18,6 @@ namespace Core.Service
         }
         public async Task<GetCompanyDTO> CreateCompanyAsync(CreateCompanyDTO createCompanyDTO , string adminId)
         {
-            if (createCompanyDTO == null) throw new ArgumentNullException(nameof(createCompanyDTO));
 
             var entity = _mapper.Map<Models.Company>(createCompanyDTO);
             entity.Id = Guid.NewGuid().ToString();

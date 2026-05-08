@@ -100,7 +100,9 @@ namespace webApi.Grpc.GrpcImplementations
             try
             {
                 var item = await _companyService.GetCompanyByAdminId(request.AdminId);
-                return _mapper.Map<CompanyResponse>(item); 
+                
+                var response = item.FirstOrDefault();
+                return _mapper.Map<CompanyResponse>(response);               
             }
             catch (KeyNotFoundException)
             {
