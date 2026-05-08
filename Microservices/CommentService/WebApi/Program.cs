@@ -21,6 +21,17 @@ using WebApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OpenCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // Add services to the container.
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
@@ -139,6 +150,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("OpenCors");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
