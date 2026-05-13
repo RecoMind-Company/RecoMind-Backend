@@ -5,26 +5,22 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Data_Mapping.WebApi.Controllers
 {
-    //[Authorize(Policy = "Management")]
+    [Authorize(Policy = "Management")]
     [Route("api/[controller]")]
     [ApiController]
     public class MappingController : ControllerBase
     {
         private readonly IMappingService _service;
-        private readonly MappingDbContext _context;
+        public MappingController(IMappingService service) => _service = service;
 
+        private string companyId => User.FindFirstValue("CompanyId") ?? string.Empty;
 
-        public MappingController(IMappingService service, MappingDbContext context)
-        {
-            _service = service;
-            _context = context;
-        }
-
-        [HttpGet("available/{companyId}/{deptName}")]
-        public async Task<IActionResult> GetAvailable(string companyId, string deptName)
+        [HttpGet("available/{deptName}")]
+        public async Task<IActionResult> GetAvailable(string deptName)
         {
             try
             {
@@ -37,8 +33,8 @@ namespace Data_Mapping.WebApi.Controllers
             }
         }
 
-        [HttpGet("review/{companyId}/{deptName}")]
-        public async Task<IActionResult> GetForReview(string companyId, string deptName)
+        [HttpGet("review/{deptName}")]
+        public async Task<IActionResult> GetForReview(string deptName)
         {
             var result = await _service.GetTablesByDeptAsync(companyId, deptName);
 

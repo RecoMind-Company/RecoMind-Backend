@@ -20,7 +20,7 @@ namespace Team.WebApi
 
             // Add DbContext
             builder.Services.AddDbContext<TeamDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"),// DefaultConnection"), //
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Team"),
 
                     sqlOptions => sqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
