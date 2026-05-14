@@ -98,7 +98,7 @@ namespace Data_Mapping.WebApi
             builder.Services.AddScoped<IMappingService, MappingService>();
             builder.Services.AddControllers();
 
-            // 7. Kestrel Configuration
+            //7.Kestrel Configuration
             builder.WebHost.ConfigureKestrel(options =>
             {
                 var httpPort = int.Parse(
