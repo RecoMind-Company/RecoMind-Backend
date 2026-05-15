@@ -76,5 +76,20 @@ namespace Notification.WebApi.Controllers
                     : BadRequest(error)
             );
         }
+
+        [HttpPost("register-device")]
+        [Authorize(Policy = "AllEmployees")]
+        public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceTokenDto dto)
+        {
+            if (string.IsNullOrEmpty(UserId))
+                return Unauthorized();
+
+            var result = await _notificationService.RegisterDeviceTokenAsync(UserId, dto);
+
+            return result.Map<IActionResult>(
+                onSuccess: _ => Ok(new { message = "Device token registered or updated successfully." }),
+                onFailure: error => BadRequest(error)
+            );
+        }
     }
 }

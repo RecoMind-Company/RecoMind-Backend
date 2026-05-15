@@ -15,6 +15,7 @@ namespace Notification.Core.Infrastructure.Data
             : base(options) { }
 
         public DbSet<NotificationModel> Notifications { get; set; }
+        public DbSet<UserDeviceToken> UserDeviceTokens { get; set; }
 
         override protected void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +27,14 @@ namespace Notification.Core.Infrastructure.Data
                 entity.Property(e => e.Message).IsRequired(); 
                 entity.Property(e => e.ReceiverId).IsRequired();
                 entity.HasIndex(e => e.ReceiverId);
+            });
+
+            modelBuilder.Entity<Core.Models.UserDeviceToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.DeviceToken).IsRequired();
+                entity.HasIndex(e => e.UserId);
             });
         }
     }

@@ -8,8 +8,8 @@ namespace Notification.Core.Models
 {
     public class NotificationModel
     {
-        public string Id { get; set; }
-        public string? Title { get; set; }
+        public string Id { get; set; } = null!;
+        public string Title { get; set; } = null!;
         public string Message { get; set; } = null!;
         public string? SenderId { get; set; }
         public string ReceiverId { get; set; } = null!;

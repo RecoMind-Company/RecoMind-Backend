@@ -53,14 +53,9 @@ namespace Notification.Infrastructure.Repositories
 
         public async Task MarkAsReadAsync(string id)
         {
-            var notification = await 
-                _context.Notifications.FindAsync(id);
-
-            if (notification == null || notification.IsRead) return;
-
-            notification.IsRead = true;
-            await _context.SaveChangesAsync();
-
+            await _context.Notifications
+                .Where(n => n.Id == id && !n.IsRead)
+                .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true));
         }
 
         public async Task MarkAllAsReadAsync(string receiverId)
@@ -75,6 +70,33 @@ namespace Notification.Infrastructure.Repositories
             await _context.Notifications
                 .Where(n => n.Id == id)
                 .ExecuteDeleteAsync();
+        }
+
+
+        public async Task<UserDeviceToken?> FindDeviceTokenAsync(string userId, string deviceToken)
+        {
+            return await _context.UserDeviceTokens
+                .FirstOrDefaultAsync(t => t.UserId == userId && t.DeviceToken == deviceToken);
+        }
+
+        public async Task AddDeviceTokenAsync(UserDeviceToken token)
+        {
+            await _context.UserDeviceTokens.AddAsync(token);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateDeviceTokenAsync(UserDeviceToken token)
+        {
+            _context.UserDeviceTokens.Update(token);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<string>> GetUserDeviceTokensAsync(string userId)
+        {
+            return await _context.UserDeviceTokens
+                .Where(t => t.UserId == userId)
+                .Select(t => t.DeviceToken)
+                .ToListAsync();
         }
     }
 }
