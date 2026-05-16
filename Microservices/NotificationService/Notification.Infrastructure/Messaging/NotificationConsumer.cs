@@ -2,23 +2,25 @@
 using Notification.Core.DTOs;
 using Notification.Core.Interfaces;
 
-public class NotificationConsumer : IConsumer<NotificationEventDto>
+namespace Notification.Infrastructure.Messaging
 {
-    private readonly INotificationService _notificationService;
-
-    public NotificationConsumer(INotificationService notificationService)
+    public class NotificationConsumer : IConsumer<NotificationEventDto>
     {
-        _notificationService = notificationService;
-    }
+        private readonly INotificationService _notificationService;
 
-    public async Task Consume(ConsumeContext<NotificationEventDto> context)
-    {
-        // MassTransit بيعمل Deserialize للرسالة لوحده هنا!
-        var msg = context.Message;
-        await _notificationService.SendNotificationAsync(msg);
+        public NotificationConsumer(INotificationService notificationService)
+        {
+            _notificationService = notificationService;
+        }
+
+        public async Task Consume(ConsumeContext<NotificationEventDto> context)
+        {
+            // MassTransit بيعمل Deserialize للرسالة لوحده هنا!
+            var msg = context.Message;
+            await _notificationService.SendNotificationAsync(msg);
+        }
     }
 }
-
 
 
 //using Microsoft.Extensions.DependencyInjection;
