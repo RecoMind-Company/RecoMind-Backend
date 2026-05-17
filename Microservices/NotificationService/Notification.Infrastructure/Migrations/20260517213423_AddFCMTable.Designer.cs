@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Notification.Core.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using Notification.Core.Infrastructure.Data;
 namespace Notification.Infrastructure.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    partial class NotificationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517213423_AddFCMTable")]
+    partial class AddFCMTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
