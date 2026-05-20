@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data-Mapping.Core", "Data-M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data-Mapping.Infrastructure", "Data-Mapping.Infrastructure\Data-Mapping.Infrastructure.csproj", "{90EC9EBB-A61F-401B-94D7-AFC16F642181}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data-Mapping.Tests", "Data-Mapping.Tests\Data-Mapping.Tests.csproj", "{216835B5-25FA-451F-92D5-4FB2B1DCDDB9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{90EC9EBB-A61F-401B-94D7-AFC16F642181}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90EC9EBB-A61F-401B-94D7-AFC16F642181}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90EC9EBB-A61F-401B-94D7-AFC16F642181}.Release|Any CPU.Build.0 = Release|Any CPU
+		{216835B5-25FA-451F-92D5-4FB2B1DCDDB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{216835B5-25FA-451F-92D5-4FB2B1DCDDB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{216835B5-25FA-451F-92D5-4FB2B1DCDDB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{216835B5-25FA-451F-92D5-4FB2B1DCDDB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

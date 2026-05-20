@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36623.8 d17.14
+VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseSetting.WebApi", "DatabaseSetting.WebApi\DatabaseSetting.WebApi.csproj", "{074B40A2-E0D1-4617-B8FB-B7F7A155DD04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseSetting.Core", "DatabaseSetting.Core\DatabaseSetting.Core.csproj", "{9C703979-4A39-4B67-B1F8-DE6CEAE9C61D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseSetting.Infrastructure", "DatabaseSetting.Infrastructure\DatabaseSetting.Infrastructure.csproj", "{5FF43557-2B38-4B34-A573-1C47F3D11CB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseSetting.Tests", "DatabaseSetting.Tests\DatabaseSetting.Tests.csproj", "{EBE22ADC-ECE9-4AFD-A4C7-0FEF36D2370E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{5FF43557-2B38-4B34-A573-1C47F3D11CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FF43557-2B38-4B34-A573-1C47F3D11CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FF43557-2B38-4B34-A573-1C47F3D11CB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBE22ADC-ECE9-4AFD-A4C7-0FEF36D2370E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBE22ADC-ECE9-4AFD-A4C7-0FEF36D2370E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBE22ADC-ECE9-4AFD-A4C7-0FEF36D2370E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBE22ADC-ECE9-4AFD-A4C7-0FEF36D2370E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

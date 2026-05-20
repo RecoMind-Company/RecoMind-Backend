@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Team.Core\Team.Core.csproj" />
+    <ProjectReference Include="..\DatabaseSetting.Core\DatabaseSetting.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

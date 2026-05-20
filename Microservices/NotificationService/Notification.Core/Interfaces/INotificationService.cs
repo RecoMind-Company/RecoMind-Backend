@@ -18,5 +18,7 @@ namespace Notification.Core.Interfaces
         Task<Result<bool>> MarkAllAsReadAsync(string userId);
         Task<Result<bool>> DeleteNotificationAsync(string id);
         Task<Result<int>> GetUnreadCountAsync(string userId);
+
+        Task<Result<bool>> RegisterDeviceTokenAsync(string userId, RegisterDeviceTokenDto dto);
     }
 }

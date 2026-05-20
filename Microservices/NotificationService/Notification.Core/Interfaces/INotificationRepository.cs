@@ -17,5 +17,11 @@ namespace Notification.Core.Interfaces
         Task MarkAsReadAsync(string id);
         Task MarkAllAsReadAsync(string receiverId);
         Task DeleteAsync(string id);
+
+
+        Task<UserDeviceToken?> FindDeviceTokenAsync(string userId, string deviceToken);
+        Task AddDeviceTokenAsync(UserDeviceToken token);
+        Task UpdateDeviceTokenAsync(UserDeviceToken token);
+        Task<List<string>> GetUserDeviceTokensAsync(string userId); // اللي بنستخدمها وإحنا بنبعت الفايربيز
     }
 }

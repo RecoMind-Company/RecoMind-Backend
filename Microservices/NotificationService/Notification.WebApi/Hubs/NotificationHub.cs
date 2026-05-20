@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Notification.WebApi.Hubs
 {
+    [Authorize]
     public class NotificationHub : Hub
     {
         public override async Task OnConnectedAsync()

@@ -1,4 +1,6 @@
-﻿using MassTransit;
+﻿using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -9,6 +11,7 @@ using Notification.Core.Infrastructure.Data;
 using Notification.Core.Interfaces;
 using Notification.Core.Services;
 using Notification.Infrastructure;
+using Notification.Infrastructure.Messaging;
 using Notification.Infrastructure.Repositories;
 using Notification.WebApi.Hubs;
 using System.IdentityModel.Tokens.Jwt;
@@ -22,7 +25,7 @@ namespace Notification.WebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Database Configuration (نفس طريقة سيرفيس Team)
+            // 1. Database Context with Resilience
             builder.Services.AddDbContext<NotificationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Notification"),
 
@@ -39,8 +42,10 @@ namespace Notification.WebApi
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
             builder.Services.AddScoped<INotificationHubContext, NotificationHubContext>();
+            builder.Services.AddSingleton<IPushNotificationService, PushNotificationService>();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            //builder.Services.AddHostedService<RabbitMQConsumer>(); // مش هستخدمه دلوقتي عشان MassTransit هيقوم بكل حاجة
+
+            // 3. MassTransit with RabbitMQ
             builder.Services.AddMassTransit(x =>
             {
                 x.AddConsumer<NotificationConsumer>();
@@ -50,7 +55,10 @@ namespace Notification.WebApi
                     // بنقرأ الداتا من الـ Configuration اللي أنت بعته
                     var rabbitSettings = builder.Configuration.GetSection("RabbitMQ");
 
-                    cfg.Host(rabbitSettings["Host"] ?? "localhost", h =>
+                    cfg.Host(rabbitSettings["Host"] ?? "localhost",
+                    ushort.TryParse(rabbitSettings["Port"], out var port) ? port : (ushort)5672,
+                    rabbitSettings["VirtualHost"] ?? "/",
+                    h =>
                     {
                         h.Username(rabbitSettings["Username"] ?? "recomind");
                         h.Password(rabbitSettings["Password"] ?? "recomind");
@@ -63,27 +71,40 @@ namespace Notification.WebApi
                 });
             });
 
-            // Add SignalR
+            // 4. Firebase Initialization
+            #region Firebase Initialization Explanation
+            var credentialsPath = builder.Configuration["Firebase:CredentialsPath"]
+                ?? throw new InvalidOperationException("Firebase:CredentialsPath is missing from configuration.");
+
+            var fullPath = Path.IsPathRooted(credentialsPath) ? credentialsPath
+                : Path.Combine(AppContext.BaseDirectory, credentialsPath);
+
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException(
+                    $"Firebase credentials file not found at: {fullPath}");
+
+            FirebaseApp.Create(new AppOptions
+            {
+                Credential = GoogleCredential.FromFile(fullPath)
+            });
+            #endregion
+
+            // 5. Add SignalR
             builder.Services.AddSignalR();
 
-            // 3. Configure CORS Policy
+            // 6. Configure CORS Policy
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("OpenCors", policy =>
                 {
-                    //policy
-                    //    .AllowAnyOrigin()     // يسمح بأي دومين
-                    //    .AllowAnyHeader()     // يسمح بأي هيدر
-                    //    .AllowAnyMethod();    // يسمح بأي نوع HTTP Method
-
                     policy.SetIsOriginAllowed(origin => true)
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        .AllowCredentials(); // لازم دي عشان الـ SignalR يشتغل
+                        .AllowCredentials();
                 });
             });
 
-            // 4. JWT Authentication
+            // 7. JWT Authentication
             builder.Services.AddAuthentication(config =>
             {
                 config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -122,7 +143,7 @@ namespace Notification.WebApi
                 };
             });
 
-            // 5. Authorization Policies (توحيد مع باقي الميكروسيرفس)
+            // 8. Authorization Policies
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AllEmployees", p => p.RequireRole("admin", "manager", "teamleader", "employee"));
@@ -130,7 +151,7 @@ namespace Notification.WebApi
                 options.AddPolicy("Management", p => p.RequireRole("admin", "manager"));
             });
 
-            // 6. Controllers & Swagger
+            // 9. Controllers & Swagger
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(cfg =>
@@ -157,7 +178,6 @@ namespace Notification.WebApi
 
             builder.WebHost.ConfigureKestrel(options =>
             {
-                // اقرأ من environment أولاً (أولوية أعلى)
                 var httpPort = int.Parse(
                     Environment.GetEnvironmentVariable("HTTP_PORT") ??
                     Environment.GetEnvironmentVariable("Kestrel__Endpoints__Http__Port") ??
@@ -179,17 +199,16 @@ namespace Notification.WebApi
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             app.UseSwagger();
             app.UseSwaggerUI();
 
+            app.UseRouting();
             app.UseCors("OpenCors");
-
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.MapHub<NotificationHub>("/hubs/notifications");
-            app.MapHub<NotificationHub>("/hubs/notifications").AllowAnonymous();
+            //app.MapHub<NotificationHub>("/hubs/notifications").AllowAnonymous();
+            app.MapHub<NotificationHub>("/hubs/notifications");
             app.MapControllers();
 
             app.Run();
