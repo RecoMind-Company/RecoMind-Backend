@@ -8,4 +8,6 @@ service TeamGrpcService {
   rpc GetTeamByEmployee (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
 
   rpc UserExist(UserExistRequest) returns (UserExistResponse);
+
+  rpc GetTeamEmployees (TeamEmployeesRequest) returns (TeamEmployeesResponse);
 }
