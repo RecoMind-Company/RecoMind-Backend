@@ -4,6 +4,7 @@ using Infrastructure.Context;
 using Infrastructure.FileStorage;
 using Infrastructure.gRPC;
 using Infrastructure.Repository;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,5 +45,23 @@ public static class InfrastructureServicesExtension
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+
+        services.AddMassTransit(x =>
+         {
+             x.UsingRabbitMq((context, cfg) =>
+             {
+                 var rabbitSettings = configuration.GetSection("RabbitMQ");
+
+                 cfg.Host(rabbitSettings["Host"] ?? "localhost",
+                     ushort.TryParse(rabbitSettings["Port"], out var port) ? port : (ushort)5672,
+                     rabbitSettings["VirtualHost"] ?? "/",
+                     h =>
+                     {
+                         h.Username(rabbitSettings["Username"] ?? "recomind");
+                         h.Password(rabbitSettings["Password"] ?? "recomind");
+                     });
+             });
+         });
+
     }
 }

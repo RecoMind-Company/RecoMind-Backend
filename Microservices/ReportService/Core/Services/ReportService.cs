@@ -1,5 +1,6 @@
 ﻿using Core.DTOs;
 using Core.DTOs.AI;
+using Core.DTOs.Notification;
 using Core.Interfaces;
 using Core.Models;
 
@@ -10,7 +11,8 @@ public class ReportService(IGenerateReportService generateReportService,
                            IReportRepository reportRepository,
                            IFileStorageService fileStorageService,
                            IGrpcTeamService grpcTeamService,
-                           IDataAssignService dataAssignService) : IReportService
+                           IDataAssignService dataAssignService,
+                           INotificationService notificationService) : IReportService
 {
     public async Task<TeamToReturnDto> GetUserData(string userId)
     {
@@ -64,6 +66,15 @@ public class ReportService(IGenerateReportService generateReportService,
             AiResponse = generatedReportStatus.Result!,
             GeneratedDate = DateTime.UtcNow
         };
+
+        var notification = new NotificationEventDto
+        {
+            ReceiverId = reportFromAiDto.UserId!,
+            Title = "Your Report Is Ready Now!!",
+            Message = "Your report has been generated successfully.",
+        };
+        await notificationService.SendNotificationAsync(notification);
+
         return aiReportResponse;
     }
 
