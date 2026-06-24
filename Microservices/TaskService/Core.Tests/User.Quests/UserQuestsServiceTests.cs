@@ -19,6 +19,7 @@ public class UserQuestsServiceTests
     private readonly Mock<IGenericRepository<UserQuests>> _userQuestsRepositoryMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly UserQuestsService _sut;
 
     public UserQuestsServiceTests()
@@ -26,6 +27,7 @@ public class UserQuestsServiceTests
         _userQuestsRepositoryMock = new Mock<IGenericRepository<UserQuests>>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
+        _notificationServiceMock = new Mock<INotificationService>();
         _unitOfWorkMock = new Mock<IUnitOfWork>();
 
         _unitOfWorkMock.Setup(u => u.GetRepository<Quest>())
@@ -43,7 +45,7 @@ public class UserQuestsServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new UserQuestsService(_unitOfWorkMock.Object, mapper, _grpcTeamServiceMock.Object);
+        _sut = new UserQuestsService(_unitOfWorkMock.Object, mapper, _grpcTeamServiceMock.Object, _notificationServiceMock.Object);
     }
 
     [Fact]

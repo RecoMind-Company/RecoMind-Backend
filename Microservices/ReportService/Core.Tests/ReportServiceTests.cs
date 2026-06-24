@@ -17,6 +17,7 @@ public class ReportServiceTests
     private readonly Mock<IFileStorageService> _mockFileStorageService;
     private readonly Mock<IGrpcTeamService> _mockGrpcTeamService;
     private readonly Mock<IDataAssignService> _mockDataAssignService;
+    private readonly Mock<INotificationService> _mockNotificationService;
     private readonly ReportService _reportService;
 
     public ReportServiceTests()
@@ -27,6 +28,7 @@ public class ReportServiceTests
         _mockFileStorageService = new Mock<IFileStorageService>();
         _mockGrpcTeamService = new Mock<IGrpcTeamService>();
         _mockDataAssignService = new Mock<IDataAssignService>();
+        _mockNotificationService = new Mock<INotificationService>();
 
         _reportService = new ReportService(
             _mockGenerateReportService.Object,
@@ -34,7 +36,8 @@ public class ReportServiceTests
             _mockReportRepository.Object,
             _mockFileStorageService.Object,
             _mockGrpcTeamService.Object,
-            _mockDataAssignService.Object
+            _mockDataAssignService.Object,
+            _mockNotificationService.Object
         );
     }
 
