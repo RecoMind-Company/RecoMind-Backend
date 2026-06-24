@@ -11,6 +11,7 @@ namespace WebApi.Controllers;
 [Route("api/tasks")]
 [Authorize]
 public class QuestController(IQuestService questService,
+                             IUserQuestsService userQuestsService,
                              IValidator<QuestDto> questDtoValidator,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
                              IValidator<QuestByStatusDto> questByStatusDtoValidator) : BaseApiController
@@ -73,6 +74,20 @@ public class QuestController(IQuestService questService,
         return result.Map(
             onSuccess: _ => NoContent(),
             onFailure: err => HandleFailure(err));
+    }
+    [HttpPost("{planId}/assign-users")]
+    public async Task<ActionResult<QuestToReturnDto>> CreateTaskAndAssignUsers([FromBody] FullQuestDto fullQuestDto, string planId)
+    {
+        var validationResult = await ExecuteValidation(questDtoValidator, fullQuestDto.questDto);
+        if (!validationResult.IsSuccess)
+            return BadRequest(validationResult.ErrorList);
+        var createdQuest = await questService.CreateQuestAsync(fullQuestDto.questDto, planId);
+        if (!createdQuest.IsSuccess)
+            return HandleFailure(createdQuest.ErrorList);
+        var assignUsersResult = await userQuestsService.AssignUsersToQuestAsync(fullQuestDto.UserIds, createdQuest.Value!.QuestId);
+        if (!assignUsersResult.IsSuccess)
+            return HandleFailure(assignUsersResult.ErrorList);
+        return Ok(assignUsersResult.Value);
     }
 
 }
