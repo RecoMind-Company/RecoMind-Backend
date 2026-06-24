@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Notification.Core.DTOs;
+using RecoMind.Contracts.Events;
 using Notification.Core.Interfaces;
 
 namespace Notification.Infrastructure.Messaging
