@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Dtos;
+using Core.Dtos.Notification;
 using Core.Interfaces;
 using Core.Models;
 using Core.Result;
@@ -9,7 +10,8 @@ namespace Core.Services;
 
 public class UserQuestsService(IUnitOfWork unitOfWork,
                           IMapper mapper,
-                          IGrpcTeamService grpcTeamService) : IUserQuestsService
+                          IGrpcTeamService grpcTeamService,
+                          INotificationService notificationService) : IUserQuestsService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
     private readonly IGenericRepository<UserQuests> _userQuestsRepository = unitOfWork.GetRepository<UserQuests>();
@@ -37,7 +39,18 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
             UserId = userToQuestDto.UserId!
         });
         await unitOfWork.SaveChangesAsync();
+
         var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
+
+        var notification = new NotificationEventDto
+        {
+            PlanId = existedQuest.PlanId,
+            Title = "New Quest Assigned",
+            Message = $"You have been assigned to the quest: {existedQuest.Title}",
+            ReceiverId = userToQuestDto.UserId!
+        };
+        await notificationService.SendNotificationAsync(notification);
+
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
     public async Task<Result<QuestToReturnDto>> AssignUsersToQuestAsync(List<string> userIds, string questId)
