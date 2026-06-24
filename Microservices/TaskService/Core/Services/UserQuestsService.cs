@@ -40,6 +40,31 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
+    public async Task<Result<QuestToReturnDto>> AssignUsersToQuestAsync(List<string> userIds, string questId)
+    {
+        //var usersExistInTeam = await Task.WhenAll(userIds.Select(userId => grpcTeamService.IsUserExist(userId, teamId)));
+        //if (usersExistInTeam.Any(exists => !exists))
+        //{
+        //    return Result<QuestToReturnDto>.Failure(UserQuestsErrors.UserNotInTeam);
+        //}
+        var quest = await _questRepository.Find(q => q.QuestId == questId, q => q.UserAssignedQuests);
+        if (quest is null)
+        {
+            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+        }
+
+        foreach (var userId in userIds)
+        {
+            quest!.UserAssignedQuests.Add(new UserQuests
+            {
+                QuestId = quest.QuestId,
+                UserId = userId
+            });
+        }
+        await unitOfWork.SaveChangesAsync();
+        var questToReturn = mapper.Map<QuestToReturnDto>(quest);
+        return Result<QuestToReturnDto>.Success(questToReturn);
+    }
     public async Task<Result<IEnumerable<QuestToReturnDto>>> GetUserAssignedQuestsAsync(string userId)
     {
         var userQuests = await _userQuestsRepository.FindAll(uq => uq.UserId == userId, uq => uq.Quest);
