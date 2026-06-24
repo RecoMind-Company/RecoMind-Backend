@@ -86,9 +86,8 @@ namespace Team.Core.Services
         public async Task<List<string>> GetAllTeamEmployeesAsync(string teamId)
         {
             var employeeIds = await _repo.GetTeamMemberIdsAsync(teamId);
-            if (employeeIds == null || !employeeIds.Any())
-                return new List<string>();
-            return employeeIds;
+
+            return employeeIds ?? new List<string>();
         }
 
 
