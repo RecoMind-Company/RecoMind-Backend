@@ -6,7 +6,9 @@ using Core.Service.Interface;
 using GrpcClients.Team;
 using Infrastructure.Data;
 using Infrastructure.GrpcClients.Team;
+using Infrastructure.Messaging;
 using Infrastructure.UnitOfWork;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +46,7 @@ namespace webApi
             builder.Services.AddScoped(typeof(IPlanType),typeof(Core.Service.PlanType));
             builder.Services.AddScoped(typeof(IStatus), typeof(Core.Service.Status));
             builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
+            builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
             builder.Services.AddAutoMapper(typeof(PlanMapper));
 
             // Add services to the container.
@@ -53,6 +56,24 @@ namespace webApi
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
             {
                 options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl")); //https://localhost:7192
+            });
+
+
+            builder.Services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    var rabbitSettings = builder.Configuration.GetSection("RabbitMQ");
+
+                    cfg.Host(rabbitSettings["Host"] ?? "localhost",
+                        ushort.TryParse(rabbitSettings["Port"], out var port) ? port : (ushort)5672,
+                        rabbitSettings["VirtualHost"] ?? "/",
+                        h =>
+                        {
+                            h.Username(rabbitSettings["Username"] ?? "recomind");
+                            h.Password(rabbitSettings["Password"] ?? "recomind");
+                        });
+                });
             });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

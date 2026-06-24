@@ -7,6 +7,7 @@ using Core.Models;
 using Core.Service.Interface;
 using Infrastructure.GrpcClients.Team;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using RecoMind.Contracts.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +25,15 @@ namespace Core.Service
         readonly IPlanType _planTypeService;
         readonly IStatus _statusService;
         readonly IMapper _mapper;
-        public PlanService(IUnitOfWork<Plan> planUnitOfWork , IMapper mapper, IStatus StatusService , IPlanType PlanTypeService , ITeamGrpcClient TeamGrpcCleint )
+        readonly IPlanEventPublisher _planEventPublisher;
+        public PlanService(IUnitOfWork<Plan> planUnitOfWork , IMapper mapper, IStatus StatusService , IPlanType PlanTypeService , ITeamGrpcClient TeamGrpcCleint , IPlanEventPublisher planEventPublisher )
         {
             _unitOfWork = planUnitOfWork;
             _mapper = mapper;           
             _planTypeService = PlanTypeService;
             _statusService = StatusService;
             _teamGrpcClient = TeamGrpcCleint;
+            _planEventPublisher = planEventPublisher;
         }
 
         public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
@@ -67,6 +70,16 @@ namespace Core.Service
 
             await _unitOfWork.Entity.AddAsync(plan);
             _unitOfWork.Save();
+
+            // Sending the notification with English text
+            await _planEventPublisher.PublishNotificationAsync(new NotificationEventDto
+            {
+                Title = "New Plan Created",
+                Message = "A new plan has been successfully created !",
+                ReceiverId = userId,
+                SenderId = "System",
+                PlanId = plan.Id
+            });
 
             var result = _mapper.Map<GetPlanDto>(plan);
 
@@ -204,6 +217,15 @@ namespace Core.Service
 
                 var result = await _unitOfWork.Entity.UpdateAsync(plan);
                 _unitOfWork.Save();
+
+                await _planEventPublisher.PublishNotificationAsync(new NotificationEventDto
+                {
+                    Title = " Plan Updated Successfuly",
+                    Message = "An plan has been successfully Updated !",
+                    ReceiverId = userId,
+                    SenderId = "System",
+                    PlanId = plan.Id
+                });
 
                 var dto = _mapper.Map<GetPlanDto>(result);
                 return Result<GetPlanDto>.Success(dto);
