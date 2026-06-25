@@ -2,12 +2,14 @@ using Core.Interface;
 using Core.MappingProfiles;
 using Core.Services;
 using Core.ServicesAbstraction;
+using Core.ServicesAbstractions;
 using Core.Settings;
 using FluentValidation;
 using Infrastructure.Context;
 using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Team;
 using Infrastructure.gRPC.UserQuests;
+using Infrastructure.Notification;
 using Infrastructure.Repository;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -109,6 +111,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {

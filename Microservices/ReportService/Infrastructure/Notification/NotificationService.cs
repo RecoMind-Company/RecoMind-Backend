@@ -4,7 +4,7 @@ using RecoMind.Contracts.Events;
 
 namespace Infrastructure.Notification;
 
-internal class NotificationService(IPublishEndpoint publishEndpoint) : INotificationService
+public class NotificationService(IPublishEndpoint publishEndpoint) : INotificationService
 {
     public async Task SendNotificationAsync(NotificationEventDto notificationEvent)
     {

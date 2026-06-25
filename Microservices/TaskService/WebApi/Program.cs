@@ -7,6 +7,7 @@ using FluentValidation;
 using Infrastructure.Context;
 using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Team;
+using Infrastructure.Notification;
 using Infrastructure.Repository;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -85,6 +86,7 @@ builder.Services.AddScoped<IQuestService, QuestService>();
 builder.Services.AddScoped<IUserQuestsService, UserQuestsService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddGrpc();
