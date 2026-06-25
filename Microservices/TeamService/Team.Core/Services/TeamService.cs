@@ -83,6 +83,14 @@ namespace Team.Core.Services
         }
         #endregion
 
+        public async Task<List<string>> GetAllTeamEmployeesAsync(string teamId)
+        {
+            var employeeIds = await _repo.GetTeamMemberIdsAsync(teamId);
+
+            return employeeIds ?? new List<string>();
+        }
+
+
         #region Write Operations
         public async Task<Result<TeamResponseDto>> CreateTeamAsync(string companyId, CreateTeamDto dto)
         {

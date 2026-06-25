@@ -43,5 +43,14 @@ namespace Team.WebApi.GrpcServices
 
             return new UserExistResponse { Exist = exist };
         }
+
+        public override async Task<TeamEmployeesResponse> GetTeamEmployees(
+            TeamEmployeesRequest request,
+            ServerCallContext context)
+        {
+            var employeeIds = await _teamService.GetAllTeamEmployeesAsync(request.TeamId);
+
+            return new TeamEmployeesResponse { EmployeeIds = { employeeIds } };
+        }
     }
 }

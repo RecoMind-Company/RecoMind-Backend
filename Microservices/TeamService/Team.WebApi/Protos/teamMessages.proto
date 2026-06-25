@@ -19,3 +19,11 @@ message UserTeamInfoResponse {
 message UserExistResponse {
   bool exist = 1;
 }
+
+message TeamEmployeesRequest {
+	  string teamId = 1;
+}
+
+message TeamEmployeesResponse {
+  repeated string employeeIds = 1;
+}
