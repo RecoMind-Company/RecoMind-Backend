@@ -9,6 +9,6 @@ public class Quest
     public DateTime StartDate { get; set; }
     public DateTime DeadLine { get; set; }
     public TimeSpan Duration => DeadLine - StartDate;
-    public string PlanId { get; set; } = default!;
+    public string? PlanId { get; set; }
     public ICollection<UserQuests> UserAssignedQuests { get; set; } = [];
 }
