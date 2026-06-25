@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Core.Dtos;
-using Core.Dtos.Notification;
 using Core.Interfaces;
 using Core.Models;
 using Core.Result;
 using Core.ServicesAbstractions;
+using RecoMind.Contracts.Events;
 
 namespace Core.Services;
 
@@ -53,7 +53,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
 
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
-    public async Task<Result<QuestToReturnDto>> AssignUsersToQuestAsync(List<string> userIds, string questId)
+    public async Task<Result<PersonalQuestToReturnDto>> AssignUsersToQuestAsync(List<string> userIds, string questId)
     {
         //var usersExistInTeam = await Task.WhenAll(userIds.Select(userId => grpcTeamService.IsUserExist(userId, teamId)));
         //if (usersExistInTeam.Any(exists => !exists))
@@ -63,7 +63,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         var quest = await _questRepository.Find(q => q.QuestId == questId, q => q.UserAssignedQuests);
         if (quest is null)
         {
-            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+            return Result<PersonalQuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
         }
 
         foreach (var userId in userIds)
@@ -75,8 +75,8 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
             });
         }
         await unitOfWork.SaveChangesAsync();
-        var questToReturn = mapper.Map<QuestToReturnDto>(quest);
-        return Result<QuestToReturnDto>.Success(questToReturn);
+        var questToReturn = mapper.Map<PersonalQuestToReturnDto>(quest);
+        return Result<PersonalQuestToReturnDto>.Success(questToReturn);
     }
     public async Task<Result<IEnumerable<QuestToReturnDto>>> GetUserAssignedQuestsAsync(string userId)
     {

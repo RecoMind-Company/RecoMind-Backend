@@ -1,8 +1,8 @@
 ﻿using Core.DTOs;
 using Core.DTOs.AI;
-using Core.DTOs.Notification;
 using Core.Interfaces;
 using Core.Models;
+using RecoMind.Contracts.Events;
 
 namespace Core.Services;
 

@@ -5,6 +5,7 @@ using Core.Models;
 using Core.Result;
 using Core.Services;
 using Core.ServicesAbstraction;
+using Core.ServicesAbstractions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -17,6 +18,7 @@ public class CommentServiceTests
     private readonly Mock<IGenericRepository<Comment>> _commentRepositoryMock;
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
     private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
+    private readonly Mock<INotificationService> _notificationServiceMock;
     private readonly IMapper _mapper;
     private readonly CommentService _sut;
 
@@ -28,12 +30,13 @@ public class CommentServiceTests
 
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
         _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
+        _notificationServiceMock = new Mock<INotificationService>();
 
         var nullLoggerFactory = new NullLoggerFactory();
         var config = new MapperConfiguration(cfg => cfg.AddProfile<CommentProfile>(), nullLoggerFactory);
         _mapper = config.CreateMapper();
 
-        _sut = new CommentService(_unitOfWorkMock.Object, _mapper, _grpcTeamServiceMock.Object, _grpcPlanServiceMock.Object);
+        _sut = new CommentService(_unitOfWorkMock.Object, _mapper, _grpcTeamServiceMock.Object, _grpcPlanServiceMock.Object, _notificationServiceMock.Object);
     }
 
     #region AddCommentAsync Tests

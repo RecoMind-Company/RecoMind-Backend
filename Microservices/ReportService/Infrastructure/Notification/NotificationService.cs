@@ -1,10 +1,10 @@
-﻿using Core.DTOs.Notification;
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using MassTransit;
+using RecoMind.Contracts.Events;
 
 namespace Infrastructure.Notification;
 
-internal class NotificationService(IPublishEndpoint publishEndpoint) : INotificationService
+public class NotificationService(IPublishEndpoint publishEndpoint) : INotificationService
 {
     public async Task SendNotificationAsync(NotificationEventDto notificationEvent)
     {

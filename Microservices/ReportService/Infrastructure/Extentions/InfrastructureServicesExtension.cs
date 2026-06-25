@@ -3,6 +3,7 @@ using Infrastructure.AI;
 using Infrastructure.Context;
 using Infrastructure.FileStorage;
 using Infrastructure.gRPC;
+using Infrastructure.Notification;
 using Infrastructure.Repository;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,7 @@ public static class InfrastructureServicesExtension
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IFileStorageService, FileStorageService>();
         services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         services.AddMassTransit(x =>
          {

@@ -1,6 +1,8 @@
-﻿namespace Core.Models;
+﻿using Core.Models;
 
-public class Quest
+namespace Core.Dtos;
+
+public class PersonalQuestToReturnDto
 {
     public string QuestId { get; set; } = default!;
     public string Title { get; set; } = default!;
@@ -8,7 +10,6 @@ public class Quest
     public QuestStatusEnum Status { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime DeadLine { get; set; }
-    public TimeSpan Duration => DeadLine - StartDate;
-    public string? PlanId { get; set; }
-    public ICollection<UserQuests> UserAssignedQuests { get; set; } = [];
+    public TimeSpan Duration { get; set; }
+    public List<string> UserAssignedQuests { get; set; } = [];
 }

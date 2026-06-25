@@ -7,4 +7,5 @@ option csharp_namespace = "Infrastructure.gRPC.Team";
 service TeamGrpcService {
   rpc GetTeamByTeamLeader (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
   rpc UserExist(UserExistRequest) returns (UserExistResponse);
+  rpc GetTeamEmployees (TeamEmployeesRequest) returns (TeamEmployeesResponse);
 }

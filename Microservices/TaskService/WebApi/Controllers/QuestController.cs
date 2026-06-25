@@ -75,19 +75,20 @@ public class QuestController(IQuestService questService,
             onSuccess: _ => NoContent(),
             onFailure: err => HandleFailure(err));
     }
-    [HttpPost("{planId}/assign-users")]
-    public async Task<ActionResult<QuestToReturnDto>> CreateTaskAndAssignUsers([FromBody] FullQuestDto fullQuestDto, string planId)
+    [HttpPost("personal")]
+    public async Task<ActionResult<PersonalQuestToReturnDto>> CreateTaskAndAssignUsers([FromBody] FullQuestDto fullQuestDto)
     {
         var validationResult = await ExecuteValidation(questDtoValidator, fullQuestDto.questDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var createdQuest = await questService.CreateQuestAsync(fullQuestDto.questDto, planId);
+        var createdQuest = await questService.CreatePersonalQuestAsync(fullQuestDto.questDto);
         if (!createdQuest.IsSuccess)
             return HandleFailure(createdQuest.ErrorList);
-        var assignUsersResult = await userQuestsService.AssignUsersToQuestAsync(fullQuestDto.UserIds, createdQuest.Value!.QuestId);
-        if (!assignUsersResult.IsSuccess)
-            return HandleFailure(assignUsersResult.ErrorList);
-        return Ok(assignUsersResult.Value);
+        var finalResult = await userQuestsService.AssignUsersToQuestAsync(fullQuestDto.UserIds, createdQuest.Value!.QuestId);
+
+        return finalResult.Map<ActionResult<PersonalQuestToReturnDto>>(
+            onSuccess: quest => Ok(quest),
+            onFailure: err => HandleFailure(err));
     }
 
 }

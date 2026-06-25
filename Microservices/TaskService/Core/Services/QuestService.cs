@@ -60,4 +60,14 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
+    public async Task<Result<PersonalQuestToReturnDto>> CreatePersonalQuestAsync(QuestDto personalQuestDto)
+    {
+        var quest = mapper.Map<Quest>(personalQuestDto);
+        quest.QuestId = Guid.NewGuid().ToString();
+        await _questRepository.AddAsync(quest);
+        await unitOfWork.SaveChangesAsync();
+
+        var questToReturn = mapper.Map<PersonalQuestToReturnDto>(quest);
+        return Result<PersonalQuestToReturnDto>.Success(questToReturn);
+    }
 }
