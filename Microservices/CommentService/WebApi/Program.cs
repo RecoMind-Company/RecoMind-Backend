@@ -9,6 +9,7 @@ using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Team;
 using Infrastructure.gRPC.UserQuests;
 using Infrastructure.Repository;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -143,6 +144,23 @@ builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
     {
         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
     };
+});
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitSettings = builder.Configuration.GetSection("RabbitMQ");
+
+        cfg.Host(rabbitSettings["Host"] ?? "localhost",
+            ushort.TryParse(rabbitSettings["Port"], out var port) ? port : (ushort)5672,
+            rabbitSettings["VirtualHost"] ?? "/",
+            h =>
+            {
+                h.Username(rabbitSettings["Username"] ?? "recomind");
+                h.Password(rabbitSettings["Password"] ?? "recomind");
+            });
+    });
 });
 
 var app = builder.Build();

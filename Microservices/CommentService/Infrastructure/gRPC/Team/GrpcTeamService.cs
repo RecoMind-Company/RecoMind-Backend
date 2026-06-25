@@ -16,4 +16,16 @@ public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient teamGrpcServi
 
         return result.Exist;
     }
+
+    public async Task<List<string>> GetTeamMembersAsync(string teamId)
+    {
+        var request = new TeamEmployeesRequest
+        {
+            TeamId = teamId
+        };
+
+        var result = await teamGrpcServiceClient.GetTeamEmployeesAsync(request);
+
+        return result.EmployeeIds.ToList();
+    }
 }

@@ -1,16 +1,19 @@
 ﻿using AutoMapper;
 using Core.Dtos;
+using Core.Dtos.Notification;
 using Core.Interface;
 using Core.Models;
 using Core.Result;
 using Core.ServicesAbstraction;
+using Core.ServicesAbstractions;
 
 namespace Core.Services;
 
 public class CommentService(IUnitOfWork unitOfWork,
                             IMapper mapper,
                             IGrpcTeamService grpcTeamService,
-                            IGrpcPlanService grpcPlanService) : ICommentService
+                            IGrpcPlanService grpcPlanService,
+                            INotificationService notificationService) : ICommentService
 {
     private readonly IGenericRepository<Comment> _commentRepository = unitOfWork.GetRepository<Comment>();
     public async Task<Result<CommentDto>> AddCommentAsync(AddCommentDto addCommentDto)
@@ -31,6 +34,26 @@ public class CommentService(IUnitOfWork unitOfWork,
             await _commentRepository.AddAsync(comment);
             await unitOfWork.SaveChangesAsync();
             var commentDto = mapper.Map<CommentDto>(comment);
+
+            // send notification to all team members
+            var teamMembersIds = await grpcTeamService.GetTeamMembersAsync(plan.TeamId!);
+
+            foreach (var memberId in teamMembersIds)
+            {
+                if (memberId != addCommentDto.UserId)
+                {
+                    var notificationForMember = new NotificationEventDto
+                    {
+                        SenderId = addCommentDto.UserId!,
+                        PlanId = addCommentDto.PlanId!,
+                        Title = "New Comment Added",
+                        Message = comment.UserComment,
+                        ReceiverId = memberId
+                    };
+                    await notificationService.SendNotificationAsync(notificationForMember);
+                }
+            }
+
             return Result<CommentDto>.Success(commentDto);
         }
         return Result<CommentDto>.Failure(CommentErrors.AccessDenied);
