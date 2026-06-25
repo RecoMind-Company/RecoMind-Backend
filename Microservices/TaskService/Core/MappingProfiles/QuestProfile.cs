@@ -25,6 +25,12 @@ public class QuestProfile : Profile
             .ForMember(des => des.UserAssignedQuests, opt => opt.
             MapFrom(src => src.UserAssignedQuests.Select(x => x.UserId).ToList()));
 
+        CreateMap<Quest, PersonalQuestToReturnDto>()
+            .ForMember(des => des.Duration, opt => opt
+                .MapFrom(src => src.DeadLine - src.StartDate))
+            .ForMember(des => des.UserAssignedQuests, opt => opt.
+            MapFrom(src => src.UserAssignedQuests.Select(x => x.UserId).ToList()));
+
         CreateMap<UserQuests, QuestToReturnDto>()
             .ForMember(des => des.QuestId, opt => opt.MapFrom(src => src.Quest.QuestId))
             .ForMember(des => des.Title, opt => opt.MapFrom(src => src.Quest.Title))
