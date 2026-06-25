@@ -1,0 +1,511 @@
+# nginx configuration for RecoMind Backend Services
+# Path: /etc/nginx/sites-available/recomind-Backend-server
+#
+# IMPORTANT: This configuration fixes the following issues:
+# 1. URL rewriting - proxy_pass with trailing '/' strips the location prefix
+#    Fix: Remove trailing '/' so requests keep the full path (e.g., /api/Authentication/login)
+# 2. HTTP/2 backend support - Added grpc_pass for HTTP/2 gRPC communication
+# 3. Proper header configuration for reverse proxy setup
+
+# ========================================
+# Upstream Definitions
+# ========================================
+
+# Authentication service (HTTP API on 8011)
+upstream authenticationservice_backend_8011 {
+    server 127.0.0.1:8011;
+    keepalive 32;
+}
+
+# Authentication service gRPC (HTTP/2 on 5011)
+upstream authenticationservice_grpc_5011 {
+    server 127.0.0.1:5011;
+    keepalive 32;
+}
+
+# Account service (HTTP API on 8002) - part of Authentication service
+upstream authenticationservice_backend_8002 {
+    server 127.0.0.1:8002;
+    keepalive 32;
+}
+
+# Database Setting service
+upstream databasesettingservice_backend_8003 {
+    server 127.0.0.1:8003;
+    keepalive 32;
+}
+
+# Subscription service
+upstream subscriptionservice_backend_8004 {
+    server 127.0.0.1:8004;
+    keepalive 32;
+}
+
+# Plan service (HTTP API)
+upstream planeservice_backend_8005 {
+    server 127.0.0.1:8005;
+    keepalive 32;
+}
+
+# Plan service gRPC (HTTP/2)
+upstream planeservice_grpc_5005 {
+    server 127.0.0.1:5005;
+    keepalive 32;
+}
+
+# Invitation service (HTTP API)
+upstream invitationservice_backend_8006 {
+    server 127.0.0.1:8006;
+    keepalive 32;
+}
+
+# Invitation service gRPC (HTTP/2)
+upstream invitationservice_grpc_5006 {
+    server 127.0.0.1:5006;
+    keepalive 32;
+}
+
+# Company service
+upstream companyservice_backend_8007 {
+    server 127.0.0.1:8007;
+    keepalive 32;
+}
+
+# Report service
+upstream reportservice_backend_8008 {
+    server 127.0.0.1:8008;
+    keepalive 32;
+}
+
+# Chatbot service
+upstream chatbotservice_backend_8009 {
+    server 127.0.0.1:8009;
+    keepalive 32;
+}
+
+# Team service
+upstream teamservice_backend_8010 {
+    server 127.0.0.1:8010;
+    keepalive 32;
+}
+
+# ========================================
+# HTTP Server - Redirect to HTTPS
+# ========================================
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.recomind.site;
+
+    # Let's Encrypt certificate verification
+    location /.well-known/acme-challenge/ {
+        alias /var/www/certbot/.well-known/acme-challenge/;
+    }
+
+    # Redirect all HTTP traffic to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ========================================
+# HTTPS Server - Main API Gateway
+# ========================================
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name api.recomind.site;
+
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/api.recomind.site/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.recomind.site/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers off;
+
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+
+    # Logging
+    access_log /var/log/nginx/api.recomind.site_access.log;
+    error_log /var/log/nginx/api.recomind.site_error.log;
+
+    # Request size limit
+    client_max_body_size 50M;
+
+    # ========================================
+    # Authentication Service (/api/Authentication/)
+    # ========================================
+    # FIX: Removed trailing '/' from proxy_pass to preserve full request path
+    # Before: proxy_pass http://.../ (strips /api/Authentication/ prefix)
+    # After:  proxy_pass http://... (preserves full path /api/Authentication/login)
+
+    location /api/Authentication/ {
+        # No trailing slash - preserves full request URI including /api/Authentication/
+        proxy_pass http://authenticationservice_backend_8011;
+        proxy_http_version 1.1;
+
+        # Required proxy headers
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        # Disable buffering for real-time responses
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        # Swagger URL rewriting for sub-path access
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Authentication/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Authentication/swagger';
+
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Account Service (/api/Account/)
+    # Part of Authentication Service
+    # ========================================
+
+    location /api/Account/ {
+        # No trailing slash - preserves full request URI
+        proxy_pass http://authenticationservice_backend_8011;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Account/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Account/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Static Files - User Profile Images
+    # Served by Authentication Service
+    # ========================================
+
+    location /UserProfileImage/ {
+        proxy_pass http://authenticationservice_backend_8011;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        # Enable caching for static files
+        proxy_cache_valid 200 1d;
+    }
+
+    # ========================================
+    # Database Setting Service (/api/DbSetting/)
+    # ========================================
+
+    location /api/DbSetting/ {
+        proxy_pass http://databasesettingservice_backend_8003;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/DbSetting/swagger';
+        sub_filter 'src="/swagger' 'src="/api/DbSetting/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Subscription Service (/api/Subscription/)
+    # ========================================
+
+    location /api/Subscription/ {
+        proxy_pass http://subscriptionservice_backend_8004;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Subscription/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Subscription/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Plan Service (/api/Planes/)
+    # ========================================
+
+    location /api/Planes/ {
+        proxy_pass http://planeservice_backend_8005;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Planes/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Planes/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Invitation Service (/api/invitation/)
+    # Note: lowercase 'invitation' to match controller route
+    # ========================================
+
+    location /api/invitation/ {
+        proxy_pass http://invitationservice_backend_8006;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/invitation/swagger';
+        sub_filter 'src="/swagger' 'src="/api/invitation/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Company Service (/api/Companies/)
+    # ========================================
+
+    location /api/Companies/ {
+        proxy_pass http://companyservice_backend_8007;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Companies/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Companies/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Report Service (/api/Report/)
+    # ========================================
+
+    location /api/Report/ {
+        proxy_pass http://reportservice_backend_8008;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Report/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Report/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Chatbot Service (/api/Chatbot/)
+    # ========================================
+
+    location /api/Chatbot/ {
+        proxy_pass http://chatbotservice_backend_8009;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Chatbot/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Chatbot/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Team Service (/api/Team/)
+    # ========================================
+
+    location /api/Team/ {
+        proxy_pass http://teamservice_backend_8010;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection "";
+
+        proxy_buffering off;
+        proxy_request_buffering off;
+
+        sub_filter_once off;
+        sub_filter 'href="/swagger' 'href="/api/Team/swagger';
+        sub_filter 'src="/swagger' 'src="/api/Team/swagger';
+
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    # ========================================
+    # Health Check / Service Status Endpoint
+    # ========================================
+
+    location = / {
+        add_header Content-Type application/json;
+        return 200 '{"status":"ok","services":["authenticationservice","databasesettingservice","subscriptionservice","planeservice","invitationservice","companyservice","reportservice","chatbotservice","teamservice"]}';
+    }
+}
+
+# ========================================
+# gRPC Server Configuration (HTTP/2)
+# For internal service-to-service gRPC communication
+# ========================================
+
+server {
+    # HTTP/2 is required for gRPC
+    listen 50051 http2;
+    listen [::]:50051 http2;
+    server_name api.recomind.site;
+
+    # SSL for secure gRPC (uncomment if needed)
+    # ssl_certificate /etc/letsencrypt/live/api.recomind.site/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/api.recomind.site/privkey.pem;
+
+    # gRPC-specific timeouts (1 hour for long-running streams)
+    grpc_read_timeout 3600s;
+    grpc_send_timeout 3600s;
+
+    # ========================================
+    # Authentication gRPC Service
+    # Handles: AuthenticationService.proto, AccountService.proto
+    # ========================================
+
+    location /authentication. {
+        grpc_pass grpc://authenticationservice_grpc_5011;
+
+        # gRPC headers
+        grpc_set_header Content-Type application/grpc;
+        grpc_set_header X-Real-IP $remote_addr;
+        grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location /account. {
+        grpc_pass grpc://authenticationservice_grpc_5011;
+
+        grpc_set_header Content-Type application/grpc;
+        grpc_set_header X-Real-IP $remote_addr;
+        grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # ========================================
+    # Invitation gRPC Service
+    # Handles: InvitationService.proto
+    # ========================================
+
+    location /invitation. {
+        grpc_pass grpc://invitationservice_grpc_5006;
+
+        grpc_set_header Content-Type application/grpc;
+        grpc_set_header X-Real-IP $remote_addr;
+        grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # ========================================
+    # Plan gRPC Service
+    # Handles: PlanService.proto
+    # ========================================
+
+    location /plan. {
+        grpc_pass grpc://planeservice_grpc_5005;
+
+        grpc_set_header Content-Type application/grpc;
+        grpc_set_header X-Real-IP $remote_addr;
+        grpc_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Default handler for unknown gRPC services
+    location / {
+        return 404;
+    }
+}
