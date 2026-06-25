@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Notification;
+﻿using RecoMind.Contracts.Events;
 
 namespace Core.Interfaces;
 

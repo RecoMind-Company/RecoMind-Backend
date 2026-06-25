@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Core.Dtos;
-using Core.Dtos.Notification;
 using Core.Interface;
 using Core.Models;
 using Core.Result;
 using Core.ServicesAbstraction;
 using Core.ServicesAbstractions;
+using RecoMind.Contracts.Events;
 
 namespace Core.Services;
 

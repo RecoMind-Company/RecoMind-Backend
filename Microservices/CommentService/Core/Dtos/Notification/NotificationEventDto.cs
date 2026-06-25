@@ -1,4 +1,4 @@
-﻿namespace Core.Dtos.Notification;
+﻿namespace RecoMind.Contracts.Events;
 
 public class NotificationEventDto
 {

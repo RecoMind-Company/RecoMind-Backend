@@ -1,4 +1,4 @@
-﻿using Core.Dtos.Notification;
+﻿using RecoMind.Contracts.Events;
 
 namespace Core.ServicesAbstractions;
 

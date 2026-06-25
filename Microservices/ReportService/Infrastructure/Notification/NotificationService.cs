@@ -1,6 +1,6 @@
-﻿using Core.DTOs.Notification;
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using MassTransit;
+using RecoMind.Contracts.Events;
 
 namespace Infrastructure.Notification;
 
