@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Dtos;
+using Core.Dtos.AI;
 using Core.Models;
 
 namespace Core.MappingProfiles;
@@ -69,5 +70,35 @@ public class QuestProfile : Profile
              opt.Condition(src => src.DeadLine.HasValue);
              opt.MapFrom(src => src.DeadLine.GetValueOrDefault());
          });
+
+        CreateMap<AITasksDto, Quest>()
+            // 1. Map Explicit Name Mismatches
+            .ForMember(dest => dest.QuestId, opt => opt.MapFrom(src => src.task_id))
+            .ForMember(dest => dest.DeadLine, opt => opt.MapFrom(src => src.deadline_date))
+            .ForMember(dest => dest.ModuleId, opt => opt.MapFrom(src => src.moduleId))
+
+            // 2. Parse String Dates to DateTime
+            .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => DateTime.Parse(src.start_date)))
+            .ForMember(dest => dest.DeadLine, opt => opt.MapFrom(src => DateTime.Parse(src.deadline_date)))
+
+            // 3. Map Enum (AutoMapper handles string-to-enum automatically if names match, 
+            // but if they don't, you might need Enum.Parse)
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<QuestStatusEnum>(src.status, true)))
+
+            // 4. Ignore the calculated/read-only property
+            .ForMember(dest => dest.Duration, opt => opt.Ignore())
+
+            // 5. Map the nested object into a Collection
+            .ForMember(dest => dest.UserAssignedQuests, opt => opt.MapFrom(src =>
+                src.suggested_owner != null
+                    ? new List<UserQuests>
+                      {
+                          new UserQuests
+                          {
+                              QuestId = src.task_id,
+                              UserId = src.suggested_owner.user_id
+                          }
+                      }
+                    : new List<UserQuests>()));
     }
 }
