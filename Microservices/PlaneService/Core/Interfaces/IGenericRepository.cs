@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace Core.Interfaces
 {
@@ -12,6 +7,7 @@ namespace Core.Interfaces
         Task<IEnumerable<T>> GetAllAsync();
         public Task<T?> GetByIdNoTrackingAsync(string id);
         public Task<T> Find(Expression<Func<T, bool>> predicate);
+        public Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         public Task<T?> GetByIdAsync(string id);
         Task<T> AddAsync(T entity);
         Task<T> UpdateAsync(T entity);

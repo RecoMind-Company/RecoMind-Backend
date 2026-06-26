@@ -1,12 +1,6 @@
 ﻿using Core.Interfaces;
-using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Repository
 {
@@ -56,12 +50,22 @@ namespace Infrastructure.Repository
 
         public async Task<T> Find(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).FirstOrDefaultAsync() ;
+            return await _dbSet.Where(predicate).FirstOrDefaultAsync();
         }
-
+        public async Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet;
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            return await query.FirstOrDefaultAsync(predicate);
+        }
         public async Task<IEnumerable<T>> FindAll(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
         }
+
+
     }
 }
