@@ -62,23 +62,26 @@ namespace Team.Core.Services
             return _mapper.Map<TeamResponseDto>(team);
         }
 
-        public async Task<List<string>> GetTeamMemberJobTitlesAsync(string teamId, string companyId)
+        public async Task<List<UserJobTitleDto>> GetTeamMemberJobTitlesAsync(string teamId, string companyId)
         {
             var teamExist = await _repo.IsTeamBelongsToCompanyAsync(teamId, companyId);
             var employeeIds = await _repo.GetTeamMemberIdsAsync(teamId);
 
             if (!teamExist || employeeIds == null || !employeeIds.Any())
-                return new List<string>();
+                return new List<UserJobTitleDto>();
 
             var grpcResult = await _authGrpcService.GetTeamEmployeesJobTitlesAsync(employeeIds);
 
             if (!grpcResult.IsSuccess || grpcResult.Value == null)
-                return new List<string>();
+                return new List<UserJobTitleDto>();
 
             return grpcResult.Value
-                .Select(x => x.JobTitle)
-                .Where(title => !string.IsNullOrWhiteSpace(title))
-                .Distinct()
+                .Where(x => !string.IsNullOrWhiteSpace(x.JobTitle))
+                .Select(x => new UserJobTitleDto
+                {
+                    UserId = x.UserId,
+                    JobTitle = x.JobTitle
+                })
                 .ToList();
         }
         #endregion
