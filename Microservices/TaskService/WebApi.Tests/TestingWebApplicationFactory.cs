@@ -30,9 +30,9 @@ public class TestingWebApplicationFactory<TProgram> : WebApplicationFactory<TPro
             services.AddAuthentication(defaultScheme: "Test")
                     .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
 
-            // Replace the gRPC Plan Service with a test implementation
-            services.RemoveAll(typeof(IGrpcPlanService));
-            services.AddScoped<IGrpcPlanService, TestGrpcPlanService>();
+            // Replace the gRPC Module Service with a test implementation
+            services.RemoveAll(typeof(IGrpcModuleService));
+            services.AddScoped<IGrpcModuleService, TestGrpcModuleService>();
 
             // Replace the gRPC Team Service with a test implementation
             services.RemoveAll(typeof(IGrpcTeamService));

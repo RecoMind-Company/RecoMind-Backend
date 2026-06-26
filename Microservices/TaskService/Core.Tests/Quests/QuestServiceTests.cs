@@ -17,12 +17,12 @@ public class QuestServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
-    private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
+    private readonly Mock<IGrpcModuleService> _grpcModuleServiceMock;
     private readonly QuestService _sut;
 
     public QuestServiceTests()
     {
-        _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
+        _grpcModuleServiceMock = new Mock<IGrpcModuleService>();
 
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
@@ -33,7 +33,7 @@ public class QuestServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcPlanServiceMock.Object);
+        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcModuleServiceMock.Object);
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public class QuestServiceTests
         var questDto = FakeQuests.GetFakeQuestDto(seed).Generate();
         var moduleId = "module1";
 
-        _grpcPlanServiceMock
+        _grpcModuleServiceMock
             .Setup(g => g.GetmoduleIdsAsync(moduleId))
             .ReturnsAsync(new ModuleIdsDto { IsExisted = true, ModuleId = moduleId });
 
@@ -53,7 +53,7 @@ public class QuestServiceTests
         var result = await _sut.CreateQuestAsync(questDto, moduleId);
 
         // assert
-        _grpcPlanServiceMock.Verify(
+        _grpcModuleServiceMock.Verify(
             g => g.GetmoduleIdsAsync(moduleId),
             Times.Once,
             "GetmoduleIdsAsync should be called exactly once to validate the module exists");
@@ -93,9 +93,9 @@ public class QuestServiceTests
     {
         // arrange
         var questDto = FakeQuests.GetFakeQuestDto().Generate();
-        var moduleId = "nonExistingPlan";
+        var moduleId = "nonExistingModule";
 
-        _grpcPlanServiceMock
+        _grpcModuleServiceMock
             .Setup(g => g.GetmoduleIdsAsync(moduleId))
             .ReturnsAsync(new ModuleIdsDto { IsExisted = false });
 
@@ -103,7 +103,7 @@ public class QuestServiceTests
         var result = await _sut.CreateQuestAsync(questDto, moduleId);
 
         // assert
-        _grpcPlanServiceMock.Verify(
+        _grpcModuleServiceMock.Verify(
             g => g.GetmoduleIdsAsync(moduleId),
             Times.Once,
             "GetmoduleIdsAsync should be called to validate the plan");
@@ -119,7 +119,7 @@ public class QuestServiceTests
             "SaveChangesAsync should not be called when the plan does not exist");
 
         result.IsSuccess.Should().BeFalse("CreateQuestAsync should fail when the plan does not exist");
-        result.ErrorList.Should().Contain(PlanErrors.NotFound, "the error list must include PlanNotFound when the plan does not exist");
+        result.ErrorList.Should().Contain(ModuleErrors.NotFound, "the error list must include ModuleNotFound when the module does not exist");
     }
 
     [Theory]
