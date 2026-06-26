@@ -554,14 +554,14 @@ namespace Team.Tests.Services
         }
 
         [Fact]
-        public async Task GetTeamMemberJobTitlesAsync_ShouldReturnDistinctNonEmptyTitles_FromGrpc()
+        public async Task GetTeamMemberJobTitlesAsync_ShouldReturnNonEmptyUserJobTitles_FromGrpc()
         {
             // Arrange
             var employeeIds = new List<string> { "e1", "e2", "e3", "e4" };
             var grpcPayload = new List<UserJobTitleDto>
             {
-                new() { UserId = "e1", JobTitle = "Developer" },
-                new() { UserId = "e2", JobTitle = "Developer" }, // duplicate — must be deduped
+                new() { UserId = "e1", JobTitle = "Junior Developer" },
+                new() { UserId = "e2", JobTitle = "Senior Developer" },
                 new() { UserId = "e3", JobTitle = "Manager" },
                 new() { UserId = "e4", JobTitle = "" }           // blank — must be excluded
             };
@@ -577,9 +577,27 @@ namespace Team.Tests.Services
             var result = await _teamService.GetTeamMemberJobTitlesAsync("t1", "c1");
 
             // Assert
-            result.Should().HaveCount(2);
-            result.Should().Contain(new[] { "Developer", "Manager" });
-            result.Should().OnlyHaveUniqueItems();
+            result.Should().HaveCount(3);
+
+            result.Should().ContainEquivalentOf(new UserJobTitleDto
+            {
+                UserId = "e1",
+                JobTitle = "Junior Developer"
+            });
+
+            result.Should().ContainEquivalentOf(new UserJobTitleDto
+            {
+                UserId = "e2",
+                JobTitle = "Senior Developer"
+            });
+
+            result.Should().ContainEquivalentOf(new UserJobTitleDto
+            {
+                UserId = "e3",
+                JobTitle = "Manager"
+            });
+
+            result.Should().NotContain(x => string.IsNullOrWhiteSpace(x.JobTitle));
         }
 
         [Fact]
