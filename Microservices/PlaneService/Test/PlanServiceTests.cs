@@ -5,6 +5,7 @@ using Core.Interfaces;
 using Core.Models;
 using Core.Service;
 using Core.Service.Interface;
+using Core.Service.Interface.AI;
 using Infrastructure.GrpcClients.Team;
 using Moq;
 using System.Linq.Expressions;
@@ -19,6 +20,7 @@ namespace Test
         private readonly Mock<IStatus> _statusServiceMock;
         private readonly Mock<ITeamGrpcClient> _teamGrpcClientMock;
         private readonly Mock<IPlanEventPublisher> _planEventPublisherMock;
+        private readonly Mock<IPlanGeneratorService> _planGeneratorService;
         private readonly IMapper _mapper;
         private readonly PlanService _planService;
 
@@ -32,6 +34,7 @@ namespace Test
             _statusServiceMock = new Mock<IStatus>();
             _teamGrpcClientMock = new Mock<ITeamGrpcClient>();
             _planEventPublisherMock = new Mock<IPlanEventPublisher>();
+            _planGeneratorService = new Mock<IPlanGeneratorService>();
 
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
@@ -46,7 +49,8 @@ namespace Test
                 _statusServiceMock.Object,
                 _planTypeServiceMock.Object,
                 _teamGrpcClientMock.Object,
-                _planEventPublisherMock.Object
+                _planEventPublisherMock.Object,
+                _planGeneratorService.Object
             );
         }
 
