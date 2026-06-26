@@ -1,20 +1,12 @@
 ﻿using AutoMapper;
-using AutoMapper.Configuration.Annotations;
+using Core.DTOs.AI;
 using Core.DTOs.PlanDtos;
-using Core.DTOs.PlnaTypeDtos;
 using Core.Interfaces;
 using Core.Models;
 using Core.Service.Interface;
+using Core.Service.Interface.AI;
 using Infrastructure.GrpcClients.Team;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using RecoMind.Contracts.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Core.Service
 {
@@ -26,19 +18,27 @@ namespace Core.Service
         readonly IStatus _statusService;
         readonly IMapper _mapper;
         readonly IPlanEventPublisher _planEventPublisher;
-        public PlanService(IUnitOfWork<Plan> planUnitOfWork , IMapper mapper, IStatus StatusService , IPlanType PlanTypeService , ITeamGrpcClient TeamGrpcCleint , IPlanEventPublisher planEventPublisher )
+        readonly IPlanGeneratorService _planGeneratorService;
+        public PlanService(IUnitOfWork<Plan> planUnitOfWork,
+            IMapper mapper,
+            IStatus StatusService,
+            IPlanType PlanTypeService,
+            ITeamGrpcClient TeamGrpcCleint,
+            IPlanEventPublisher planEventPublisher,
+            IPlanGeneratorService planGeneratorService)
         {
             _unitOfWork = planUnitOfWork;
-            _mapper = mapper;           
+            _mapper = mapper;
             _planTypeService = PlanTypeService;
             _statusService = StatusService;
             _teamGrpcClient = TeamGrpcCleint;
             _planEventPublisher = planEventPublisher;
+            _planGeneratorService = planGeneratorService;
         }
 
         public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
         {
-            
+
             Plan plan = new Plan();
             plan = _mapper.Map<Plan>(createPlanDto);
 
@@ -51,10 +51,10 @@ namespace Core.Service
 
             var checkEndDate = await GetPlanEndDate(plan.PlanType);         // Calculate end date based on plan type
 
-            if (checkEndDate.IsSuccess) 
+            if (checkEndDate.IsSuccess)
             {
                 plan.EndDate = checkEndDate.Value;
-            } 
+            }
             else
                 return Result<GetPlanDto>.Failure(checkEndDate.Error);
 
@@ -65,8 +65,8 @@ namespace Core.Service
             {
                 plan.Team_Id = checkTeamId.Value;
             }
-            else            
-                return Result<GetPlanDto>.Failure(checkTeamId.Error);            
+            else
+                return Result<GetPlanDto>.Failure(checkTeamId.Error);
 
             await _unitOfWork.Entity.AddAsync(plan);
             _unitOfWork.Save();
@@ -85,7 +85,7 @@ namespace Core.Service
 
             return Result<GetPlanDto>.Success(result);
         }
-        
+
         public async Task<Result<DateTime>> GetPlanEndDate(string planType)
         {
             // Validate input
@@ -112,7 +112,7 @@ namespace Core.Service
             }
 
         }
-        
+
         public async Task<bool> DeletePlan(string planId, string companyId)
         {
             var plan = await _unitOfWork.Entity.Find(p => p.Id == planId && p.Company_Id == companyId);
@@ -133,9 +133,9 @@ namespace Core.Service
 
             var planToReturn = new List<Result<GetPlanDto>>();
 
-            if (plans != null) 
+            if (plans != null)
             {
-                foreach(var plan in plans)
+                foreach (var plan in plans)
                 {
                     var item = _mapper.Map<GetPlanDto>(plan);
                     planToReturn.Add(Result<GetPlanDto>.Success(item));
@@ -147,9 +147,9 @@ namespace Core.Service
 
         public async Task<Result<GetPlanDto>> GetPlanById(string planId, string companyId)
         {
-            var plan = await _unitOfWork.Entity.Find(p =>( p.Company_Id == companyId && p.Id == planId ));
+            var plan = await _unitOfWork.Entity.Find(p => (p.Company_Id == companyId && p.Id == planId));
 
-            if(plan != null)
+            if (plan != null)
             {
                 var item = _mapper.Map<GetPlanDto>(plan);
                 return Result<GetPlanDto>.Success(item);
@@ -157,7 +157,7 @@ namespace Core.Service
             return Result<GetPlanDto>.Failure("Invalid PLan Id !");
         }
 
-        public async Task<Result<GetPlanDto>> UpdatePlan( string companyId , string userId , UpdatePlanDto updatePlanDto)
+        public async Task<Result<GetPlanDto>> UpdatePlan(string companyId, string userId, UpdatePlanDto updatePlanDto)
         {
             var plan = await _unitOfWork.Entity.Find(p => p.Id == updatePlanDto.PlanId && p.Company_Id == companyId);
 
@@ -166,7 +166,7 @@ namespace Core.Service
 
                 plan.Goal = updatePlanDto.Goal;
                 plan.Description = updatePlanDto.Description;
-              
+
                 #region ckeck for the name of plan type 
 
                 if (!string.IsNullOrWhiteSpace(updatePlanDto.PlanType))
@@ -237,11 +237,11 @@ namespace Core.Service
         public async Task<IEnumerable<Result<GetPlanDto>>> GetPlansByStatus(string status, string companyId)
         {
             var planToRetyrn = new List<Result<GetPlanDto>>();
-            var items = await _unitOfWork.Entity.FindAll((x=>(x.Company_Id==companyId && x.Status==status)));
+            var items = await _unitOfWork.Entity.FindAll((x => (x.Company_Id == companyId && x.Status == status)));
 
-            if(items != null)
+            if (items != null)
             {
-                foreach(var item in items)
+                foreach (var item in items)
                 {
                     var dto = _mapper.Map<GetPlanDto>(item);
                     planToRetyrn.Add(Result<GetPlanDto>.Success(dto));
@@ -250,6 +250,41 @@ namespace Core.Service
             }
             planToRetyrn.Add(Result<GetPlanDto>.Failure($"No plans found with the specified status : {status}"));
             return planToRetyrn;
-        }        
+        }
+
+        public async Task<Result<AIResultDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
+        {
+            var plan = new Plan();
+
+            plan.IsApproved = false;
+            plan.Company_Id = companyId;
+
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<AIResultDto>.Failure(checkTeamId.Error);
+
+            plan.Team_Id = checkTeamId.Value;
+            plan.Owner_Id = userId;
+
+            // Call AI To Generate A plan
+            var request = new AIRequestDto
+            {
+                company_id = companyId,
+                plan_text = userCustomPlanDto.Description,
+                team_id = checkTeamId.Value
+            };
+
+            var result = await _planGeneratorService.GeneratePlan(request);
+            if (!result.IsSuccess)
+                return Result<AIResultDto>.Failure(result.Error);
+
+            _mapper.Map(result.Value.result, plan);
+
+            await _unitOfWork.Entity.AddAsync(plan);
+            _unitOfWork.Save();
+
+            // IN BACKGROUND JOBS (Hangfire) CALL A gRPC service that will take a list of tasks and add them to DB
+            return Result<AIResultDto>.Success(result.Value);
+        }
     }
 }
