@@ -110,7 +110,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             await db.Quests.AddRangeAsync(quests);
             await db.SaveChangesAsync();
         }
-        var planId = quests.First().PlanId;
+        var planId = quests.First().ModuleId;
         // act 
         var response = await _client.GetAsync($"{_baseUrl}/{planId}/tasks");
         // assert
@@ -122,7 +122,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .NotBeEmpty()
             .And
-            .OnlyContain(x => x.PlanId == planId);
+            .OnlyContain(x => x.ModuleId == planId);
         result
             .Should()
             .Contain(x => x.QuestId == quests.First().QuestId);
@@ -160,7 +160,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var quests = QuestFakers.Quest(seed).Generate(6);
         var status = quests.First().Status;
         var questsCount = quests.Count(q => q.Status == status);
-        var planId = quests.First().PlanId;
+        var planId = quests.First().ModuleId;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -177,7 +177,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .HaveCount(questsCount)
             .And
-            .OnlyContain(q => q.Status == status && q.PlanId == planId);
+            .OnlyContain(q => q.Status == status && q.ModuleId == planId);
     }
     [Fact]
     public async Task GetAllTasksByStatusAsync_WithInValidStatus_ReturnBadRequest()
@@ -207,7 +207,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         // arrange
         var planId = "plan1";
         var quests = QuestFakers.Quest().Generate(5);
-        var questsCount = quests.Count(q => q.PlanId == planId);
+        var questsCount = quests.Count(q => q.ModuleId == planId);
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -223,7 +223,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .HaveCount(questsCount)
             .And
-            .OnlyContain(q => q.PlanId == planId);
+            .OnlyContain(q => q.ModuleId == planId);
     }
     #endregion
 
@@ -240,7 +240,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var validQuestAfterUpdate = new QuestToReturnDto
         {
             QuestId = quest.QuestId,
-            PlanId = quest.PlanId,
+            ModuleId = quest.ModuleId,
             Title = updateQuest.Title ?? quest.Title,
             Description = updateQuest.Description ?? quest.Description,
             Status = updateQuest.Status == null ? quest.Status : (QuestStatusEnum)updateQuest.Status,

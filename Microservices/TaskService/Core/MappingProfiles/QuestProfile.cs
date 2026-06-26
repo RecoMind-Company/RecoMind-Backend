@@ -39,7 +39,7 @@ public class QuestProfile : Profile
             .ForMember(des => des.StartDate, opt => opt.MapFrom(src => src.Quest.StartDate))
             .ForMember(des => des.DeadLine, opt => opt.MapFrom(src => src.Quest.DeadLine))
             .ForMember(des => des.Duration, opt => opt.MapFrom(src => src.Quest.DeadLine - src.Quest.StartDate))
-            .ForMember(des => des.PlanId, opt => opt.MapFrom(src => src.Quest.PlanId))
+            .ForMember(des => des.ModuleId, opt => opt.MapFrom(src => src.Quest.ModuleId))
             .ForMember(des => des.UserAssignedQuests, opt => opt.
             MapFrom(src => src.Quest.UserAssignedQuests.Select(x => x.UserId).ToList()));
 

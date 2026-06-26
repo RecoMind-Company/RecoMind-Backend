@@ -36,6 +36,13 @@ namespace webApi
 
             builder.Configuration.AddEnvironmentVariables();
 
+            //
+            //
+            // -------------------------------  NOTE THAT I AM USING THE DEFAULT CONNECTION STRING NOT PRODUCTION ---------------------------------
+            //
+            //
+            //
+
             builder.Services.AddDbContext<PlanDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

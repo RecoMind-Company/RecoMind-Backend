@@ -44,7 +44,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
 
         var notification = new NotificationEventDto
         {
-            PlanId = existedQuest.PlanId,
+            PlanId = existedQuest.ModuleId,
             Title = "New Quest Assigned",
             Message = $"You have been assigned to the quest: {existedQuest.Title}",
             ReceiverId = userToQuestDto.UserId!
@@ -95,7 +95,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
     }
     public async Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId)
     {
-        var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
+        var isExist = await _questRepository.AnyAsync(q => q.ModuleId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
         return isExist;
     }
 }

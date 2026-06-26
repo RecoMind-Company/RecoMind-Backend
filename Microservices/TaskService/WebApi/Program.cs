@@ -76,9 +76,17 @@ builder.Services.AddAuthentication(config =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
     };
 });
+
+//
+//
+// -------------------------------  NOTE THAT I AM USING THE DEFAULT CONNECTION STRING NOT PRODUCTION ---------------------------------
+//
+//
+//
+
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("TaskDbConnectionString"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
 });
 builder.Services.AddAutoMapper(cfg => { }, typeof(QuestProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, includeInternalTypes: true);

@@ -5,15 +5,15 @@ namespace Infrastructure.gRPC.Plan;
 
 public class GrpcPlanService(PlanServiceGrpc.PlanServiceGrpcClient planServiceGrpcClient) : IGrpcPlanService
 {
-    public async Task<PlanIdsDto> GetPlanIdsAsync(string planId)
+    public async Task<ModuleIdsDto> GetmoduleIdsAsync(string planId)
     {
         var request = new PlanRequest { PlanId = planId };
         var result = await planServiceGrpcClient.GetPlanAsync(request);
 
-        return new PlanIdsDto
+        return new ModuleIdsDto
         {
             IsExisted = result.IsExist,
-            PlanId = result.PlanId,
+            ModuleId = result.PlanId,
             CompanyId = result.CompanyId,
             OwnerId = result.OwnerId,
             TeamId = result.TeamId

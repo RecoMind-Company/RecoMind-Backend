@@ -11,23 +11,23 @@ public class QuestService(IUnitOfWork unitOfWork,
                           IGrpcPlanService grpcPlanService) : IQuestService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
-    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string planId)
+    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string moduleId)
     {
-        var isPlanExist = await grpcPlanService.GetPlanIdsAsync(planId);
+        var isPlanExist = await grpcPlanService.GetmoduleIdsAsync(moduleId);
         if (!isPlanExist.IsExisted)
             return Result<QuestToReturnDto>.Failure(PlanErrors.NotFound);
 
         var quest = mapper.Map<Quest>(questDto);
         quest.QuestId = Guid.NewGuid().ToString();
-        quest.PlanId = planId;
+        quest.ModuleId = moduleId;
         await _questRepository.AddAsync(quest);
         await unitOfWork.SaveChangesAsync();
         var questToReturn = mapper.Map<QuestToReturnDto>(quest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string moduleId)
     {
-        var quests = await _questRepository.FindAll(q => q.PlanId == planId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
@@ -50,13 +50,13 @@ public class QuestService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string planId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string moduleId)
     {
         if (questByStatusDto.Status is null)
         {
-            return await GetAllQuestsAsync(planId);
+            return await GetAllQuestsAsync(moduleId);
         }
-        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status! && q.PlanId == planId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status! && q.ModuleId == moduleId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }

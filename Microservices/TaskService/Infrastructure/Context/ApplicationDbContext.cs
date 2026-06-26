@@ -13,6 +13,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasKey(uq => new { uq.UserId, uq.QuestId });
 
         modelBuilder.Entity<Quest>()
-            .HasIndex(q => q.PlanId);
+            .HasIndex(q => q.ModuleId);
     }
 }

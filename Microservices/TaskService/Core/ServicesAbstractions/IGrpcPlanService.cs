@@ -4,6 +4,6 @@ namespace Core.ServicesAbstractions;
 
 public interface IGrpcPlanService
 {
-    Task<PlanIdsDto> GetPlanIdsAsync(string planId);
+    Task<ModuleIdsDto> GetmoduleIdsAsync(string planId);
 
 }
