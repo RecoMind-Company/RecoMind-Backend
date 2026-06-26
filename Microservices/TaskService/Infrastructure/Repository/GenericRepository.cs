@@ -38,6 +38,10 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         await _dbset.AddAsync(entity);
     }
+    public async Task AddRangeAsync(IEnumerable<T> entities)
+    {
+        await _dbset.AddRangeAsync(entities);
+    }
     public void Update(T entity)
     {
         _dbset.Update(entity);

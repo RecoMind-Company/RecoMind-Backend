@@ -9,6 +9,7 @@ public interface IGenericRepository<T> where T : class
     Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     Task AddAsync(T entity);
+    Task AddRangeAsync(IEnumerable<T> entities);
     void Update(T entity);
     void Delete(T entity);
 }
