@@ -13,7 +13,7 @@
         public DateTime EndDate { get; set; }
 
         // **************
-
+        public List<Module> Modules { get; set; } = [];
         public string Owner_Id { get; set; }   // User who created the plan "from cocky"
         public string Company_Id { get; set; } // Company to which the plan belongs "from cocky"
         public string Team_Id { get; set; }    // Team to which the plan belongs "from cocky"
