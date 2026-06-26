@@ -1,9 +1,11 @@
 using Core.Interfaces;
 using Core.Mapping;
 using Core.Models;
-using Core.Service;
 using Core.Service.Interface;
+using Core.Service.Interface.AI;
 using GrpcClients.Team;
+using Hangfire;
+using Infrastructure.AI;
 using Infrastructure.Data;
 using Infrastructure.GrpcClients.Team;
 using Infrastructure.Messaging;
@@ -19,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
 using System;
 using System.Text;
 using webApi.Grpc;
@@ -35,20 +38,35 @@ namespace webApi
 
             builder.Services.AddDbContext<PlanDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Plan"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
+            //Setup Hangfire with SQL Server storage
+            builder.Services.AddHangfire(x => x.UseSqlServerStorage("DefaultConnection"));
+            builder.Services.AddHangfireServer();
             builder.Services.AddGrpc();
 
             builder.Services.AddScoped<PlanServiceImpl>();
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UOW<>));
-            builder.Services.AddScoped(typeof(IPlanService),typeof(Core.Service.PlanService));
-            builder.Services.AddScoped(typeof(IPlanType),typeof(Core.Service.PlanType));
+            builder.Services.AddScoped(typeof(IPlanService), typeof(Core.Service.PlanService));
+            builder.Services.AddScoped(typeof(IPlanType), typeof(Core.Service.PlanType));
             builder.Services.AddScoped(typeof(IStatus), typeof(Core.Service.Status));
             builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
             builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
-            builder.Services.AddAutoMapper(typeof(PlanMapper));
 
+            //AI plan generation Service
+            var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIPlanGeneratorUrl");
+            builder.Services.AddHttpClient<IPlanGeneratorService, PlanGeneratorService>(client =>
+            {
+                client.BaseAddress = new Uri(AiServiceUrl!);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.Timeout = TimeSpan.FromSeconds(30);
+
+            }).AddTransientHttpErrorPolicy(policy =>
+                policy.WaitAndRetryAsync(3,
+               retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            );
+
+            builder.Services.AddAutoMapper(typeof(PlanMapper));
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -178,9 +196,9 @@ namespace webApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             app.UseHttpsRedirection();
 
