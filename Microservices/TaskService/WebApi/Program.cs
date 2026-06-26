@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using WebApi.gRPC.Quest;
 using WebApi.gRPC.UserQuests;
 using WebApi.Validators;
 
@@ -169,6 +170,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGrpcService<UserQuestGrpcService>();
+app.MapGrpcService<QuestGrpcService>();
 
 app.Run();
 
