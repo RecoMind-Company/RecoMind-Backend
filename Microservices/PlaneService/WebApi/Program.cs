@@ -1,6 +1,7 @@
 using Core.Interfaces;
 using Core.Mapping;
 using Core.Models;
+using Core.Service;
 using Core.Service.Interface;
 using Core.Service.Interface.AI;
 using GrpcClients.Team;
@@ -59,6 +60,7 @@ namespace webApi
             builder.Services.AddScoped(typeof(IStatus), typeof(Core.Service.Status));
             builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
             builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
+            builder.Services.AddScoped<IModuleService, ModuleService>();
 
             //AI plan generation Service
             var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIPlanGeneratorUrl");
