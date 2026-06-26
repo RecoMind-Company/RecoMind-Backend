@@ -10,9 +10,13 @@
 
   <ItemGroup>
     <None Remove="GrpcServer\GrpcPlanService.proto" />
+    <None Remove="GrpcServer\ModuleService.proto" />
   </ItemGroup>
 
   <ItemGroup>
+	  <Protobuf Include="GrpcServer\ModuleService.proto" GrpcServices="Server">
+		  <protoRoot>GrpcServer</protoRoot>
+	  </Protobuf>
 	  <Protobuf Include="GrpcServer\PlanService.proto" GrpcServices="Server">
 		  <protoRoot>GrpcServer</protoRoot>
 	  </Protobuf>
