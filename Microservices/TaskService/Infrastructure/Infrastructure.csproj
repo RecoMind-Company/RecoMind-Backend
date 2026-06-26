@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\Module\ModuleService.proto" />
     <None Remove="gRPC\Plan\PlanService.proto" />
     <None Remove="gRPC\Team\teamMessages.proto" />
     <None Remove="gRPC\Team\TeamService.proto" />
@@ -34,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="gRPC\Module\ModuleService.proto" GrpcServices="Client" />
     <Protobuf Include="gRPC\Plan\PlanService.proto" GrpcServices="Client" />
 	  <Protobuf Include="gRPC\Team\teamMessages.proto" GrpcServices="None">
 		  <ProtoRoot>gRPC\Team</ProtoRoot>
