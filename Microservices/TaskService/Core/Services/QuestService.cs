@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Dtos;
+using Core.Dtos.AI;
 using Core.Interfaces;
 using Core.Models;
 using Core.Result;
@@ -69,5 +70,12 @@ public class QuestService(IUnitOfWork unitOfWork,
 
         var questToReturn = mapper.Map<PersonalQuestToReturnDto>(quest);
         return Result<PersonalQuestToReturnDto>.Success(questToReturn);
+    }
+
+    public async Task AddAiTasksAsync(IEnumerable<AITasksDto> aiTasks)
+    {
+        var quests = mapper.Map<IEnumerable<Quest>>(aiTasks);
+        await _questRepository.AddRangeAsync(quests);
+        await unitOfWork.SaveChangesAsync();
     }
 }
