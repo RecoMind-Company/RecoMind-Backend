@@ -26,6 +26,7 @@ using Polly;
 using System;
 using System.Text;
 using webApi.Grpc;
+using WebApi.GrpcServer;
 
 namespace webApi
 {
@@ -218,7 +219,7 @@ namespace webApi
             app.MapControllers();
 
             app.MapGrpcService<PlanServiceImpl>();
-
+            app.MapGrpcService<ModuleServiceImplementation>();
             app.Run();
         }
     }
