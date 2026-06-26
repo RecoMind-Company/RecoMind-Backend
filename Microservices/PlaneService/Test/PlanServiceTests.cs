@@ -8,9 +8,6 @@ using Core.Service.Interface;
 using Infrastructure.GrpcClients.Team;
 using Moq;
 using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Numerics;
-using Xunit;
 
 namespace Test
 {
@@ -21,6 +18,7 @@ namespace Test
         private readonly Mock<IPlanType> _planTypeServiceMock;
         private readonly Mock<IStatus> _statusServiceMock;
         private readonly Mock<ITeamGrpcClient> _teamGrpcClientMock;
+        private readonly Mock<IPlanEventPublisher> _planEventPublisherMock;
         private readonly IMapper _mapper;
         private readonly PlanService _planService;
 
@@ -33,6 +31,7 @@ namespace Test
             _planTypeServiceMock = new Mock<IPlanType>();
             _statusServiceMock = new Mock<IStatus>();
             _teamGrpcClientMock = new Mock<ITeamGrpcClient>();
+            _planEventPublisherMock = new Mock<IPlanEventPublisher>();
 
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
@@ -46,7 +45,8 @@ namespace Test
                 _mapper,
                 _statusServiceMock.Object,
                 _planTypeServiceMock.Object,
-                _teamGrpcClientMock.Object
+                _teamGrpcClientMock.Object,
+                _planEventPublisherMock.Object
             );
         }
 
