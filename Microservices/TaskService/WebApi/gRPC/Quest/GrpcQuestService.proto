@@ -4,5 +4,5 @@ import "google/protobuf/empty.proto";
 option csharp_namespace = "WebApi.gRPC.Quest";
 
 service GrpcQuestsService {
-	rpc AddAIGeneratedTasks(AiTasks) returns (google.protobuf.Empty);
+	rpc AddAIGeneratedTasks(ListOfAiTasksRequest) returns (google.protobuf.Empty);
 }

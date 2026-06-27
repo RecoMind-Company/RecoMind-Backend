@@ -28,7 +28,7 @@ internal static class QuestFakers
         .UseSeed(seed)
         .RuleFor(q => q.Title, f => f.Lorem.Sentence(3))
         .RuleFor(q => q.Description, f => seed % 2 == 0 ? f.Lorem.Letter(20) : null)
-        .RuleFor(q => q.Status, f => seed % 2 == 0 ? f.PickRandom<QuestStatusEnum>() : QuestStatusEnum.active)
+        .RuleFor(q => q.Status, f => seed % 2 == 0 ? f.PickRandom<QuestStatusEnum>() : QuestStatusEnum.in_progress)
         .RuleFor(q => q.StartDate, f => seed % 2 == 0 ? f.Date.Future(1, DateTime.UtcNow.AddSeconds(10)) : DateTime.UtcNow)
         .RuleFor(q => q.DeadLine, (f, q) => seed % 2 == 0 ? q.StartDate.AddDays(1) : DateTime.UtcNow.AddDays(1))
         .RuleFor(q => q.QuestId, f => f.Random.Guid().ToString())

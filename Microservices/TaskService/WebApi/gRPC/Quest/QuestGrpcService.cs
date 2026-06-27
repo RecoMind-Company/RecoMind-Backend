@@ -7,26 +7,32 @@ namespace WebApi.gRPC.Quest;
 
 public class QuestGrpcService(IQuestService questService) : GrpcQuestsService.GrpcQuestsServiceBase
 {
-    public override async Task<Empty> AddAIGeneratedTasks(AiTasks request, ServerCallContext context)
+    public override async Task<Empty> AddAIGeneratedTasks(ListOfAiTasksRequest request, ServerCallContext context)
     {
-        var tasks = request.Tasks.Select(t => new AITasksDto
+        IEnumerable<PostTasksDto> postTasksDtos = request.Aitasks.Select(protoTasks => new PostTasksDto
         {
-            task_id = t.TaskId,
-            title = t.Title,
-            description = t.Description,
-            duration_days = t.DurationDays,
-            start_date = t.StartDate,
-            deadline_date = t.DeadlineDate,
-            status = t.Status,
-            priority = t.Priority,
-            moduleId = t.ModuleId,
-            suggested_owner = new AISuggestedOwnersDto
+            moduleId = protoTasks.ModuleId,
+            tasksDto = protoTasks.Tasks.Select(protoTask => new AITasksDto
             {
-                user_id = t.SuggestedOwner?.UserId!,
-                job_title = t.SuggestedOwner?.JobTitle!
-            }
-        });
-        await questService.AddAiTasksAsync(tasks);
+                task_id = protoTask.TaskId,
+                title = protoTask.Title,
+                description = protoTask.Description,
+                duration_days = protoTask.DurationDays,
+                start_date = protoTask.StartDate,
+                deadline_date = protoTask.DeadlineDate,
+                status = protoTask.Status,
+                priority = protoTask.Priority,
+
+                suggested_owner = protoTask.SuggestedOwner != null ? new AISuggestedOwnersDto
+                {
+                    user_id = protoTask.SuggestedOwner.UserId,
+                    job_title = protoTask.SuggestedOwner.JobTitle
+                } : null
+            }).ToList()
+        }).ToList();
+
+        await questService.AddAiTasksAsync(postTasksDtos);
+
         return new Empty();
     }
 }

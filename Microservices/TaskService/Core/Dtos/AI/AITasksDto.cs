@@ -27,6 +27,4 @@ public class AITasksDto
     public AISuggestedOwnersDto suggested_owner { get; set; }
     public string status { get; set; }
     public string priority { get; set; }
-    // module 
-    public string moduleId { get; set; }
 }

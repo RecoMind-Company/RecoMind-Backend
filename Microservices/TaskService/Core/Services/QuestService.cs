@@ -72,10 +72,21 @@ public class QuestService(IUnitOfWork unitOfWork,
         return Result<PersonalQuestToReturnDto>.Success(questToReturn);
     }
 
-    public async Task AddAiTasksAsync(IEnumerable<AITasksDto> aiTasks)
+    public async Task AddAiTasksAsync(IEnumerable<PostTasksDto> postTasksDtos)
     {
-        var quests = mapper.Map<IEnumerable<Quest>>(aiTasks);
-        await _questRepository.AddRangeAsync(quests);
+        var allQuests = new List<Quest>();
+
+        foreach (var dto in postTasksDtos)
+        {
+            var questsForThisModule = mapper.Map<IEnumerable<Quest>>(dto.tasksDto, opt =>
+            {
+                opt.Items["ModuleId"] = dto.moduleId;
+            });
+
+            allQuests.AddRange(questsForThisModule);
+        }
+
+        await _questRepository.AddRangeAsync(allQuests);
         await unitOfWork.SaveChangesAsync();
     }
 }

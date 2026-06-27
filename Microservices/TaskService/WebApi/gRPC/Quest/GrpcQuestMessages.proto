@@ -1,8 +1,12 @@
 syntax = "proto3";
 option csharp_namespace = "WebApi.gRPC.Quest";
 
+message ListOfAiTasksRequest {
+	repeated AiTasks Aitasks = 1;
+}
 message AiTasks {
   repeated AiTask tasks = 1;
+  string moduleId = 2;
 }
 
 message AiTask {
@@ -15,7 +19,6 @@ message AiTask {
   AiSuggestedOwnersDto suggested_owner = 7;
   string status = 8;
   string priority = 9;
-  string moduleId = 10;
 }
 
 message AiSuggestedOwnersDto {
