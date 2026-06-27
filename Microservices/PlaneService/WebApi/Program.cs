@@ -6,7 +6,9 @@ using Core.Service.Interface;
 using Core.Service.Interface.AI;
 using GrpcClients.Quest;
 using GrpcClients.Team;
+using Hangfire;
 using Infrastructure.AI;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Data;
 using Infrastructure.GrpcClients.Quest;
 using Infrastructure.GrpcClients.Team;
@@ -50,8 +52,9 @@ namespace webApi
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
             //Setup Hangfire with SQL Server storage
-            //builder.Services.AddHangfire(x => x.UseSqlServerStorage("DefaultConnection"));
-            //builder.Services.AddHangfireServer();
+            builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddHangfireServer();
+            builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
             builder.Services.AddGrpc();
 
             builder.Services.AddScoped<PlanServiceImpl>();
