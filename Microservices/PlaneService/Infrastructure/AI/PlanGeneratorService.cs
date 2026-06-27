@@ -8,7 +8,7 @@ namespace Infrastructure.AI;
 
 public class PlanGeneratorService(HttpClient httpClient, IConfiguration configuration) : IPlanGeneratorService
 {
-    private readonly string AiRoute = configuration.GetValue<string>("AI:TestRoute");
+    private readonly string AiRoute = configuration.GetValue<string>("AI:ProductionRoute");
     public async Task<Result<AIPlanDto>> GeneratePlan(AIRequestDto RequestDto)
     {
         var response = await httpClient.PostAsJsonAsync(AiRoute, RequestDto);

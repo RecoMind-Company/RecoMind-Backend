@@ -75,7 +75,7 @@ namespace webApi
                 client.BaseAddress = new Uri(AiServiceUrl!);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.DefaultRequestHeaders.Add("X-API-Key", aiApiKey);
-                client.Timeout = TimeSpan.FromSeconds(30);
+                client.Timeout = TimeSpan.FromSeconds(60);
 
             }).AddTransientHttpErrorPolicy(policy =>
                 policy.WaitAndRetryAsync(3,
