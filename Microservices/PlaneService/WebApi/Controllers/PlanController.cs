@@ -2,7 +2,6 @@
 using Core.DTOs.PlnaTypeDtos;
 using Core.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Security.Claims;
@@ -19,7 +18,7 @@ namespace webApi.Controllers
         public IPlanService _planService;
         public IPlanType _planTypeService;
         public IStatus _statusService;
-        public PlanController(IPlanService PlanService, IPlanType planType , IStatus StatusService )
+        public PlanController(IPlanService PlanService, IPlanType planType, IStatus StatusService)
         {
             _planService = PlanService;
             _planTypeService = planType;
@@ -40,16 +39,16 @@ namespace webApi.Controllers
         }
 
         [HttpGet("GetId/{id}")]
-        public async Task<IActionResult> GetPlanById (string id)
+        public async Task<IActionResult> GetPlanById(string id)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
 
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest(" CompanyId Not Found !");
 
-            var plan = await _planService.GetPlanById( id , companyId );
+            var plan = await _planService.GetPlanById(id, companyId);
 
-            if(plan.IsSuccess)
+            if (plan.IsSuccess)
                 return Ok(plan);
 
             return NotFound(plan.Error);
@@ -63,10 +62,10 @@ namespace webApi.Controllers
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest(" CompanyId Not Found !");
 
-            var plans = await _planService.GetPlansByStatus( status , companyId );
+            var plans = await _planService.GetPlansByStatus(status, companyId);
 
-            if(plans.Any(x => x.IsFailure))
-                return NotFound(plans.Any(x => x.IsFailure ));
+            if (plans.Any(x => x.IsFailure))
+                return NotFound(plans.Any(x => x.IsFailure));
             else
                 return Ok(plans);
         }
@@ -83,16 +82,16 @@ namespace webApi.Controllers
             if (string.IsNullOrWhiteSpace(userId))
                 return BadRequest(" User Not Found !");
 
-            var createdPlan = await _planService.CreatePlan(createPlanDto,companyId, userId );
+            var createdPlan = await _planService.CreatePlan(createPlanDto, companyId, userId);
 
-            if (createdPlan.IsSuccess)            
-                return Ok(createdPlan);            
-            else            
-                return BadRequest(createdPlan);        
+            if (createdPlan.IsSuccess)
+                return Ok(createdPlan);
+            else
+                return BadRequest(createdPlan);
         }
 
-        [HttpPut("UpdatePlan")]        
-        public async Task<IActionResult> UpdatePlan( [FromBody] UpdatePlanDto updatePlanDto)
+        [HttpPut("UpdatePlan")]
+        public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanDto updatePlanDto)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -103,7 +102,7 @@ namespace webApi.Controllers
             if (string.IsNullOrWhiteSpace(userId))
                 return BadRequest(" User Not Found !");
 
-            var updatedPlan = await _planService.UpdatePlan(companyId , userId , updatePlanDto);
+            var updatedPlan = await _planService.UpdatePlan(companyId, userId, updatePlanDto);
 
             if (updatedPlan.IsSuccess)
                 return Ok(updatedPlan);
@@ -173,7 +172,7 @@ namespace webApi.Controllers
         }
 
         [HttpPost("Status/Add/{Name}")]
-        public async Task<IActionResult> AddStatus([FromRoute]string Name) 
+        public async Task<IActionResult> AddStatus([FromRoute] string Name)
         {
             var Check = await _statusService.AddStatus(Name);
             if (Check)
@@ -188,6 +187,26 @@ namespace webApi.Controllers
             if (Check)
                 return Ok(" Deleted Successfuly ");
             return BadRequest(" Status Not Found ");
+        }
+
+        [HttpPost("custom-plan/generate")]
+        public async Task<IActionResult> GenerateCustomPlan([FromBody] UserCustomPlanDto userCustomPlanDto)
+        {
+            //var companyId = User.FindFirst("CompanyId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            //  FOR TEST 
+
+            var companyId = "34293b50-0c58-4111-8fcd-b0127dd250ce";
+
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId Not Found!");
+
+            var response = await _planService.CreateCustomPlan(userCustomPlanDto, companyId, userId);
+            if (response.IsSuccess)
+                return Ok(response.Value);
+            else
+                return BadRequest(response.Error);
         }
     }
 }

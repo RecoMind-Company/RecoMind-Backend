@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.DTOs.AI;
 using Core.DTOs.PlanDtos;
+using Core.DTOs.Quest;
 using Core.Interfaces;
 using Core.Models;
 using Core.Service.Interface;
@@ -19,13 +20,15 @@ namespace Core.Service
         readonly IMapper _mapper;
         readonly IPlanEventPublisher _planEventPublisher;
         readonly IPlanGeneratorService _planGeneratorService;
+        readonly IQuestGrpcClient _questGrpcClient;
         public PlanService(IUnitOfWork<Plan> planUnitOfWork,
             IMapper mapper,
             IStatus StatusService,
             IPlanType PlanTypeService,
             ITeamGrpcClient TeamGrpcCleint,
             IPlanEventPublisher planEventPublisher,
-            IPlanGeneratorService planGeneratorService)
+            IPlanGeneratorService planGeneratorService,
+            IQuestGrpcClient questGrpcClient)
         {
             _unitOfWork = planUnitOfWork;
             _mapper = mapper;
@@ -34,6 +37,7 @@ namespace Core.Service
             _teamGrpcClient = TeamGrpcCleint;
             _planEventPublisher = planEventPublisher;
             _planGeneratorService = planGeneratorService;
+            _questGrpcClient = questGrpcClient;
         }
 
         public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
@@ -252,18 +256,23 @@ namespace Core.Service
             return planToRetyrn;
         }
 
-        public async Task<Result<AIResultDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
+        public async Task<Result<AIPlanDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
         {
             var plan = new Plan();
 
             plan.IsApproved = false;
             plan.Company_Id = companyId;
 
-            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
-            if (!checkTeamId.IsSuccess)
-                return Result<AIResultDto>.Failure(checkTeamId.Error);
+            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            //if (!checkTeamId.IsSuccess)
+            //    return Result<AIResultDto>.Failure(checkTeamId.Error);
 
-            plan.Team_Id = checkTeamId.Value;
+            //plan.Team_Id = checkTeamId.Value;
+
+            // FOR TEST
+
+            plan.Team_Id = "0dc1400d-a758-424b-80fb-a8ff89078522";
+
             plan.Owner_Id = userId;
 
             // Call AI To Generate A plan
@@ -271,20 +280,27 @@ namespace Core.Service
             {
                 company_id = companyId,
                 plan_text = userCustomPlanDto.Description,
-                team_id = checkTeamId.Value
+                team_id = "0dc1400d-a758-424b-80fb-a8ff89078522"
             };
 
             var result = await _planGeneratorService.GeneratePlan(request);
             if (!result.IsSuccess)
-                return Result<AIResultDto>.Failure(result.Error);
+                return Result<AIPlanDto>.Failure(result.Error);
 
-            _mapper.Map(result.Value.result, plan);
+            _mapper.Map(result.Value, plan);
 
             await _unitOfWork.Entity.AddAsync(plan);
             _unitOfWork.Save();
 
             // IN BACKGROUND JOBS (Hangfire) CALL A gRPC service that will take a list of tasks and add them to DB
-            return Result<AIResultDto>.Success(result.Value);
+            var postTasksList = result.Value.modules.Select(x => new PostTasksDto
+            {
+                tasksDto = x.tasks,
+                moduleId = x.module_id
+            });
+            await _questGrpcClient.PostTasksToQuestService(postTasksList);
+
+            return Result<AIPlanDto>.Success(result.Value);
         }
     }
 }

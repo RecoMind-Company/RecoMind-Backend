@@ -21,6 +21,7 @@ namespace Test
         private readonly Mock<ITeamGrpcClient> _teamGrpcClientMock;
         private readonly Mock<IPlanEventPublisher> _planEventPublisherMock;
         private readonly Mock<IPlanGeneratorService> _planGeneratorService;
+        private readonly Mock<IQuestGrpcClient> _questGrpcClientMock;
         private readonly IMapper _mapper;
         private readonly PlanService _planService;
 
@@ -35,6 +36,7 @@ namespace Test
             _teamGrpcClientMock = new Mock<ITeamGrpcClient>();
             _planEventPublisherMock = new Mock<IPlanEventPublisher>();
             _planGeneratorService = new Mock<IPlanGeneratorService>();
+            _questGrpcClientMock = new Mock<IQuestGrpcClient>();
 
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
@@ -50,7 +52,8 @@ namespace Test
                 _planTypeServiceMock.Object,
                 _teamGrpcClientMock.Object,
                 _planEventPublisherMock.Object,
-                _planGeneratorService.Object
+                _planGeneratorService.Object,
+                _questGrpcClientMock.Object
             );
         }
 

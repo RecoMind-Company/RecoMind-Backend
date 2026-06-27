@@ -12,7 +12,7 @@ namespace Core.Service.Interface
         Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId);
         Task<Result<GetPlanDto>> UpdatePlan(string companyId, string userId, UpdatePlanDto dto);
         Task<bool> DeletePlan(string planId, string companyId);
-        Task<Result<AIResultDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
+        Task<Result<AIPlanDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
 
 
 

@@ -1,24 +1,26 @@
 ﻿using Core.DTOs.AI;
 using Core.Models;
 using Core.Service.Interface.AI;
+using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
 
 namespace Infrastructure.AI;
 
-public class PlanGeneratorService(HttpClient httpClient) : IPlanGeneratorService
+public class PlanGeneratorService(HttpClient httpClient, IConfiguration configuration) : IPlanGeneratorService
 {
-    public async Task<Result<AIResultDto>> GeneratePlan(AIRequestDto RequestDto)
+    private readonly string AiRoute = configuration.GetValue<string>("AI:TestRoute");
+    public async Task<Result<AIPlanDto>> GeneratePlan(AIRequestDto RequestDto)
     {
-        var response = await httpClient.PostAsJsonAsync("ROUTE_TO_AI_SERVICE", RequestDto);
+        var response = await httpClient.PostAsJsonAsync(AiRoute, RequestDto);
         try
         {
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<AIResultDto>();
-            return Result<AIResultDto>.Success(result!);
+            var result = await response.Content.ReadFromJsonAsync<AIPlanDto>();
+            return Result<AIPlanDto>.Success(result!);
         }
         catch (Exception)
         {
-            return Result<AIResultDto>.Failure($"Failed to generate plan because {response.Content}");
+            return Result<AIPlanDto>.Failure($"Failed to generate plan");
         }
     }
 }
