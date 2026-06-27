@@ -266,15 +266,14 @@ namespace Core.Service
             plan.IsApproved = false;
             plan.Company_Id = companyId;
 
-            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
-            //if (!checkTeamId.IsSuccess)
-            //    return Result<AIResultDto>.Failure(checkTeamId.Error);
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<AIPlanDto>.Failure(checkTeamId.Error);
 
-            //plan.Team_Id = checkTeamId.Value;
+            plan.Team_Id = checkTeamId.Value;
 
-            // FOR TEST
-
-            plan.Team_Id = "0dc1400d-a758-424b-80fb-a8ff89078522";
+            //// FOR TEST
+            //plan.Team_Id = "0dc1400d-a758-424b-80fb-a8ff89078522";
 
             plan.Owner_Id = userId;
 
@@ -301,7 +300,6 @@ namespace Core.Service
                 tasksDto = x.tasks,
                 moduleId = x.module_id
             });
-
             _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasksList));
 
             return Result<AIPlanDto>.Success(result.Value);
