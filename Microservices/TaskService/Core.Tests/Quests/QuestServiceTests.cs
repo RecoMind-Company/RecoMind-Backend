@@ -17,12 +17,12 @@ public class QuestServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
-    private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
+    private readonly Mock<IGrpcModuleService> _grpcModuleServiceMock;
     private readonly QuestService _sut;
 
     public QuestServiceTests()
     {
-        _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
+        _grpcModuleServiceMock = new Mock<IGrpcModuleService>();
 
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
@@ -33,35 +33,35 @@ public class QuestServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcPlanServiceMock.Object);
+        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcModuleServiceMock.Object);
     }
 
     [Theory]
     [InlineData(200)] // even seed => past StartDate, expected status: pending (when Status is null)
     [InlineData(31)]  // odd  seed => today StartDate, expected status: active  (when Status is null)
-    public async Task CreateQuestAsync_WithValidPlanId_ShouldReturnQuestToReturnDto(int seed)
+    public async Task CreateQuestAsync_WithValidmoduleId_ShouldReturnQuestToReturnDto(int seed)
     {
         // arrange
         var questDto = FakeQuests.GetFakeQuestDto(seed).Generate();
-        var planId = "plan1";
+        var moduleId = "module1";
 
-        _grpcPlanServiceMock
-            .Setup(g => g.GetPlanIdsAsync(planId))
-            .ReturnsAsync(new PlanIdsDto { IsExisted = true, PlanId = planId });
+        _grpcModuleServiceMock
+            .Setup(g => g.GetmoduleIdsAsync(moduleId))
+            .ReturnsAsync(new ModuleIdsDto { IsExisted = true, ModuleId = moduleId });
 
         // act
-        var result = await _sut.CreateQuestAsync(questDto, planId);
+        var result = await _sut.CreateQuestAsync(questDto, moduleId);
 
         // assert
-        _grpcPlanServiceMock.Verify(
-            g => g.GetPlanIdsAsync(planId),
+        _grpcModuleServiceMock.Verify(
+            g => g.GetmoduleIdsAsync(moduleId),
             Times.Once,
-            "GetPlanIdsAsync should be called exactly once to validate the plan exists");
+            "GetmoduleIdsAsync should be called exactly once to validate the module exists");
 
         _questRepositoryMock.Verify(
-            r => r.AddAsync(It.Is<Quest>(q => q.PlanId == planId && !string.IsNullOrEmpty(q.QuestId))),
+            r => r.AddAsync(It.Is<Quest>(q => q.ModuleId == moduleId && !string.IsNullOrEmpty(q.QuestId))),
             Times.Once,
-            "AddAsync should be called exactly once with the correct planId and a non-empty QuestId");
+            "AddAsync should be called exactly once with the correct moduleId and a non-empty QuestId");
 
         _unitOfWorkMock.Verify(
             u => u.SaveChangesAsync(),
@@ -69,7 +69,7 @@ public class QuestServiceTests
             "SaveChangesAsync should be called once when a new quest is created");
 
         result.Should().NotBeNull("CreateQuestAsync should return a result object, not null");
-        result.IsSuccess.Should().BeTrue("CreateQuestAsync should succeed when a valid QuestDto, planId, and existing plan are provided");
+        result.IsSuccess.Should().BeTrue("CreateQuestAsync should succeed when a valid QuestDto, moduleId, and existing plan are provided");
 
         Guid.Parse(result.Value!.QuestId).Should().NotBeEmpty("the created quest must be assigned a valid non-empty GUID as its ID");
         result.Value.Title.Should().Be(questDto.Title, "the returned title must match the submitted DTO title");
@@ -85,7 +85,7 @@ public class QuestServiceTests
             TimeSpan.FromSeconds(1),
             "the returned deadline should match the submitted DTO deadline within 1 second");
 
-        result.Value.PlanId.Should().Be(planId, "the returned planId must match the provided planId");
+        result.Value.ModuleId.Should().Be(moduleId, "the returned moduleId must match the provided moduleId");
     }
 
     [Fact]
@@ -93,20 +93,20 @@ public class QuestServiceTests
     {
         // arrange
         var questDto = FakeQuests.GetFakeQuestDto().Generate();
-        var planId = "nonExistingPlan";
+        var moduleId = "nonExistingModule";
 
-        _grpcPlanServiceMock
-            .Setup(g => g.GetPlanIdsAsync(planId))
-            .ReturnsAsync(new PlanIdsDto { IsExisted = false });
+        _grpcModuleServiceMock
+            .Setup(g => g.GetmoduleIdsAsync(moduleId))
+            .ReturnsAsync(new ModuleIdsDto { IsExisted = false });
 
         // act
-        var result = await _sut.CreateQuestAsync(questDto, planId);
+        var result = await _sut.CreateQuestAsync(questDto, moduleId);
 
         // assert
-        _grpcPlanServiceMock.Verify(
-            g => g.GetPlanIdsAsync(planId),
+        _grpcModuleServiceMock.Verify(
+            g => g.GetmoduleIdsAsync(moduleId),
             Times.Once,
-            "GetPlanIdsAsync should be called to validate the plan");
+            "GetmoduleIdsAsync should be called to validate the plan");
 
         _questRepositoryMock.Verify(
             r => r.AddAsync(It.IsAny<Quest>()),
@@ -119,17 +119,17 @@ public class QuestServiceTests
             "SaveChangesAsync should not be called when the plan does not exist");
 
         result.IsSuccess.Should().BeFalse("CreateQuestAsync should fail when the plan does not exist");
-        result.ErrorList.Should().Contain(PlanErrors.NotFound, "the error list must include PlanNotFound when the plan does not exist");
+        result.ErrorList.Should().Contain(ModuleErrors.NotFound, "the error list must include ModuleNotFound when the module does not exist");
     }
 
     [Theory]
     [InlineData(234)]
     [InlineData(345)]
     [InlineData(456)]
-    public async Task GetAllQuestsAsync_WithExistingPlanId_ShouldReturnListOfQuestToReturnDto(int seed)
+    public async Task GetAllQuestsAsync_WithExistingmoduleId_ShouldReturnListOfQuestToReturnDto(int seed)
     {
         // arrange
-        var planId = "plan1";
+        var moduleId = "module1";
         var quests = FakeQuests.GetFakeQuest(seed).Generate(5);
 
         // Moq cannot match lambda expressions by semantic equality.
@@ -141,7 +141,7 @@ public class QuestServiceTests
             .ReturnsAsync(quests);
 
         // act
-        var result = await _sut.GetAllQuestsAsync(planId);
+        var result = await _sut.GetAllQuestsAsync(moduleId);
 
         // assert
         _questRepositoryMock.Verify(
@@ -149,14 +149,14 @@ public class QuestServiceTests
                 It.IsAny<Expression<Func<Quest, bool>>>(),
                 It.IsAny<Expression<Func<Quest, object>>>()),
             Times.Once,
-            "FindAll should be called exactly once to retrieve quests for the given planId");
+            "FindAll should be called exactly once to retrieve quests for the given moduleId");
 
-        result.IsSuccess.Should().BeTrue("GetAllQuestsAsync should succeed when a valid planId with existing quests is provided");
+        result.IsSuccess.Should().BeTrue("GetAllQuestsAsync should succeed when a valid moduleId with existing quests is provided");
         result.Value.Should().NotBeNull("the result value should contain a list of quests, not null");
         result.Value!.Count().Should().Be(quests.Count, "the number of returned quests must match the number of seeded quests");
 
-        // All faked quests have PlanId == "plan1" by faker definition
-        result.Value.Select(q => q.PlanId).Should().AllBeEquivalentTo(planId, "every returned quest must belong to the requested plan");
+        // All faked quests have moduleId == "module1" by faker definition
+        result.Value.Select(q => q.ModuleId).Should().AllBeEquivalentTo(moduleId, "every returned quest must belong to the requested plan");
 
         result.Value.Select(q => q.UserAssignedQuests).Should().AllSatisfy(
             u => u.Should().NotBeNull("each quest must include its assigned users collection, not null"));
@@ -276,7 +276,7 @@ public class QuestServiceTests
     public async Task GetAllQuestsByStatusAsync_WhenQuestsWithRequiredStatusExist_ReturnListOfQuestToReturnDto(int seed)
     {
         // arrange
-        var planId = "plan1";
+        var moduleId = "module1";
         var questByStatus = FakeQuests.GetFakeQuestByStatusDto(seed).Generate();
         var expectedStatus = (QuestStatusEnum)questByStatus.Status!;
         var quests = FakeQuests.GetFakeQuest(seed)
@@ -290,7 +290,7 @@ public class QuestServiceTests
             .ReturnsAsync(quests);
 
         // act
-        var result = await _sut.GetAllQuestsByStatusAsync(questByStatus, planId);
+        var result = await _sut.GetAllQuestsByStatusAsync(questByStatus, moduleId);
 
         // assert
         _questRepositoryMock.Verify(
@@ -316,7 +316,7 @@ public class QuestServiceTests
     public async Task GetAllQuestsByStatusAsync_WhenQuestStatusIsNull_ReturnAllQuestsOfThePlan()
     {
         // arrange
-        var planId = "plan1";
+        var moduleId = "module1";
         var questByStatus = FakeQuests.GetFakeQuestByStatusDto()
             .RuleFor(q => q.Status, _ => (int?)null)
             .Generate();
@@ -329,7 +329,7 @@ public class QuestServiceTests
             .ReturnsAsync(quests);
 
         // act
-        var result = await _sut.GetAllQuestsByStatusAsync(questByStatus, planId);
+        var result = await _sut.GetAllQuestsByStatusAsync(questByStatus, moduleId);
 
         // assert
         _questRepositoryMock.Verify(

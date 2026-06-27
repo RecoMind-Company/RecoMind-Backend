@@ -5,6 +5,7 @@ using Core.ServicesAbstractions;
 using Core.Settings;
 using FluentValidation;
 using Infrastructure.Context;
+using Infrastructure.gRPC.Module;
 using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Team;
 using Infrastructure.Notification;
@@ -16,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using WebApi.gRPC.Quest;
 using WebApi.gRPC.UserQuests;
 using WebApi.Validators;
 
@@ -76,6 +78,7 @@ builder.Services.AddAuthentication(config =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SecretKey)),
     };
 });
+
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("TaskDbConnectionString"));
@@ -85,6 +88,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, i
 builder.Services.AddScoped<IQuestService, QuestService>();
 builder.Services.AddScoped<IUserQuestsService, UserQuestsService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
+builder.Services.AddScoped<IGrpcModuleService, GrpcModuleService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -92,6 +96,17 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddGrpc();
 
 builder.Services.AddGrpcClient<PlanServiceGrpc.PlanServiceGrpcClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:PlanServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
+builder.Services.AddGrpcClient<ModuleServiceGrpc.ModuleServiceGrpcClient>(options =>
 {
     options.Address = new Uri(builder.Configuration["GrpcSettings:PlanServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
 }).ConfigurePrimaryHttpMessageHandler(() =>
@@ -148,6 +163,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGrpcService<UserQuestGrpcService>();
+app.MapGrpcService<QuestGrpcService>();
 
 app.Run();
 

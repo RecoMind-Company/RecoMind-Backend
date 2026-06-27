@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="gRPC\Quest\GrpcQuestMessages.proto" />
+    <None Remove="gRPC\Quest\GrpcQuestService.proto" />
     <None Remove="gRPC\UserQuests\GrpcUserQuestsMessages.proto" />
   </ItemGroup>
 
@@ -35,6 +37,12 @@
   </ItemGroup>
 
   <ItemGroup>
+	<Protobuf Include="gRPC\Quest\GrpcQuestService.proto" GrpcServices="Server">
+		<ProtoRoot>gRPC/Quest</ProtoRoot>
+	</Protobuf>
+	<Protobuf Include="gRPC\Quest\GrpcQuestMessages.proto" GrpcServices="None">
+		<ProtoRoot>gRPC/Quest</ProtoRoot>
+	</Protobuf>
 	<Protobuf Include="gRPC\UserQuests\GrpcUserQuestsService.proto" GrpcServices="Server">
 		<ProtoRoot>gRPC/UserQuests</ProtoRoot>
 	</Protobuf>

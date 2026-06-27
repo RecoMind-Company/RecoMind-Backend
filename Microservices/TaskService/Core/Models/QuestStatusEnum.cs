@@ -2,8 +2,8 @@
 
 public enum QuestStatusEnum
 {
-    pending,
-    active,
+    to_do,
+    in_progress,
     completed,
-    action_required,
+    blocked,
 }

@@ -3,8 +3,14 @@ using Core.Mapping;
 using Core.Models;
 using Core.Service;
 using Core.Service.Interface;
+using Core.Service.Interface.AI;
+using GrpcClients.Quest;
 using GrpcClients.Team;
+using Hangfire;
+using Infrastructure.AI;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Data;
+using Infrastructure.GrpcClients.Quest;
 using Infrastructure.GrpcClients.Team;
 using Infrastructure.Messaging;
 using Infrastructure.UnitOfWork;
@@ -19,9 +25,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
 using System;
 using System.Text;
 using webApi.Grpc;
+using WebApi.GrpcServer;
 
 namespace webApi
 {
@@ -33,31 +41,62 @@ namespace webApi
 
             builder.Configuration.AddEnvironmentVariables();
 
+            //
+            //
+            // -------------------------------  NOTE THAT I AM USING THE DEFAULT CONNECTION STRING NOT PRODUCTION ---------------------------------
+            //
+            //
+            //
+
             builder.Services.AddDbContext<PlanDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Plan"));
             });
-
+            //Setup Hangfire with SQL Server storage
+            builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("ProductionConnection_Plan")));
+            builder.Services.AddHangfireServer();
+            builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
             builder.Services.AddGrpc();
 
             builder.Services.AddScoped<PlanServiceImpl>();
             builder.Services.AddScoped(typeof(IUnitOfWork<>), typeof(UOW<>));
-            builder.Services.AddScoped(typeof(IPlanService),typeof(Core.Service.PlanService));
-            builder.Services.AddScoped(typeof(IPlanType),typeof(Core.Service.PlanType));
+            builder.Services.AddScoped(typeof(IPlanService), typeof(Core.Service.PlanService));
+            builder.Services.AddScoped(typeof(IPlanType), typeof(Core.Service.PlanType));
             builder.Services.AddScoped(typeof(IStatus), typeof(Core.Service.Status));
             builder.Services.AddScoped<ITeamGrpcClient, TeamGrpcClientImpl>();
+            builder.Services.AddScoped<IQuestGrpcClient, QuestGrpcClientImplementation>();
             builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
-            builder.Services.AddAutoMapper(typeof(PlanMapper));
+            builder.Services.AddScoped<IModuleService, ModuleService>();
 
+            //AI plan generation Service
+            var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIPlanGeneratorUrl");
+            var aiApiKey = builder.Configuration.GetValue<string>("AI:ApiKey");
+            builder.Services.AddHttpClient<IPlanGeneratorService, PlanGeneratorService>(client =>
+            {
+                client.BaseAddress = new Uri(AiServiceUrl!);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.DefaultRequestHeaders.Add("X-API-Key", aiApiKey);
+                client.Timeout = TimeSpan.FromSeconds(60);
+
+            }).AddTransientHttpErrorPolicy(policy =>
+                policy.WaitAndRetryAsync(3,
+               retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            );
+
+            builder.Services.AddAutoMapper(typeof(PlanMapper));
             // Add services to the container.
 
             builder.Services.AddControllers();
 
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
             {
-                options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl")); //https://localhost:7192
+                options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl"));
             });
 
+            builder.Services.AddGrpcClient<GrpcQuestsService.GrpcQuestsServiceClient>(options =>
+            {
+                options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TaskServiceUrl"));
+            });
 
             builder.Services.AddMassTransit(x =>
             {
@@ -178,9 +217,9 @@ namespace webApi
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
 
             app.UseHttpsRedirection();
 
@@ -191,7 +230,7 @@ namespace webApi
             app.MapControllers();
 
             app.MapGrpcService<PlanServiceImpl>();
-
+            app.MapGrpcService<ModuleServiceImplementation>();
             app.Run();
         }
     }

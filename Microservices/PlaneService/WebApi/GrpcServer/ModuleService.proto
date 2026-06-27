@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "webApi.Grpc";
+
+service ModuleServiceGrpc{
+	rpc GetModule (ModuleRequest) returns (ModuleResponse);
+}
+
+message ModuleRequest {
+	string moduleId = 1;
+}
+
+message ModuleResponse {
+	bool isExist = 1;
+	string moduleId = 2;
+	string companyId = 3;
+	string teamId = 4;
+	string ownerId = 5;
+}
+

@@ -44,11 +44,11 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     public async Task CreateTask_WhenDateIsValid_ReturnOk(int seed)
     {
         // arrange
-        var planId = seed % 2 == 0 ? "plan1" : "plan2";
+        var moduleId = seed % 2 == 0 ? "module1" : "module2";
         var questDto = QuestFakers.QuestDto(seed).Generate();
         var questToReturnDto = QuestFakers.QuestToReturnDto(seed).Generate();
         // act
-        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{planId}/add-task", questDto);
+        var response = await _client.PostAsJsonAsync($"{_baseUrl}/{moduleId}/add-task", questDto);
         // assert
         response.Should().Be200Ok();
 
@@ -73,7 +73,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     public async Task CreateTask_WhenDataIsInvalid_RetrunBadRequest()
     {
         // arrange
-        var planId = "plan1";
+        var planId = "module1";
         var questDto = QuestFakers.QuestDto().Generate(QuestFakers.InValid);
         var errors = new Error[]
         {
@@ -110,7 +110,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             await db.Quests.AddRangeAsync(quests);
             await db.SaveChangesAsync();
         }
-        var planId = quests.First().PlanId;
+        var planId = quests.First().ModuleId;
         // act 
         var response = await _client.GetAsync($"{_baseUrl}/{planId}/tasks");
         // assert
@@ -122,7 +122,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .NotBeEmpty()
             .And
-            .OnlyContain(x => x.PlanId == planId);
+            .OnlyContain(x => x.ModuleId == planId);
         result
             .Should()
             .Contain(x => x.QuestId == quests.First().QuestId);
@@ -160,7 +160,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var quests = QuestFakers.Quest(seed).Generate(6);
         var status = quests.First().Status;
         var questsCount = quests.Count(q => q.Status == status);
-        var planId = quests.First().PlanId;
+        var planId = quests.First().ModuleId;
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -177,13 +177,13 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .HaveCount(questsCount)
             .And
-            .OnlyContain(q => q.Status == status && q.PlanId == planId);
+            .OnlyContain(q => q.Status == status && q.ModuleId == planId);
     }
     [Fact]
     public async Task GetAllTasksByStatusAsync_WithInValidStatus_ReturnBadRequest()
     {
         // arrange
-        var planId = "plan1";
+        var planId = "module1";
         var status = 5; // invalid status
         var quests = QuestFakers.Quest().Generate(3);
         using (var scope = _factory.Services.CreateScope())
@@ -205,9 +205,9 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
     public async Task GetAllTasksByStatusAsync_WithNullStatus_ReturnOkWithAllTasks()
     {
         // arrange
-        var planId = "plan1";
+        var moduleId = "module1";
         var quests = QuestFakers.Quest().Generate(5);
-        var questsCount = quests.Count(q => q.PlanId == planId);
+        var questsCount = quests.Count(q => q.ModuleId == moduleId);
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -215,7 +215,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             await db.SaveChangesAsync();
         }
         // act 
-        var response = await _client.GetAsync($"{_baseUrl}/{planId}/by-status");
+        var response = await _client.GetAsync($"{_baseUrl}/{moduleId}/by-status");
         // assert
         response.Should().Be200Ok();
         var result = await response.Content.ReadFromJsonAsync<IEnumerable<QuestToReturnDto>>(_jsonOptions);
@@ -223,7 +223,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
             .Should()
             .HaveCount(questsCount)
             .And
-            .OnlyContain(q => q.PlanId == planId);
+            .OnlyContain(q => q.ModuleId == moduleId);
     }
     #endregion
 
@@ -240,7 +240,7 @@ public class QuestControllerTests : IClassFixture<TestingWebApplicationFactory<P
         var validQuestAfterUpdate = new QuestToReturnDto
         {
             QuestId = quest.QuestId,
-            PlanId = quest.PlanId,
+            ModuleId = quest.ModuleId,
             Title = updateQuest.Title ?? quest.Title,
             Description = updateQuest.Description ?? quest.Description,
             Status = updateQuest.Status == null ? quest.Status : (QuestStatusEnum)updateQuest.Status,

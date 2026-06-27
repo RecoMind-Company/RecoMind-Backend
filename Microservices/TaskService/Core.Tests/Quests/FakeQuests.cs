@@ -15,7 +15,7 @@ public static class FakeQuests
         .RuleFor(q => q.DeadLine, (f, q) => q.StartDate.AddDays(f.Random.Int(1, 30)))
         .RuleFor(q => q.Status, f => f.PickRandom<QuestStatusEnum>())
         .RuleFor(q => q.QuestId, f => f.Random.Guid().ToString())
-        .RuleFor(q => q.PlanId, f => "plan1")
+        .RuleFor(q => q.ModuleId, f => "module1")
         .RuleFor(q => q.UserAssignedQuests, f => FakeUserQuests.GetFakeUserQuests(seed).Generate(3));
 
     public static Faker<QuestDto> GetFakeQuestDto(int seed = 0) => new Faker<QuestDto>()
@@ -37,7 +37,7 @@ public static class FakeQuests
             .RuleFor(q => q.Status, f => f.PickRandom<QuestStatusEnum>())
             .RuleFor(q => q.QuestId, f => f.Random.Guid().ToString())
             .RuleFor(q => q.Duration, (f, q) => q.DeadLine - q.StartDate)
-            .RuleFor(q => q.PlanId, f => "plan1")
+            .RuleFor(q => q.ModuleId, f => "module1")
             .RuleFor(q => q.UserAssignedQuests, f => f.Make(f.Random.Int(1, 5), () => f.Random.Guid().ToString()).ToList());
 
     public static Faker<UpdateQuestDto> GetFakeUpdateQuestDto(int seed = 0) => new Faker<UpdateQuestDto>()

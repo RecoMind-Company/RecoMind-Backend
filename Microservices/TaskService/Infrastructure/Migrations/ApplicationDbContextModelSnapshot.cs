@@ -33,7 +33,7 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PlanId")
+                    b.Property<string>("ModuleId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("StartDate")
@@ -48,7 +48,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("QuestId");
 
-                    b.HasIndex("PlanId");
+                    b.HasIndex("ModuleId");
 
                     b.ToTable("Quests");
                 });

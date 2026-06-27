@@ -5,12 +5,10 @@ using Core.Interfaces;
 using Core.Models;
 using Core.Service;
 using Core.Service.Interface;
+using Core.Service.Interface.AI;
 using Infrastructure.GrpcClients.Team;
 using Moq;
 using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Numerics;
-using Xunit;
 
 namespace Test
 {
@@ -21,6 +19,10 @@ namespace Test
         private readonly Mock<IPlanType> _planTypeServiceMock;
         private readonly Mock<IStatus> _statusServiceMock;
         private readonly Mock<ITeamGrpcClient> _teamGrpcClientMock;
+        private readonly Mock<IPlanEventPublisher> _planEventPublisherMock;
+        private readonly Mock<IPlanGeneratorService> _planGeneratorService;
+        private readonly Mock<IQuestGrpcClient> _questGrpcClientMock;
+        private readonly Mock<IBackgroundService> _backgroundServiceMock;
         private readonly IMapper _mapper;
         private readonly PlanService _planService;
 
@@ -33,6 +35,10 @@ namespace Test
             _planTypeServiceMock = new Mock<IPlanType>();
             _statusServiceMock = new Mock<IStatus>();
             _teamGrpcClientMock = new Mock<ITeamGrpcClient>();
+            _planEventPublisherMock = new Mock<IPlanEventPublisher>();
+            _planGeneratorService = new Mock<IPlanGeneratorService>();
+            _questGrpcClientMock = new Mock<IQuestGrpcClient>();
+            _backgroundServiceMock = new Mock<IBackgroundService>();
 
             var config = new AutoMapper.MapperConfiguration(cfg =>
             {
@@ -46,7 +52,11 @@ namespace Test
                 _mapper,
                 _statusServiceMock.Object,
                 _planTypeServiceMock.Object,
-                _teamGrpcClientMock.Object
+                _teamGrpcClientMock.Object,
+                _planEventPublisherMock.Object,
+                _planGeneratorService.Object,
+                _questGrpcClientMock.Object,
+                _backgroundServiceMock.Object
             );
         }
 

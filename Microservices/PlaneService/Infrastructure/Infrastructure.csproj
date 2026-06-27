@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="GrpcClients\Quest\GrpcQuestMessages.proto" />
+    <None Remove="GrpcClients\Quest\GrpcQuestService.proto" />
     <None Remove="GrpcClients\Team\TeamService.proto" />
   </ItemGroup>
 
@@ -19,6 +21,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.8.23" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.24" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
@@ -37,6 +41,12 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="GrpcClients\Quest\GrpcQuestMessages.proto" GrpcServices="None">
+			<ProtoRoot>GrpcClients\Quest</ProtoRoot>
+		</Protobuf>
+		<Protobuf Include="GrpcClients\Quest\GrpcQuestService.proto" GrpcServices="Client">
+			<ProtoRoot>GrpcClients\Quest</ProtoRoot>
+		</Protobuf>
 		<Protobuf Include="GrpcClients\Team\TeamService.proto" GrpcServices="Client">
 			<ProtoRote>GrpcClients\Team</ProtoRote>
 		</Protobuf>

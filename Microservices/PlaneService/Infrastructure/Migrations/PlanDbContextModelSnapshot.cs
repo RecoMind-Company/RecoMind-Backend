@@ -22,6 +22,26 @@ namespace Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Core.Models.Module", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlanId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.ToTable("Modules");
+                });
+
             modelBuilder.Entity("Core.Models.Plan", b =>
                 {
                     b.Property<string>("Id")
@@ -32,7 +52,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Duration")
@@ -54,7 +73,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlanType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartDate")
@@ -102,6 +120,22 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Statuses");
+                });
+
+            modelBuilder.Entity("Core.Models.Module", b =>
+                {
+                    b.HasOne("Core.Models.Plan", "Plan")
+                        .WithMany("Modules")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+                });
+
+            modelBuilder.Entity("Core.Models.Plan", b =>
+                {
+                    b.Navigation("Modules");
                 });
 #pragma warning restore 612, 618
         }

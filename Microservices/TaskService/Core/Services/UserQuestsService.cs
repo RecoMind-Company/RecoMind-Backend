@@ -44,7 +44,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
 
         var notification = new NotificationEventDto
         {
-            PlanId = existedQuest.PlanId,
+            PlanId = existedQuest.ModuleId,
             Title = "New Quest Assigned",
             Message = $"You have been assigned to the quest: {existedQuest.Title}",
             ReceiverId = userToQuestDto.UserId!
@@ -93,9 +93,15 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
+    /// <summary>
+    /// TODO: Implement a method to check if a user is assigned to any quest within a specific MODULE NOT PLAN
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="moduleId"></param>
+    /// <returns></returns>
     public async Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId)
     {
-        var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
+        var isExist = await _questRepository.AnyAsync(q => q.ModuleId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
         return isExist;
     }
 }
