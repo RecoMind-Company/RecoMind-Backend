@@ -192,12 +192,8 @@ namespace webApi.Controllers
         [HttpPost("custom-plan/generate")]
         public async Task<IActionResult> GenerateCustomPlan([FromBody] UserCustomPlanDto userCustomPlanDto)
         {
-            //var companyId = User.FindFirst("CompanyId")?.Value;
+            var companyId = User.FindFirst("CompanyId")?.Value;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            //  FOR TEST 
-
-            var companyId = "34293b50-0c58-4111-8fcd-b0127dd250ce";
 
             if (string.IsNullOrWhiteSpace(companyId))
                 return BadRequest("CompanyId Not Found!");
