@@ -21,6 +21,7 @@ namespace Core.Service
         readonly IPlanEventPublisher _planEventPublisher;
         readonly IPlanGeneratorService _planGeneratorService;
         readonly IQuestGrpcClient _questGrpcClient;
+        readonly IBackgroundService _backgroundService;
         public PlanService(IUnitOfWork<Plan> planUnitOfWork,
             IMapper mapper,
             IStatus StatusService,
@@ -28,7 +29,8 @@ namespace Core.Service
             ITeamGrpcClient TeamGrpcCleint,
             IPlanEventPublisher planEventPublisher,
             IPlanGeneratorService planGeneratorService,
-            IQuestGrpcClient questGrpcClient)
+            IQuestGrpcClient questGrpcClient,
+            IBackgroundService backgroundService)
         {
             _unitOfWork = planUnitOfWork;
             _mapper = mapper;
@@ -38,6 +40,7 @@ namespace Core.Service
             _planEventPublisher = planEventPublisher;
             _planGeneratorService = planGeneratorService;
             _questGrpcClient = questGrpcClient;
+            _backgroundService = backgroundService;
         }
 
         public async Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId)
@@ -298,7 +301,8 @@ namespace Core.Service
                 tasksDto = x.tasks,
                 moduleId = x.module_id
             });
-            await _questGrpcClient.PostTasksToQuestService(postTasksList);
+
+            _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasksList));
 
             return Result<AIPlanDto>.Success(result.Value);
         }
