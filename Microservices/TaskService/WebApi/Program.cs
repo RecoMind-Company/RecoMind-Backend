@@ -79,16 +79,9 @@ builder.Services.AddAuthentication(config =>
     };
 });
 
-//
-//
-// -------------------------------  NOTE THAT I AM USING THE DEFAULT CONNECTION STRING NOT PRODUCTION ---------------------------------
-//
-//
-//
-
 builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
-    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionString"));
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("TaskDbConnectionString"));
 });
 builder.Services.AddAutoMapper(cfg => { }, typeof(QuestProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(QuestDtoValidator).Assembly, includeInternalTypes: true);
