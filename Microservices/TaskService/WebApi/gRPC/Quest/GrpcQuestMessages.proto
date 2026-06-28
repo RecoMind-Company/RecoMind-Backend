@@ -3,6 +3,8 @@ option csharp_namespace = "WebApi.gRPC.Quest";
 
 message ListOfAiTasksRequest {
 	repeated AiTasks Aitasks = 1;
+	string planId = 2;
+
 }
 message AiTasks {
   repeated AiTask tasks = 1;

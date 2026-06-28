@@ -85,6 +85,9 @@ public class QuestProfile : Profile
             .ForMember(dest => dest.ModuleId, opt => opt.MapFrom((src, dest, destMember, context) =>
                 context.Items.ContainsKey("ModuleId") ? context.Items["ModuleId"] as string : null))
 
+            .ForMember(dest => dest.PlanId, opt => opt.MapFrom((src, dest, destMember, context) =>
+            context.Items.ContainsKey("PlanId") ? context.Items["PlanId"] as string : null))
+
             .ForMember(dest => dest.UserAssignedQuests,
             opt => opt.MapFrom(
                     (src, dest) =>
