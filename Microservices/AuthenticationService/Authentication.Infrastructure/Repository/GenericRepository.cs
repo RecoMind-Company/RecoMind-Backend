@@ -39,8 +39,15 @@ public class GenericRepository<T>(AuthenticationDbContext context) : IGenericRep
         return _dbSet.Where(predicate).ToListAsync();
     }
 
-
-
+    public async Task<T> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+    {
+        var query = _dbSet.AsQueryable();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return await query.FirstOrDefaultAsync(predicate);
+    }
     public T UpdateAsync(T entity)
     {
         _dbSet.Update(entity);
@@ -50,4 +57,5 @@ public class GenericRepository<T>(AuthenticationDbContext context) : IGenericRep
     {
         _dbSet.Remove(entity);
     }
+
 }

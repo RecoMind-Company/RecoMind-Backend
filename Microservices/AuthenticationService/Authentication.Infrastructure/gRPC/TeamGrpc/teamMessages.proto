@@ -6,9 +6,24 @@ option csharp_namespace = "Authentication.Infrastructure.gRPC.TeamGrpc";
 message GetUserTeamInfoRequest {
   string userId = 1;
 }
+message UserExistRequest {
+  string userId = 1;
+  string teamId = 2;
+}
 
 message UserTeamInfoResponse {
   string companyId = 1;
   string teamId = 2;
   string teamName = 3;
+}
+message UserExistResponse {
+  bool exist = 1;
+}
+
+message TeamEmployeesRequest {
+	  string teamId = 1;
+}
+
+message TeamEmployeesResponse {
+  repeated string employeeIds = 1;
 }

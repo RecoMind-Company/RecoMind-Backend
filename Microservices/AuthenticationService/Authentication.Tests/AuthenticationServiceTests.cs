@@ -284,7 +284,7 @@ public class AuthenticationServiceTests
         _userManagerMock.Setup(um => um.CheckPasswordAsync(user, loginDto.Password)).ReturnsAsync(true);
         _userManagerMock.Setup(um => um.GetRolesAsync(user)).ReturnsAsync(roles);
         _grpcInvitationServiceMock.Setup(i => i.LoginAttempt(It.IsAny<string>())).ReturnsAsync(baseToReturn);
-        _grpcTeamServiceMock.Setup(c => c.GetTeamByUserId(It.IsAny<string>())).ReturnsAsync(companyId);
+        _grpcTeamServiceMock.Setup(c => c.GetCompanyIdByUserId(It.IsAny<string>())).ReturnsAsync(companyId);
 
         // act
         var result = await _sut.Login(loginDto);
@@ -308,7 +308,7 @@ public class AuthenticationServiceTests
         result.message.Should().Contain("login successfully");
         result.Roles.Should().Contain(roles.First());
 
-        _grpcTeamServiceMock.Verify(c => c.GetTeamByUserId(It.IsAny<string>()), Times.Once);
+        _grpcTeamServiceMock.Verify(c => c.GetCompanyIdByUserId(It.IsAny<string>()), Times.Once);
     }
 
     [Fact]

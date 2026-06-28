@@ -178,7 +178,7 @@ public class AuthenticationService : IAuthenticationService
                 userToReturn.message = validInvitation.Message;
                 return userToReturn;
             }
-            userCompanyId = await grpcTeamService.GetTeamByUserId(user.Id);
+            userCompanyId = await grpcTeamService.GetCompanyIdByUserId(user.Id);
         }
 
         var token = await CreateToken(user, userCompanyId);
@@ -246,7 +246,7 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            userCompanyId = await grpcTeamService.GetTeamByUserId(user.Id);
+            userCompanyId = await grpcTeamService.GetCompanyIdByUserId(user.Id);
         }
         var jwtToken = await CreateToken(user, userCompanyId);
         var roles = await userManager.GetRolesAsync(user);

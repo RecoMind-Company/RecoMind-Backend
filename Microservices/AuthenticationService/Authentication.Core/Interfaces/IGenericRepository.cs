@@ -12,5 +12,6 @@ public interface IGenericRepository<T> where T : class
     Task<bool> Any(Expression<Func<T, bool>> predicate);
     Task<List<T>> FindAll(Expression<Func<T, bool>> predicate);
     Task<T> Find(Expression<Func<T, bool>> predicate);
+    Task<T> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     void Delete(T entity);
 }
