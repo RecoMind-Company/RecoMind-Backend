@@ -42,14 +42,17 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
 
         var questToReturn = mapper.Map<QuestToReturnDto>(existedQuest);
 
-        var notification = new NotificationEventDto
+        if (string.IsNullOrEmpty(questToReturn.PlanId))
         {
-            PlanId = existedQuest.ModuleId,
-            Title = "New Quest Assigned",
-            Message = $"You have been assigned to the quest: {existedQuest.Title}",
-            ReceiverId = userToQuestDto.UserId!
-        };
-        await notificationService.SendNotificationAsync(notification);
+            var notification = new NotificationEventDto
+            {
+                PlanId = existedQuest.PlanId,
+                Title = "New Quest Assigned",
+                Message = $"You have been assigned to the quest: {existedQuest.Title}",
+                ReceiverId = userToQuestDto.UserId!
+            };
+            await notificationService.SendNotificationAsync(notification);
+        }
 
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
