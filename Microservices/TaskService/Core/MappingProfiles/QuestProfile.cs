@@ -85,6 +85,7 @@ public class QuestProfile : Profile
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.description))
 
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ParseStatus(src.status)))
+            .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => ParsePriority(src.priority)))
 
             .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => ParseDateTime(src.start_date)))
             .ForMember(dest => dest.DeadLine, opt => opt.MapFrom(src => ParseDateTime(src.deadline_date)))
@@ -116,6 +117,11 @@ public class QuestProfile : Profile
     private static QuestStatusEnum ParseStatus(string statusStr)
     {
         return Enum.TryParse<QuestStatusEnum>(statusStr, true, out var parsedStatus) ? parsedStatus : default;
+    }
+
+    private static QuestPriorityEnum ParsePriority(string priorityStr)
+    {
+        return Enum.TryParse<QuestPriorityEnum>(priorityStr, true, out var parsedPriority) ? parsedPriority : default;
     }
 
     private static DateTime ParseDateTime(string dateStr)
