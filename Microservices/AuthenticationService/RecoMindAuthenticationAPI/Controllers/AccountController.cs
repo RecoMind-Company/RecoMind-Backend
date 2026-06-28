@@ -48,5 +48,17 @@ namespace RecoMindAuthenticationAPI.Controllers
                 return BadRequest(result);
             return Ok(result);
         }
+
+        [HttpGet("getJobTitle/{userId}")]
+        public async Task<ActionResult<UserJobTitleDto>> GetUserJobTitle(string userId)
+        {
+            var errors = ModelState.Values.SelectMany(e => e.Errors);
+            if (!ModelState.IsValid)
+                return BadRequest(errors);
+            var result = await accountService.GetUserJobTitle(userId);
+            if (result is null)
+                return NotFound("this user is not found");
+            return Ok(result);
+        }
     }
 }

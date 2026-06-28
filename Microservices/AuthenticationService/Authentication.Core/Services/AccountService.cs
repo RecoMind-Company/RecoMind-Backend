@@ -10,6 +10,7 @@ namespace Authentication.Core.Services;
 
 public interface IAccountService
 {
+    Task<UserJobTitleDto> GetUserJobTitle(string userId);
     Task<BaseToReturnDto> EditProfile(ProfileDto profile, string email);
     Task<ProfileToReturnDto?> GetProfile(string email);
     Task<BaseToReturnDto> DeleteUser(string id);
@@ -162,5 +163,22 @@ public class AccountService : IAccountService
         var jobTitlesDto = usersJobTitle.Select(x => new JobTitlesDto { UserId = x.UserId, JobTitle = x.JobTitle }).ToList();
 
         return jobTitlesDto;
+    }
+
+    public async Task<UserJobTitleDto> GetUserJobTitle(string userId)
+    {
+        var userJobTitle = await jobTitleRepo.Find(x => x.UserId == userId, x => x.User);
+
+        if (userJobTitle is null)
+            return null;
+
+        var usrJobTitleDto = new UserJobTitleDto
+        {
+            UserId = userJobTitle.UserId,
+            UserName = userJobTitle.User?.FullName ?? string.Empty,
+            JobTitle = userJobTitle.JobTitle
+        };
+
+        return usrJobTitleDto;
     }
 }
