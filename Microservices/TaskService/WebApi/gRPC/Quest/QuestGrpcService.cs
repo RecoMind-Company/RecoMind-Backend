@@ -11,6 +11,7 @@ public class QuestGrpcService(IQuestService questService) : GrpcQuestsService.Gr
     {
         IEnumerable<PostTasksDto> postTasksDtos = request.Aitasks.Select(protoTasks => new PostTasksDto
         {
+            planId = request.PlanId,
             moduleId = protoTasks.ModuleId,
             tasksDto = protoTasks.Tasks.Select(protoTask => new AITasksDto
             {

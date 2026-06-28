@@ -282,7 +282,7 @@ namespace Core.Service
             {
                 company_id = companyId,
                 plan_text = userCustomPlanDto.Description,
-                team_id = "0dc1400d-a758-424b-80fb-a8ff89078522"
+                team_id = plan.Team_Id
             };
 
             var result = await _planGeneratorService.GeneratePlan(request);
@@ -295,12 +295,18 @@ namespace Core.Service
             _unitOfWork.Save();
 
             // IN BACKGROUND JOBS (Hangfire) CALL A gRPC service that will take a list of tasks and add them to DB
-            var postTasksList = result.Value.modules.Select(x => new PostTasksDto
+            var postModuleTasksDtos = result.Value.modules.Select(x => new PostModuleTasksDto
             {
                 tasksDto = x.tasks,
                 moduleId = x.module_id
             });
-            _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasksList));
+
+            var postTasks = new PostTasksDto
+            {
+                PlanId = plan.Id,
+                ModulesTasks = postModuleTasksDtos
+            };
+            _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasks));
 
             return Result<AIPlanDto>.Success(result.Value);
         }

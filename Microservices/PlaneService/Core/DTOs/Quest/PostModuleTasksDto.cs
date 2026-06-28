@@ -1,8 +1,9 @@
-﻿namespace Core.Dtos.AI;
+﻿using Core.DTOs.AI;
 
-public class PostTasksDto
+namespace Core.DTOs.Quest;
+
+public class PostModuleTasksDto
 {
     public IEnumerable<AITasksDto> tasksDto { set; get; } = [];
     public string moduleId { set; get; }
-    public string planId { set; get; }
 }

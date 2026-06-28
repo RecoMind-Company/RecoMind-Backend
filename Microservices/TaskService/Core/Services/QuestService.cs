@@ -81,6 +81,7 @@ public class QuestService(IUnitOfWork unitOfWork,
             var questsForThisModule = mapper.Map<IEnumerable<Quest>>(dto.tasksDto, opt =>
             {
                 opt.Items["ModuleId"] = dto.moduleId;
+                opt.Items["PlanId"] = dto.planId;
             });
 
             allQuests.AddRange(questsForThisModule);
