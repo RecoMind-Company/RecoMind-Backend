@@ -16,35 +16,36 @@ The system supports multi-tenant company structures with role-based access, subs
 
 ```
                           ┌─────────────────────┐
-                          │     API Gateway      │
-                          │  (Routing / Auth)    │
+                          │      Frontend       │
+                          │    (Mobile/Web)     │
                           └────────┬────────────┘
                                    │ REST
-          ┌────────────────────────┼─────────────────────────┐
-          │                        │                          │
-   ┌──────▼──────┐         ┌───────▼──────┐         ┌───────▼──────┐
-   │    Auth     │         │   Company    │         │     Team     │
-   │   Service   │         │   Service   │         │   Service    │
-   └──────┬──────┘         └───────┬──────┘         └───────┬──────┘
-          │ gRPC                   │ gRPC                    │ gRPC
-          │              ┌─────────▼──────────┐             │
-          │              │  Subscription Svc  │             │
-          │              └────────────────────┘             │
-          │                                                  │
-   ┌──────▼──────────────────────────────────────────────────▼──────┐
-   │               Internal gRPC Communication Layer                 │
-   └───────┬──────────────┬────────────────┬───────────────┬────────┘
-           │              │                │               │
-   ┌───────▼───┐   ┌──────▼─────┐  ┌──────▼──────┐  ┌────▼──────────┐
-   │  Chatbot  │   │   Mapping  │  │  DbSetting  │  │  Notification │
-   │  Service  │   │  Service   │  │   Service   │  │    Service    │
-   └───────┬───┘   └────────────┘  └─────────────┘  └────▲──────────┘
-           │ HTTP                                         │ RabbitMQ
-   ┌───────▼───────────┐                    ┌────────────┴──────────┐
-   │   AI Copilot Svc  │                    │  Other Services (pub) │
-   │  (External HTTP)  │                    │  Plan, Task, Comment  │
-   └───────────────────┘                    └───────────────────────┘
+          ┌────────────────────────┼─────────────────────────┐─────────────────────────┐
+          │                        │                         │                         │
+   ┌──────▼──────┐         ┌───────▼──────┐         ┌───────▼──────┐           ┌───────▼──────┐
+   │    Auth     │         │   Company    │         │     Team     │           │    Other     │
+   │   Service   │         │   Service    │         │   Service    │           │   Services   │
+   └──────┬──────┘         └───────┬──────┘         └───────┬──────┘           └───────┬──────┘
+          │ gRPC                   │ gRPC                   │ gRPC                     │ gRPC
+          │              ┌─────────▼──────────┐             │                          │
+          │              │  Subscription Svc  │             │                          │
+          │              └────────────────────┘             │                          │
+          │                                                 │                          │
+   ┌──────▼─────────────────────────────────────────────────▼──────────────────────────▼──────────┐
+   │                              Internal gRPC Communication Layer                               │
+   └────────────┬──────────────┬────────────────┬─────────────┬─────────────────────────┬──────────┘
+                │              │                │             │                         │
+        ┌───────▼───┐    ┌──────▼─────┐    ┌──────▼──────┐    ┌────▼──────────┐    ┌────▼──────────┐
+        │  Chatbot  │    │   Mapping  │    │  DbSetting  │    │  Notification │    │     Other     │
+        │  Service  │    │  Service   │    │   Service   │    │    Service    │    │    Service    │
+        └───────┬───┘    └────────────┘    └─────────────┘    └────▲──────────┘    └────▲──────────┘
+                │ HTTP                                             │ RabbitMQ
+        ┌───────▼───────────┐                              ┌───────┴───────────────┐
+        │   AI Copilot Svc  │                              │  Other Services (pub) │
+        │  (External HTTP)  │                              │  Plan, Task, Comment  │
+        └───────────────────┘                              └───────────────────────┘
 ```
+
 
 **Key design principles:**
 - Each service owns its own database — no shared data stores
