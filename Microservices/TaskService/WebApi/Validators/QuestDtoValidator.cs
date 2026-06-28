@@ -22,6 +22,11 @@ internal class QuestDtoValidator : AbstractValidator<QuestDto>
             .When(q => q.Status is not null)
             .WithMessage("Status must be between 0 and 3. 0: pending 1: active 2: completed 3: action_required");
 
+        RuleFor(q => q.Priority)
+            .InclusiveBetween(0, 2)
+            .When(q => q.Priority is not null)
+            .WithMessage("Priority must be between 0 and 3. 0: low 1: medium 2: high");
+
         RuleFor(q => q.StartDate)
             .Must(startDate => startDate >= DateTime.UtcNow.AddMinutes(-2)).WithMessage("Start date must be in the future.")
             .When(q => q.StartDate is not null);
@@ -30,5 +35,10 @@ internal class QuestDtoValidator : AbstractValidator<QuestDto>
             .NotEmpty().WithMessage("Deadline is required.")
             .Must((dto, deadline) => deadline >= (dto.StartDate ?? DateTime.UtcNow.AddMinutes(-1)))
             .WithMessage("Deadline must be in the future and after the start date.");
+
+        RuleFor(q => q.PlanId)
+            .NotEmpty()
+            .WithMessage("PlanId is required.");
+
     }
 }

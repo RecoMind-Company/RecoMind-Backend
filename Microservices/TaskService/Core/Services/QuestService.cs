@@ -12,15 +12,17 @@ public class QuestService(IUnitOfWork unitOfWork,
                           IGrpcModuleService grpcModuleService) : IQuestService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
-    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string moduleId)
+    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto)
     {
-        var isModuleExist = await grpcModuleService.GetmoduleIdsAsync(moduleId);
-        if (!isModuleExist.IsExisted)
-            return Result<QuestToReturnDto>.Failure(ModuleErrors.NotFound);
+        if (questDto.ModuleId is not null)
+        {
+            var isModuleExist = await grpcModuleService.GetmoduleIdsAsync(questDto.ModuleId);
+            if (!isModuleExist.IsExisted)
+                return Result<QuestToReturnDto>.Failure(ModuleErrors.NotFound);
+        }
 
         var quest = mapper.Map<Quest>(questDto);
-        quest.QuestId = Guid.NewGuid().ToString();
-        quest.ModuleId = moduleId;
+
         await _questRepository.AddAsync(quest);
         await unitOfWork.SaveChangesAsync();
         var questToReturn = mapper.Map<QuestToReturnDto>(quest);

@@ -16,15 +16,15 @@ public class QuestController(IQuestService questService,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
                              IValidator<QuestByStatusDto> questByStatusDtoValidator) : BaseApiController
 {
-    [HttpPost("{moduleId}/add-task")]
+    [HttpPost("add-task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<QuestToReturnDto>> CreateTask([FromBody] QuestDto questDto, string moduleId)
+    public async Task<ActionResult<QuestToReturnDto>> CreateTask([FromBody] QuestDto questDto)
     {
         var validationResult = await ExecuteValidation(questDtoValidator, questDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var result = await questService.CreateQuestAsync(questDto, moduleId);
+        var result = await questService.CreateQuestAsync(questDto);
         return result.Map<ActionResult<QuestToReturnDto>>(
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));

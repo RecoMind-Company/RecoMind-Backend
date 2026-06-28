@@ -10,6 +10,8 @@ public class QuestProfile : Profile
     public QuestProfile()
     {
         CreateMap<QuestDto, Quest>()
+            .ForMember(des => des.QuestId, opt => opt.MapFrom(src => Guid.NewGuid().ToString()))
+
             .ForMember(des => des.StartDate, opt => opt.
             MapFrom(src => src.StartDate ?? DateTime.UtcNow))
 
@@ -18,7 +20,12 @@ public class QuestProfile : Profile
             ? (QuestStatusEnum)src.Status
             : (src.StartDate ?? DateTime.UtcNow).Date == DateTime.UtcNow.Date
             ? QuestStatusEnum.in_progress
-            : QuestStatusEnum.to_do));
+            : QuestStatusEnum.to_do))
+
+            .ForMember(des => des.Priority, opt => opt.
+            MapFrom(src => src.Priority != null
+            ? (QuestPriorityEnum)src.Priority
+            : QuestPriorityEnum.Low));
 
         CreateMap<Quest, QuestToReturnDto>()
             .ForMember(des => des.Duration, opt => opt
