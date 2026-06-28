@@ -6,11 +6,11 @@ namespace Infrastructure.GrpcClients.Quest;
 
 public class QuestGrpcClientImplementation(GrpcQuestsService.GrpcQuestsServiceClient grpcQuestsServiceClient) : IQuestGrpcClient
 {
-    public async Task PostTasksToQuestService(IEnumerable<PostTasksDto> postTasksDtos)
+    public async Task PostTasksToQuestService(PostTasksDto postTasksDtos)
     {
         var request = new ListOfAiTasksRequest();
 
-        request.Aitasks.AddRange(postTasksDtos.Select(dto => new AiTasks
+        request.Aitasks.AddRange(postTasksDtos.ModulesTasks.Select(dto => new AiTasks
         {
             ModuleId = dto.moduleId ?? string.Empty,
             Tasks =
@@ -35,10 +35,10 @@ public class QuestGrpcClientImplementation(GrpcQuestsService.GrpcQuestsServiceCl
                 }) ?? Enumerable.Empty<AiTask>()
             }
         }));
+        request.PlanId = postTasksDtos.PlanId ?? string.Empty;
 
         await grpcQuestsServiceClient.AddAIGeneratedTasksAsync(request);
-        // الآن الـ request جاهز تماماً لتبعتة من خلال الـ gRPC Client:
-        // var response = await _grpcClient.YourMethodAsync(request);
+
 
     }
 }

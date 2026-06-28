@@ -4,6 +4,7 @@ option csharp_namespace = "GrpcClients.Quest";
 
 message ListOfAiTasksRequest {
 	repeated AiTasks Aitasks = 1;
+	string planId = 2;
 }
 message AiTasks {
   repeated AiTask tasks = 1;
