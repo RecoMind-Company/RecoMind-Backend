@@ -29,24 +29,25 @@ public class QuestController(IQuestService questService,
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
-    [HttpGet("{moduleId}/tasks")]
+
+    [HttpGet("{planId}/tasks")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync(string moduleId)
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync([FromRoute] string planId, [FromQuery] string? moduleId)
     {
-        var result = await questService.GetAllQuestsAsync(moduleId);
+        var result = await questService.GetAllQuestsAsync(planId, moduleId);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));
     }
-    [HttpGet("{moduleId}/by-status")]
+    [HttpGet("{planId}/by-status")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksByStatusAsync(string moduleId, [FromQuery] QuestByStatusDto questByStatusDto)
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksByStatusAsync(string planId, [FromQuery] QuestByStatusDto questByStatusDto)
     {
         var validationResult = await ExecuteValidation(questByStatusDtoValidator, questByStatusDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var result = await questService.GetAllQuestsByStatusAsync(questByStatusDto, moduleId);
+        var result = await questService.GetAllQuestsByStatusAsync(questByStatusDto, planId);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));

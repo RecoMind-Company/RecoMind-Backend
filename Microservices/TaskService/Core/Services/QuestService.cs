@@ -28,9 +28,9 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questToReturn = mapper.Map<QuestToReturnDto>(quest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string moduleId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId, string? moduleId)
     {
-        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId && q.PlanId == planId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
@@ -53,13 +53,17 @@ public class QuestService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string moduleId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string planId)
     {
         if (questByStatusDto.Status is null)
         {
-            return await GetAllQuestsAsync(moduleId);
+            return await GetAllQuestsAsync(planId, questByStatusDto.ModuleId);
         }
-        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status! && q.ModuleId == moduleId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(
+            q => q.Status == (QuestStatusEnum)questByStatusDto.Status! &&
+            q.PlanId == planId &&
+            (q.ModuleId == questByStatusDto.ModuleId || questByStatusDto.ModuleId == null),
+            q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
