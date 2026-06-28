@@ -39,6 +39,18 @@ public class QuestController(IQuestService questService,
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));
     }
+
+    [HttpGet("{questId}")]
+    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<QuestToReturnDto>> GetTaskByIdAsync(string questId)
+    {
+        var result = await questService.GetQuestByIdAsync(questId);
+        return result.Map<ActionResult<QuestToReturnDto>>(
+            onSuccess: quest => Ok(quest),
+            onFailure: err => HandleFailure(err));
+    }
+
     [HttpGet("{planId}/by-status")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]

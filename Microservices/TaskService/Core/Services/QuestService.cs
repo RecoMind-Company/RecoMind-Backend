@@ -34,6 +34,15 @@ public class QuestService(IUnitOfWork unitOfWork,
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
+    public async Task<Result<QuestToReturnDto>> GetQuestByIdAsync(string questId)
+    {
+        var quest = await _questRepository.Find(q => q.QuestId == questId, q => q.UserAssignedQuests);
+        if (quest is null)
+            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+
+        var questToReturn = mapper.Map<QuestToReturnDto>(quest);
+        return Result<QuestToReturnDto>.Success(questToReturn);
+    }
     public async Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId)
     {
         var ExistedQuest = await _questRepository.Find(q => q.QuestId == questId);
