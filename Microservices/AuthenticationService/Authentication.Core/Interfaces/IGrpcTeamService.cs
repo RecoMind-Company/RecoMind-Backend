@@ -2,5 +2,5 @@
 
 public interface IGrpcTeamService
 {
-    Task<string?> GetTeamByUserId(string userId);
+    Task<string?> GetCompanyIdByUserId(string userId);
 }

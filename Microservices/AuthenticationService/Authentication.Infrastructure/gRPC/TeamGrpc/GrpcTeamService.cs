@@ -1,22 +1,29 @@
 ﻿using Authentication.Core.Interfaces;
-using Grpc.Core;
 
 namespace Authentication.Infrastructure.gRPC.TeamGrpc;
 
 public class GrpcTeamService(TeamGrpcService.TeamGrpcServiceClient grpcServiceClient) : IGrpcTeamService
 {
-    public async Task<string?> GetTeamByUserId(string userId)
+    //rpc GetTeamByEmployee(GetUserTeamInfoRequest) returns(UserTeamInfoResponse);
+
+    /*
+    message GetUserTeamInfoRequest {
+        tring userId = 1;
+    }
+
+    message UserTeamInfoResponse {
+      string companyId = 1;
+      string teamId = 2;
+      string teamName = 3;
+    }
+     */
+
+    public async Task<string?> GetCompanyIdByUserId(string userId)
     {
         var request = new GetUserTeamInfoRequest { UserId = userId };
-        try
-        {
-            var response = await grpcServiceClient.GetTeamByTeamLeaderAsync(request);
-            return response.CompanyId;
-        }
-        catch (RpcException ex)
-        {
-            return null;
-        }
 
+        var response = await grpcServiceClient.GetTeamByEmployeeAsync(request);
+
+        return response?.CompanyId;
     }
 }
