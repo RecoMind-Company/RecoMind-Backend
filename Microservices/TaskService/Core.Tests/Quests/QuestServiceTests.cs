@@ -18,11 +18,13 @@ public class QuestServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IGenericRepository<Quest>> _questRepositoryMock;
     private readonly Mock<IGrpcModuleService> _grpcModuleServiceMock;
+    private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
     private readonly QuestService _sut;
 
     public QuestServiceTests()
     {
         _grpcModuleServiceMock = new Mock<IGrpcModuleService>();
+        _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
 
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _questRepositoryMock = new Mock<IGenericRepository<Quest>>();
@@ -33,7 +35,7 @@ public class QuestServiceTests
             loggerFactory
         );
         var mapper = config.CreateMapper();
-        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcModuleServiceMock.Object);
+        _sut = new QuestService(_unitOfWorkMock.Object, mapper, _grpcModuleServiceMock.Object, _grpcPlanServiceMock.Object);
     }
 
     [Theory]
