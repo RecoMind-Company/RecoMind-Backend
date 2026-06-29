@@ -2,11 +2,15 @@
 using Core.Result;
 using Core.ServicesAbstraction;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace WebApi.Controllers;
 
+[ApiController]
+[Route("api/[Controller]")]
+[Authorize]
 public class TaskCommentController(IQuestCommentService questCommentService,
                                 IValidator<AddTaskCommentDto> addTaskCommentDtoValidator,
                                 IValidator<UpdateTaskCommentDto> updateTaskCommentDtoValidator) : BaseApiController
@@ -59,7 +63,7 @@ public class TaskCommentController(IQuestCommentService questCommentService,
             onFailure: err => HandleFailure(err));
     }
 
-    [HttpDelete("{commentId}")]
+    [HttpDelete("{commentId}/remove")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<bool>> DeleteCommentAsync([FromRoute] string commentId)
