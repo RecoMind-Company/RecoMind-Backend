@@ -1,11 +1,11 @@
 ﻿using Core.Dtos.Plan;
 using FluentValidation;
 
-namespace WebApi.Validators;
+namespace WebApi.Validators.PlanComments;
 
-internal class AddCommentDtoValidator : AbstractValidator<AddPlanCommentDto>
+internal class AddiPlanCommentDtoValidator : AbstractValidator<AddPlanCommentDto>
 {
-    public AddCommentDtoValidator()
+    public AddiPlanCommentDtoValidator()
     {
         RuleFor(x => x.UserComment)
             .NotEmpty().WithMessage("User comment is required.")

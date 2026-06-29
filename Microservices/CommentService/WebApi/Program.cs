@@ -23,7 +23,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApi.Hubs;
 using WebApi.Hubs.HubFilters;
-using WebApi.Validators;
+using WebApi.Validators.PlanComments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -111,7 +111,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("CommentDbConnectionString")));
 builder.Services.AddHangfireServer();
 builder.Services.AddAutoMapper(cfg => { }, typeof(PlanCommentProfile).Assembly);
-builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
+builder.Services.AddValidatorsFromAssembly(typeof(AddiPlanCommentDtoValidator).Assembly, includeInternalTypes: true);
 builder.Services.AddScoped<IPlanCommentService, PlanCommentService>();
 builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();

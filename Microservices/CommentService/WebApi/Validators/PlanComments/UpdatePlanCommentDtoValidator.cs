@@ -2,11 +2,11 @@
 using FluentValidation;
 
 
-namespace WebApi.Validators;
+namespace WebApi.Validators.PlanComments;
 
-internal class UpdateCommentDtoValidator : AbstractValidator<UpdatePlanCommentDto>
+internal class UpdatePlanCommentDtoValidator : AbstractValidator<UpdatePlanCommentDto>
 {
-    public UpdateCommentDtoValidator()
+    public UpdatePlanCommentDtoValidator()
     {
         RuleFor(x => x.UserComment)
             .MaximumLength(500)
