@@ -5,7 +5,7 @@ namespace Core.Interfaces;
 
 public interface IReportService
 {
-    Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId);
+    Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId, int limit);
     Task<AiReportResponseDto> GetReportFromAi(GetReportFromAiDto reportFromAiDto);
     Task<AiReportResponseDto> GetReportById(string reportId);
     Task<string> DeleteReport(string reportId);
