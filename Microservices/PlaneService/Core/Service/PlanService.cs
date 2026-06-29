@@ -156,7 +156,10 @@ namespace Core.Service
 
         public async Task<Result<GetPlanDto>> GetPlanById(string planId, string companyId)
         {
-            var plan = await _unitOfWork.Entity.Find(p => (p.Company_Id == companyId && p.Id == planId));
+            var plan = await _unitOfWork.Entity.Find(
+                p => p.Company_Id == companyId && p.Id == planId,
+                p => p.Modules
+            );
 
             if (plan != null)
             {
