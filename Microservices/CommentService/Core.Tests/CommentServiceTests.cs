@@ -19,8 +19,9 @@ public class CommentServiceTests
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
     private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
     private readonly Mock<INotificationService> _notificationServiceMock;
+    private readonly Mock<IBackgroundService> _backgroundServiceMock;
     private readonly IMapper _mapper;
-    private readonly CommentService _sut;
+    private readonly PlanCommentService _sut;
 
     public CommentServiceTests()
     {
@@ -31,12 +32,13 @@ public class CommentServiceTests
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
         _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
         _notificationServiceMock = new Mock<INotificationService>();
+        _backgroundServiceMock = new Mock<IBackgroundService>();
 
         var nullLoggerFactory = new NullLoggerFactory();
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<CommentProfile>(), nullLoggerFactory);
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<PlanCommentProfile>(), nullLoggerFactory);
         _mapper = config.CreateMapper();
 
-        _sut = new CommentService(_unitOfWorkMock.Object, _mapper, _grpcTeamServiceMock.Object, _grpcPlanServiceMock.Object, _notificationServiceMock.Object);
+        _sut = new PlanCommentService(_unitOfWorkMock.Object, _mapper, _grpcTeamServiceMock.Object, _grpcPlanServiceMock.Object, _notificationServiceMock.Object, _backgroundServiceMock.Object);
     }
 
     #region AddCommentAsync Tests

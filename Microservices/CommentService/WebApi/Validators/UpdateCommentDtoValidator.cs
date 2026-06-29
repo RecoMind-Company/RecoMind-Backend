@@ -1,10 +1,10 @@
-﻿using Core.Dtos;
+﻿using Core.Dtos.Plan;
 using FluentValidation;
 
 
 namespace WebApi.Validators;
 
-internal class UpdateCommentDtoValidator : AbstractValidator<UpdateCommentDto>
+internal class UpdateCommentDtoValidator : AbstractValidator<UpdatePlanCommentDto>
 {
     public UpdateCommentDtoValidator()
     {

@@ -1,4 +1,4 @@
-﻿using Core.Dtos;
+﻿using Core.Dtos.Plan;
 using Core.ServicesAbstraction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -9,7 +9,7 @@ namespace WebApi.Hubs;
 [Authorize]
 public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
                         IGrpcPlanService grpcPlanService,
-                        ICommentService commentService,
+                        IPlanCommentService commentService,
                         ILogger<CommentHub> logger) : Hub<ICommentClient>
 {
     public override async Task OnConnectedAsync()
@@ -49,7 +49,7 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
         }
     }
 
-    public async Task CreateComment(AddCommentDto addCommentDto)
+    public async Task CreateComment(AddPlanCommentDto addCommentDto)
     {
         var userId = Context.Items["userId"] as string;
         addCommentDto.UserId = userId;
@@ -61,7 +61,7 @@ public class CommentHub(IUserQuestGrpcService userQuestGrpcService,
             onFailure: errors => Clients.Caller.ReceiveErrors(errors)
         );
     }
-    public async Task EditComment(UpdateCommentDto updateCommentDto)
+    public async Task EditComment(UpdatePlanCommentDto updateCommentDto)
     {
         var userId = Context.Items["userId"] as string;
         var planId = Context.Items["planId"] as string;
