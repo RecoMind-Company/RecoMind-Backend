@@ -50,4 +50,8 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     {
         _dbset.Remove(entity);
     }
+    public async Task BulkDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        await _dbset.Where(predicate).ExecuteDeleteAsync(cancellationToken);
+    }
 }

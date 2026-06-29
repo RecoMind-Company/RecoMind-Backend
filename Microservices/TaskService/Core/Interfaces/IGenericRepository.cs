@@ -12,4 +12,5 @@ public interface IGenericRepository<T> where T : class
     Task AddRangeAsync(IEnumerable<T> entities);
     void Update(T entity);
     void Delete(T entity);
+    Task BulkDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
 }
