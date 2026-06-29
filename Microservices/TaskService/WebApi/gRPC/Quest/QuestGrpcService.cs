@@ -47,4 +47,10 @@ public class QuestGrpcService(IQuestService questService) : GrpcQuestsService.Gr
         };
         return response;
     }
+
+    public override async Task<Empty> DeleteTaskByPlanId(DeleteTaskByPlanIdRequest request, ServerCallContext context)
+    {
+        await questService.DeleteTasksByPlanId(request.PlanId);
+        return new Empty();
+    }
 }

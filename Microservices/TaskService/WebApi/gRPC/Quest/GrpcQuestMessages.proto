@@ -34,3 +34,7 @@ message IsTaskExistsRequest {
 message IsTaskExistsResponse {
   bool isExists = 1;
 }
+
+message DeleteTaskByPlanIdRequest {
+	string plan_id = 1;
+}
