@@ -120,4 +120,9 @@ public class QuestService(IUnitOfWork unitOfWork,
 
         return false;
     }
+
+    public async Task DeleteTasksByPlanId(string planId)
+    {
+        await _questRepository.BulkDeleteAsync(q => q.PlanId == planId);
+    }
 }
