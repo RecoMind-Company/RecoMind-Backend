@@ -96,15 +96,14 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
-    /// <summary>
-    /// TODO: Implement a method to check if a user is assigned to any quest within a specific MODULE NOT PLAN
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="moduleId"></param>
-    /// <returns></returns>
     public async Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId)
     {
         var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
         return isExist;
     }
+    public async Task<bool> IsUserAssignToQuestAsync(string userId, string questId)
+    {
+        return await _userQuestsRepository.AnyAsync(uq => uq.UserId == userId && uq.QuestId == questId);
+    }
+
 }

@@ -11,4 +11,9 @@ public class UserQuestGrpcService(IUserQuestsService userQuestsService) : GrpcUs
 
         return new IsUserInPlanResponse { IsInPlan = isInPlan };
     }
+    public override async Task<IsUserAssignedToTaskResponse> IsUserAssignedToTask(IsUserAssignedToTaskRequest request, ServerCallContext context)
+    {
+        var isAssigned = await userQuestsService.IsUserAssignToQuestAsync(request.UserId, request.TaskId);
+        return new IsUserAssignedToTaskResponse { IsAssigned = isAssigned };
+    }
 }

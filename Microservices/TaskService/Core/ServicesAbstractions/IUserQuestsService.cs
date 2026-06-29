@@ -10,4 +10,5 @@ public interface IUserQuestsService
     Task<Result<bool>> UnAssignUserFromQuestAsync(string questId, string userId);
     Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId);
     Task<Result<PersonalQuestToReturnDto>> AssignUsersToQuestAsync(List<string> userIds, string questId);
+    Task<bool> IsUserAssignToQuestAsync(string userId, string questId);
 }
