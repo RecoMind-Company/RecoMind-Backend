@@ -1,6 +1,6 @@
 ﻿namespace Core.Models;
 
-public class Comment
+public class PlanComment
 {
     public string Id { get; set; } = default!;
     public string UserComment { get; set; } = default!;

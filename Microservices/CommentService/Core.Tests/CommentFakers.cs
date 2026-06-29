@@ -7,7 +7,7 @@ namespace Core.Tests;
 
 internal static class CommentFakers
 {
-    internal static Faker<Comment> GetComment(int seed = 0) => new Faker<Comment>()
+    internal static Faker<PlanComment> GetComment(int seed = 0) => new Faker<PlanComment>()
         .UseSeed(seed)
         .RuleFor(c => c.Id, f => f.Random.Guid().ToString())
         .RuleFor(c => c.UserId, f => f.Random.Guid().ToString())

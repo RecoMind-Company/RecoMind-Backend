@@ -15,7 +15,7 @@ public class CommentService(IUnitOfWork unitOfWork,
                             IGrpcPlanService grpcPlanService,
                             INotificationService notificationService) : ICommentService
 {
-    private readonly IGenericRepository<Comment> _commentRepository = unitOfWork.GetRepository<Comment>();
+    private readonly IGenericRepository<PlanComment> _commentRepository = unitOfWork.GetRepository<PlanComment>();
     public async Task<Result<CommentDto>> AddCommentAsync(AddCommentDto addCommentDto)
     {
         // TODO: the main two validation
@@ -30,7 +30,7 @@ public class CommentService(IUnitOfWork unitOfWork,
             ||
             await grpcTeamService.IsUserExist(addCommentDto.UserId!, plan.TeamId!))
         {
-            var comment = mapper.Map<Comment>(addCommentDto);
+            var comment = mapper.Map<PlanComment>(addCommentDto);
             await _commentRepository.AddAsync(comment);
             await unitOfWork.SaveChangesAsync();
             var commentDto = mapper.Map<CommentDto>(comment);

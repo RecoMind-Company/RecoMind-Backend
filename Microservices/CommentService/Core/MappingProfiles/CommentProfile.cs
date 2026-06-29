@@ -8,13 +8,13 @@ public class CommentProfile : Profile
 {
     public CommentProfile()
     {
-        CreateMap<AddCommentDto, Comment>()
+        CreateMap<AddCommentDto, PlanComment>()
             .ForMember(des => des.Id, opt => opt.MapFrom(_ => Guid.NewGuid().ToString()))
             .ForMember(des => des.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-        CreateMap<Comment, CommentDto>();
+        CreateMap<PlanComment, CommentDto>();
 
-        CreateMap<UpdateCommentDto, Comment>()
+        CreateMap<UpdateCommentDto, PlanComment>()
             .ForMember(des => des.UserComment, opt =>
             {
                 opt.Condition(src => !string.IsNullOrEmpty(src.UserComment));

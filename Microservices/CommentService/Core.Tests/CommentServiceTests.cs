@@ -15,7 +15,7 @@ namespace Core.Tests;
 public class CommentServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-    private readonly Mock<IGenericRepository<Comment>> _commentRepositoryMock;
+    private readonly Mock<IGenericRepository<PlanComment>> _commentRepositoryMock;
     private readonly Mock<IGrpcTeamService> _grpcTeamServiceMock;
     private readonly Mock<IGrpcPlanService> _grpcPlanServiceMock;
     private readonly Mock<INotificationService> _notificationServiceMock;
@@ -25,8 +25,8 @@ public class CommentServiceTests
     public CommentServiceTests()
     {
         _unitOfWorkMock = new Mock<IUnitOfWork>();
-        _commentRepositoryMock = new Mock<IGenericRepository<Comment>>();
-        _unitOfWorkMock.Setup(u => u.GetRepository<Comment>()).Returns(_commentRepositoryMock.Object);
+        _commentRepositoryMock = new Mock<IGenericRepository<PlanComment>>();
+        _unitOfWorkMock.Setup(u => u.GetRepository<PlanComment>()).Returns(_commentRepositoryMock.Object);
 
         _grpcTeamServiceMock = new Mock<IGrpcTeamService>();
         _grpcPlanServiceMock = new Mock<IGrpcPlanService>();
@@ -57,7 +57,7 @@ public class CommentServiceTests
             .ReturnsAsync(true);
 
         _commentRepositoryMock
-            .Setup(x => x.AddAsync(It.IsAny<Comment>()))
+            .Setup(x => x.AddAsync(It.IsAny<PlanComment>()))
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock
@@ -72,7 +72,7 @@ public class CommentServiceTests
         result.Value.Should().NotBeNull();
         result.ErrorsList.Should().BeEmpty();
 
-        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Comment>()), Times.Once);
+        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<PlanComment>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -96,7 +96,7 @@ public class CommentServiceTests
             .ReturnsAsync(true);
 
         _commentRepositoryMock
-            .Setup(x => x.AddAsync(It.IsAny<Comment>()))
+            .Setup(x => x.AddAsync(It.IsAny<PlanComment>()))
             .Returns(Task.CompletedTask);
 
         _unitOfWorkMock
@@ -111,7 +111,7 @@ public class CommentServiceTests
         result.Value.Should().NotBeNull();
         result.ErrorsList.Should().BeEmpty();
 
-        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Comment>()), Times.Once);
+        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<PlanComment>()), Times.Once);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class CommentServiceTests
             .Should()
             .Be(PlanErrors.PlanNotFound);
 
-        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<PlanComment>()), Times.Never);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 
@@ -176,7 +176,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.AccessDenied);
 
-        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.AddAsync(It.IsAny<PlanComment>()), Times.Never);
     }
 
     #endregion
@@ -197,9 +197,9 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.FindAll(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<Func<IQueryable<PlanComment>, IOrderedQueryable<PlanComment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(comments);
 
         // Act
@@ -213,9 +213,9 @@ public class CommentServiceTests
 
         _commentRepositoryMock.Verify(
             x => x.FindAll(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<Func<IQueryable<PlanComment>, IOrderedQueryable<PlanComment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()),
             Times.Once);
     }
 
@@ -232,10 +232,10 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.FindAll(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
-            .ReturnsAsync(Enumerable.Empty<Comment>());
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<Func<IQueryable<PlanComment>, IOrderedQueryable<PlanComment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
+            .ReturnsAsync(Enumerable.Empty<PlanComment>());
 
         // Act
         var result = await _sut.GetCommentsByPlanIdAsync(planId);
@@ -274,9 +274,9 @@ public class CommentServiceTests
 
         _commentRepositoryMock.Verify(
             x => x.FindAll(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<Func<IQueryable<Comment>, IOrderedQueryable<Comment>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<Func<IQueryable<PlanComment>, IOrderedQueryable<PlanComment>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()),
             Times.Never);
     }
 
@@ -294,12 +294,12 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(existingComment);
 
         _commentRepositoryMock
-            .Setup(x => x.Update(It.IsAny<Comment>()));
+            .Setup(x => x.Update(It.IsAny<PlanComment>()));
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync())
@@ -313,7 +313,7 @@ public class CommentServiceTests
         result.Value.Should().NotBeNull();
         result.ErrorsList.Should().BeEmpty();
 
-        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Once);
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<PlanComment>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -325,9 +325,9 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
-            .ReturnsAsync((Comment?)null);
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
+            .ReturnsAsync((PlanComment?)null);
 
         // Act
         var result = await _sut.UpdateCommentAsync(updateCommentDto);
@@ -343,7 +343,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.NotFound);
 
-        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<PlanComment>()), Times.Never);
     }
 
     [Fact]
@@ -356,8 +356,8 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(existingComment);
 
         // Act
@@ -374,7 +374,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.AccessDenied);
 
-        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<PlanComment>()), Times.Never);
     }
 
     [Fact]
@@ -387,8 +387,8 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(existingComment);
 
         // Act
@@ -405,7 +405,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.EditTimeout);
 
-        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.Update(It.IsAny<PlanComment>()), Times.Never);
     }
 
     #endregion
@@ -422,12 +422,12 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(comment);
 
         _commentRepositoryMock
-            .Setup(x => x.Delete(It.IsAny<Comment>()));
+            .Setup(x => x.Delete(It.IsAny<PlanComment>()));
 
         _unitOfWorkMock
             .Setup(x => x.SaveChangesAsync())
@@ -441,7 +441,7 @@ public class CommentServiceTests
         result.Value.Should().BeTrue();
         result.ErrorsList.Should().BeEmpty();
 
-        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Once);
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<PlanComment>()), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
@@ -454,9 +454,9 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
-            .ReturnsAsync((Comment?)null);
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
+            .ReturnsAsync((PlanComment?)null);
 
         // Act
         var result = await _sut.DeleteCommentAsync(commentId, userId);
@@ -472,7 +472,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.NotFound);
 
-        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<PlanComment>()), Times.Never);
     }
 
     [Fact]
@@ -485,8 +485,8 @@ public class CommentServiceTests
 
         _commentRepositoryMock
             .Setup(x => x.Find(
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, bool>>>(),
-                It.IsAny<System.Linq.Expressions.Expression<Func<Comment, object>>[]>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, bool>>>(),
+                It.IsAny<System.Linq.Expressions.Expression<Func<PlanComment, object>>[]>()))
             .ReturnsAsync(comment);
 
         // Act
@@ -503,7 +503,7 @@ public class CommentServiceTests
             .Should()
             .Be(CommentErrors.AccessDenied);
 
-        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<Comment>()), Times.Never);
+        _commentRepositoryMock.Verify(x => x.Delete(It.IsAny<PlanComment>()), Times.Never);
     }
 
     #endregion
