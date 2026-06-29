@@ -27,3 +27,8 @@ message AiSuggestedOwnersDto {
   string user_id = 1;
   string job_title = 2;
 }
+
+
+message DeleteTaskByPlanIdRequest {
+	string plan_id = 1;
+}

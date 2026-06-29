@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.DTOs.AI;
-using Core.DTOs.PlanDtos;
+using Core.DTOs.PlanDtos.Module;
+using Core.DTOs.PlanDtos.Plan;
 using Core.Models;
 
 namespace Core.Mapping
@@ -18,12 +19,17 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Team_Id, opt => opt.Ignore())
                 .ReverseMap();
 
+            CreateMap<Module, GetModuleDto>();
+
             CreateMap<Plan, GetPlanDto>()
                 .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.IsApproved, opt => opt.MapFrom(src => src.IsApproved))
+                .ForMember(dest => dest.Feedback, opt => opt.MapFrom(src => src.Feedback))
+                .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Duration))
+                .ForMember(dest => dest.Modules, opt => opt.MapFrom(src => src.Modules))
                 .ReverseMap();
-
-
+                               
             // AI Mapping 
             // AI Plan
             CreateMap<AIPlanDto, Plan>()

@@ -1,5 +1,7 @@
 ﻿using Core.DTOs.AI;
 using Core.DTOs.PlanDtos;
+using Core.DTOs.PlanDtos.Approve;
+using Core.DTOs.PlanDtos.Plan;
 using Core.Models;
 
 namespace Core.Service.Interface
@@ -13,8 +15,7 @@ namespace Core.Service.Interface
         Task<Result<GetPlanDto>> UpdatePlan(string companyId, string userId, UpdatePlanDto dto);
         Task<bool> DeletePlan(string planId, string companyId);
         Task<Result<AIPlanDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
-
-
+        Task<Result<PostIsApprovedDto>> IsApproved (PostIsApprovedDto approvedDto);
 
     }
 }

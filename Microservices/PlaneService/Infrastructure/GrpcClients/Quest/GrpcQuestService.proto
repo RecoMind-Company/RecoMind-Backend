@@ -5,4 +5,5 @@ option csharp_namespace = "GrpcClients.Quest";
 
 service GrpcQuestsService {
 	rpc AddAIGeneratedTasks(ListOfAiTasksRequest) returns (google.protobuf.Empty);
+	rpc DeleteTaskByPlanId(DeleteTaskByPlanIdRequest) returns (google.protobuf.Empty);
 }

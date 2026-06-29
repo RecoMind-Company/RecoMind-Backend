@@ -6,6 +6,15 @@ namespace Infrastructure.GrpcClients.Quest;
 
 public class QuestGrpcClientImplementation(GrpcQuestsService.GrpcQuestsServiceClient grpcQuestsServiceClient) : IQuestGrpcClient
 {
+    public async Task DeleteTaskByPlanId(string planId)
+    {
+        var request = new DeleteTaskByPlanIdRequest
+        {
+            PlanId = planId ?? string.Empty
+        };
+        await grpcQuestsServiceClient.DeleteTaskByPlanIdAsync(request);
+    }
+
     public async Task PostTasksToQuestService(PostTasksDto postTasksDtos)
     {
         var request = new ListOfAiTasksRequest();

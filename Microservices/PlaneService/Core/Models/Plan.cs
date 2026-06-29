@@ -8,6 +8,7 @@
         public string Status { get; set; }
         public string? PlanType { get; set; }
         public bool IsApproved { get; set; }
+        public string? Feedback { get; set; }
         public string Duration { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

@@ -1,4 +1,6 @@
 ﻿using Core.DTOs.PlanDtos;
+using Core.DTOs.PlanDtos.Approve;
+using Core.DTOs.PlanDtos.Plan;
 using Core.DTOs.PlnaTypeDtos;
 using Core.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -68,6 +70,32 @@ namespace webApi.Controllers
                 return NotFound(plans.Any(x => x.IsFailure));
             else
                 return Ok(plans);
+        }
+
+        [HttpPost("custom-plan/generate")]
+        public async Task<IActionResult> GenerateCustomPlan([FromBody] UserCustomPlanDto userCustomPlanDto)
+        {
+            var companyId = User.FindFirst("CompanyId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest("CompanyId Not Found!");
+
+            var response = await _planService.CreateCustomPlan(userCustomPlanDto, companyId, userId);
+            if (response.IsSuccess)
+                return Ok(response.Value);
+            else
+                return BadRequest(response.Error);
+        }
+
+        [HttpPost("IsApproved")]
+        public async Task<IActionResult> IsApproved([FromBody] PostIsApprovedDto approvedDto)
+        {
+            var response = await _planService.IsApproved(approvedDto);
+            if (response.IsSuccess)
+                return Ok(response.Value);
+            else
+                return BadRequest(response.Error);
         }
 
         [HttpPost("CreatePlan")]
@@ -164,6 +192,8 @@ namespace webApi.Controllers
             return NotFound($"Plan Type With Name {PlanTypeName} Not Found");
         }
 
+        
+
         [HttpGet("Status/GetAll")]
         public async Task<IActionResult> GetAllStatuses()
         {
@@ -187,22 +217,6 @@ namespace webApi.Controllers
             if (Check)
                 return Ok(" Deleted Successfuly ");
             return BadRequest(" Status Not Found ");
-        }
-
-        [HttpPost("custom-plan/generate")]
-        public async Task<IActionResult> GenerateCustomPlan([FromBody] UserCustomPlanDto userCustomPlanDto)
-        {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest("CompanyId Not Found!");
-
-            var response = await _planService.CreateCustomPlan(userCustomPlanDto, companyId, userId);
-            if (response.IsSuccess)
-                return Ok(response.Value);
-            else
-                return BadRequest(response.Error);
         }
     }
 }

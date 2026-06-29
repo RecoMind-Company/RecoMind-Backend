@@ -1,5 +1,6 @@
 using AutoMapper;
 using Core.DTOs.PlanDtos;
+using Core.DTOs.PlanDtos.Plan;
 using Core.DTOs.PlnaTypeDtos;
 using Core.Interfaces;
 using Core.Models;

@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.DTOs.AI;
 using Core.DTOs.PlanDtos;
+using Core.DTOs.PlanDtos.Approve;
+using Core.DTOs.PlanDtos.Plan;
 using Core.DTOs.Quest;
 using Core.Interfaces;
 using Core.Models;
@@ -246,14 +248,14 @@ namespace Core.Service
             var planToRetyrn = new List<Result<GetPlanDto>>();
             var items = await _unitOfWork.Entity.FindAll((x => (x.Company_Id == companyId && x.Status == status)));
 
-            if (items != null)
+            if (items != null && items.Any())
             {
                 foreach (var item in items)
                 {
                     var dto = _mapper.Map<GetPlanDto>(item);
                     planToRetyrn.Add(Result<GetPlanDto>.Success(dto));
-                    return planToRetyrn;
                 }
+                return planToRetyrn;
             }
             planToRetyrn.Add(Result<GetPlanDto>.Failure($"No plans found with the specified status : {status}"));
             return planToRetyrn;
@@ -309,6 +311,56 @@ namespace Core.Service
             _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasks));
 
             return Result<AIPlanDto>.Success(result.Value);
+        }
+
+        public async Task<Result<PostIsApprovedDto>> IsApproved(PostIsApprovedDto approvedDto)
+        {
+            var plan = await _unitOfWork.Entity.Find(p => p.Id == approvedDto.PlanId);
+            if (plan == null) // If the plan is not found, return a failure result
+                return Result<PostIsApprovedDto>.Failure("Plan Not Found!");
+
+            if (plan.IsApproved) // If the plan is already approved, return a message indicating that   
+            {
+                return Result<PostIsApprovedDto>.Success(new PostIsApprovedDto
+                {
+                    PlanId = plan.Id,
+                    IsAproved = plan.IsApproved,
+                    Feedback = "Plan With Id: " + plan.Id + " Is Already Approved!"
+                });
+            }
+            else if (plan.Feedback != null && !plan.IsApproved) // If The Plan Already Rejected 
+            {
+                return Result<PostIsApprovedDto>.Failure("Plan With Id: " + plan.Id + " Is Already Rejected!");
+            }
+            else if (plan.Feedback == null && !plan.IsApproved)  // If the plan is not approved, update the approval status and feedback
+            {
+
+                if (approvedDto.IsAproved)
+                {
+                    plan.IsApproved = approvedDto.IsAproved;
+                    plan.Feedback = approvedDto.Feedback ?? "Plan Approved Successfully!";
+
+                }
+                else
+                {
+                    plan.IsApproved = approvedDto.IsAproved;
+                    plan.Feedback = approvedDto.Feedback ?? "Plan Rejected!";
+
+                    await _questGrpcClient.DeleteTaskByPlanId(plan.Id); // Delete all tasks related to the plan if it is rejected            
+                }
+                await _unitOfWork.Entity.UpdateAsync(plan);
+                _unitOfWork.Save();
+                return Result<PostIsApprovedDto>.Success(new PostIsApprovedDto
+                {
+                    PlanId = plan.Id,
+                    IsAproved = plan.IsApproved,
+                    Feedback = plan.Feedback
+                });
+            }
+            else
+            {
+                return Result<PostIsApprovedDto>.Failure("Invalid Plan Approval Status!");
+            }
         }
     }
 }
