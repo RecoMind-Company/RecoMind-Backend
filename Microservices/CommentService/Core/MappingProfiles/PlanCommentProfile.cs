@@ -1,20 +1,20 @@
 ﻿using AutoMapper;
-using Core.Dtos;
+using Core.Dtos.Plan;
 using Core.Models;
 
 namespace Core.MappingProfiles;
 
-public class CommentProfile : Profile
+public class PlanCommentProfile : Profile
 {
-    public CommentProfile()
+    public PlanCommentProfile()
     {
-        CreateMap<AddCommentDto, PlanComment>()
+        CreateMap<AddPlanCommentDto, PlanComment>()
             .ForMember(des => des.Id, opt => opt.MapFrom(_ => Guid.NewGuid().ToString()))
             .ForMember(des => des.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-        CreateMap<PlanComment, CommentDto>();
+        CreateMap<PlanComment, PlanCommentDto>();
 
-        CreateMap<UpdateCommentDto, PlanComment>()
+        CreateMap<UpdatePlanCommentDto, PlanComment>()
             .ForMember(des => des.UserComment, opt =>
             {
                 opt.Condition(src => !string.IsNullOrEmpty(src.UserComment));

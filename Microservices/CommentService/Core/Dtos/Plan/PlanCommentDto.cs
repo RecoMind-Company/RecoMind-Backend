@@ -1,6 +1,6 @@
-﻿namespace Core.Dtos;
+﻿namespace Core.Dtos.Plan;
 
-public class CommentDto
+public class PlanCommentDto
 {
     public string Id { get; set; } = default!;
     public string UserComment { get; set; } = default!;

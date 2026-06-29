@@ -1,12 +1,11 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Core.Dtos;
+namespace Core.Dtos.Plan;
 
-public class AddCommentDto
+public class UpdatePlanCommentDto
 {
     public string? UserComment { get; set; }
-    [JsonIgnore]
-    public string? PlanId { get; set; }
+    public string? CommentId { get; set; }
     [JsonIgnore]
     public string? UserId { get; set; }
 }
