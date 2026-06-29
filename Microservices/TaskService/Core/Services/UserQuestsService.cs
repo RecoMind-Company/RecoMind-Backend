@@ -104,7 +104,7 @@ public class UserQuestsService(IUnitOfWork unitOfWork,
     /// <returns></returns>
     public async Task<bool> IsUserAssignedToAnyQuestInPlan(string userId, string planId)
     {
-        var isExist = await _questRepository.AnyAsync(q => q.ModuleId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
+        var isExist = await _questRepository.AnyAsync(q => q.PlanId == planId && q.UserAssignedQuests.Any(uq => uq.UserId == userId));
         return isExist;
     }
 }
