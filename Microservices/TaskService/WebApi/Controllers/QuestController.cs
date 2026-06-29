@@ -30,7 +30,7 @@ public class QuestController(IQuestService questService,
             onFailure: err => HandleFailure(err));
     }
 
-    [HttpGet("{planId}/tasks")]
+    [HttpGet("{planId}/all")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync([FromRoute] string planId, [FromQuery] string? moduleId)
     {
@@ -88,7 +88,11 @@ public class QuestController(IQuestService questService,
             onSuccess: _ => NoContent(),
             onFailure: err => HandleFailure(err));
     }
+
     [HttpPost("personal")]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(PersonalQuestToReturnDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<PersonalQuestToReturnDto>> CreateTaskAndAssignUsers([FromBody] FullQuestDto fullQuestDto)
     {
         var validationResult = await ExecuteValidation(questDtoValidator, fullQuestDto.questDto);
