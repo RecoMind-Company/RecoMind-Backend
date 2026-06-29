@@ -9,5 +9,6 @@ public class ApplicationDbContext : DbContext
     {
 
     }
-    public DbSet<Comment> Comments { get; set; } = default!;
+    public DbSet<PlanComment> PlanComments { get; set; } = default!;
+    public DbSet<QuestComment> QuestComments { get; set; }
 }

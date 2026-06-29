@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Core.Dtos;
+namespace Core.Dtos.Plan;
 
-public class AddCommentDto
+public class AddPlanCommentDto
 {
     public string? UserComment { get; set; }
     [JsonIgnore]

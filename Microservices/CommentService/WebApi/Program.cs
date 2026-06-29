@@ -5,6 +5,8 @@ using Core.ServicesAbstraction;
 using Core.ServicesAbstractions;
 using Core.Settings;
 using FluentValidation;
+using Hangfire;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Context;
 using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Quest;
@@ -19,9 +21,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using WebApi.gRPC.Quest;
 using WebApi.Hubs;
 using WebApi.Hubs.HubFilters;
-using WebApi.Validators;
+using WebApi.Validators.PlanComments;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,13 +109,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("CommentDbConnectionString"));
 });
-builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
-builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
-builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("CommentDbConnectionString")));
+builder.Services.AddHangfireServer();
+builder.Services.AddAutoMapper(cfg => { }, typeof(PlanCommentProfile).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(AddiPlanCommentDtoValidator).Assembly, includeInternalTypes: true);
+builder.Services.AddScoped<IPlanCommentService, PlanCommentService>();
 builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
+builder.Services.AddScoped<IQuestGrpcService, QuestGrpcService>();
+builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
+builder.Services.AddScoped<IQuestCommentService, QuestCommentService>();
 
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {

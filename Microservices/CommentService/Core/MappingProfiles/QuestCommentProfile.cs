@@ -1,20 +1,20 @@
 ﻿using AutoMapper;
-using Core.Dtos;
+using Core.Dtos.Task;
 using Core.Models;
 
 namespace Core.MappingProfiles;
 
-public class CommentProfile : Profile
+public class QuestCommentProfile : Profile
 {
-    public CommentProfile()
+    public QuestCommentProfile()
     {
-        CreateMap<AddCommentDto, Comment>()
+        CreateMap<AddTaskCommentDto, QuestComment>()
             .ForMember(des => des.Id, opt => opt.MapFrom(_ => Guid.NewGuid().ToString()))
             .ForMember(des => des.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-        CreateMap<Comment, CommentDto>();
+        CreateMap<QuestComment, TaskCommentDto>();
 
-        CreateMap<UpdateCommentDto, Comment>()
+        CreateMap<UpdateTaskCommentDto, QuestComment>()
             .ForMember(des => des.UserComment, opt =>
             {
                 opt.Condition(src => !string.IsNullOrEmpty(src.UserComment));
@@ -22,9 +22,7 @@ public class CommentProfile : Profile
             })
             .ForMember(des => des.Id, opt => opt.Ignore())
             .ForMember(des => des.UserId, opt => opt.Ignore())
-            .ForMember(des => des.PlanId, opt => opt.Ignore())
+            .ForMember(des => des.QuestId, opt => opt.Ignore())
             .ForMember(des => des.UpdatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
     }
-
-
 }
