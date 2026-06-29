@@ -36,4 +36,15 @@ public class QuestGrpcService(IQuestService questService) : GrpcQuestsService.Gr
 
         return new Empty();
     }
+
+    public override async Task<IsTaskExistsResponse> IsTaskExists(IsTaskExistsRequest request, ServerCallContext context)
+    {
+        var taskId = request.TaskId;
+
+        var response = new IsTaskExistsResponse
+        {
+            IsExists = await questService.IsTaskExists(taskId)
+        };
+        return response;
+    }
 }

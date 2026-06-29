@@ -27,3 +27,10 @@ message AiSuggestedOwnersDto {
   string user_id = 1;
   string job_title = 2;
 }
+
+message IsTaskExistsRequest {
+  string task_id = 1;
+}
+message IsTaskExistsResponse {
+  bool isExists = 1;
+}
