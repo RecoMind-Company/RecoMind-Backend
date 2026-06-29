@@ -6,6 +6,7 @@ public class Quest
     public string Title { get; set; } = default!;
     public string? Description { get; set; }
     public QuestStatusEnum Status { get; set; }
+    public QuestPriorityEnum Priority { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime DeadLine { get; set; }
     public TimeSpan Duration => DeadLine - StartDate;

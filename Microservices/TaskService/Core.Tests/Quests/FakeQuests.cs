@@ -21,6 +21,7 @@ public static class FakeQuests
     public static Faker<QuestDto> GetFakeQuestDto(int seed = 0) => new Faker<QuestDto>()
             .UseSeed(seed)
             .RuleFor(q => q.Title, f => f.Lorem.Sentence(3))
+            .RuleFor(q => q.ModuleId, f => "module1")
             .RuleFor(q => q.Description, f => f.Lorem.Paragraph())
             .RuleFor(q => q.StartDate, f => seed % 2 == 0
                 ? f.Date.Past(1, DateTime.UtcNow.AddDays(-1))   // past → pending

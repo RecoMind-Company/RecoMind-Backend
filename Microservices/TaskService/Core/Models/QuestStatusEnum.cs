@@ -6,4 +6,5 @@ public enum QuestStatusEnum
     in_progress,
     completed,
     blocked,
+    overdue
 }

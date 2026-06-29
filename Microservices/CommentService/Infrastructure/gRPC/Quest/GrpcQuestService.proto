@@ -1,10 +1,9 @@
 syntax = "proto3";
 import "GrpcQuestMessages.proto";
 import "google/protobuf/empty.proto";
-option csharp_namespace = "WebApi.gRPC.Quest";
+option csharp_namespace = "Infrastructure.gRPC.Quest";
 
 service GrpcQuestsService {
 	rpc AddAIGeneratedTasks(ListOfAiTasksRequest) returns (google.protobuf.Empty);
 	rpc IsTaskExists(IsTaskExistsRequest) returns (IsTaskExistsResponse);
-	rpc DeleteTaskByPlanId(DeleteTaskByPlanIdRequest) returns (google.protobuf.Empty);
 }

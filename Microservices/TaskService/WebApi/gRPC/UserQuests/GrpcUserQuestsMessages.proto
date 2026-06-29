@@ -8,3 +8,11 @@ message IsUserInPlanRequest {
 message IsUserInPlanResponse {
 	bool isInPlan = 1;
 }
+
+message IsUserAssignedToTaskRequest {
+	string userId = 1;
+	string taskId = 2;
+}
+message IsUserAssignedToTaskResponse {
+	bool isAssigned = 1;
+}

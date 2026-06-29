@@ -7,6 +7,7 @@ using Core.Settings;
 using FluentValidation;
 using Infrastructure.Context;
 using Infrastructure.gRPC.Plan;
+using Infrastructure.gRPC.Quest;
 using Infrastructure.gRPC.Team;
 using Infrastructure.gRPC.UserQuests;
 using Infrastructure.Notification;
@@ -116,6 +117,18 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {
     options.Address = new Uri(builder.Configuration["GrpcSettings:UserQuestsServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
+});
+
+builder.Services.AddGrpcClient<GrpcQuestsService.GrpcQuestsServiceClient>(options =>
+{
+    options.Address = new Uri(builder.Configuration["GrpcSettings:QuestsServiceUrl"] ?? throw new InvalidOperationException("gRPC service URL is missing."));
 }).ConfigurePrimaryHttpMessageHandler(() =>
 {
 

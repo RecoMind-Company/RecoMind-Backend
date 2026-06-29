@@ -4,5 +4,6 @@ option csharp_namespace = "WebApi.gRPC.UserQuests";
 
 service GrpcUserQuestsService {
 	rpc IsUserInAnyQuestWithinPlan(IsUserInPlanRequest) returns (IsUserInPlanResponse);
+	rpc IsUserAssignedToTask(IsUserAssignedToTaskRequest) returns (IsUserAssignedToTaskResponse);
 }
 

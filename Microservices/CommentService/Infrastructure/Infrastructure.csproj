@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <None Remove="gRPC\Plan\PlanService.proto" />
+    <None Remove="gRPC\Quest\GrpcQuestMessages.proto" />
+    <None Remove="gRPC\Quest\GrpcQuestService.proto" />
     <None Remove="gRPC\Team\teamMessages.proto" />
     <None Remove="gRPC\Team\TeamService.proto" />
     <None Remove="gRPC\UserQuests\GrpcUserQuestsMessages.proto" />
@@ -37,7 +39,12 @@
 
   <ItemGroup>
 	<Protobuf Include="gRPC\Plan\PlanService.proto" GrpcServices="Client" />
-	  
+	<Protobuf Include="gRPC\Quest\GrpcQuestMessages.proto" GrpcServices="None">
+		<ProtoRoot>gRPC\Quest</ProtoRoot>
+	</Protobuf>
+	<Protobuf Include="gRPC\Quest\GrpcQuestService.proto" GrpcServices="Client">
+		<ProtoRoot>gRPC\Quest</ProtoRoot>
+	</Protobuf>
 	<Protobuf Include="gRPC\Team\teamMessages.proto" GrpcServices="None">
 		<ProtoRoot>gRPC\Team</ProtoRoot>
 	</Protobuf>

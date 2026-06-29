@@ -7,15 +7,15 @@ namespace WebApi.Tests;
 /// </summary>
 public class TestGrpcPlanService : IGrpcPlanService
 {
-    public async Task<ModuleIdsDto> GetmoduleIdsAsync(string planId)
+    public async Task<PlanIdsDto> GetPlanIdsAsync(string planId)
     {
         // Simulate async operation
         await Task.Delay(10);
 
-        return new ModuleIdsDto
+        return new PlanIdsDto
         {
             IsExisted = true,
-            ModuleId = planId,
+            PlanId = planId,
             CompanyId = "test-company",
             OwnerId = "test-user",
             TeamId = "test-team"

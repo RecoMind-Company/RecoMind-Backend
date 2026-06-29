@@ -16,37 +16,50 @@ public class QuestController(IQuestService questService,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
                              IValidator<QuestByStatusDto> questByStatusDtoValidator) : BaseApiController
 {
-    [HttpPost("{moduleId}/add-task")]
+    [HttpPost("add-task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<QuestToReturnDto>> CreateTask([FromBody] QuestDto questDto, string moduleId)
+    public async Task<ActionResult<QuestToReturnDto>> CreateTask([FromBody] QuestDto questDto)
     {
         var validationResult = await ExecuteValidation(questDtoValidator, questDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var result = await questService.CreateQuestAsync(questDto, moduleId);
+        var result = await questService.CreateQuestAsync(questDto);
         return result.Map<ActionResult<QuestToReturnDto>>(
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }
-    [HttpGet("{moduleId}/tasks")]
+
+    [HttpGet("{planId}/tasks")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync(string moduleId)
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksAsync([FromRoute] string planId, [FromQuery] string? moduleId)
     {
-        var result = await questService.GetAllQuestsAsync(moduleId);
+        var result = await questService.GetAllQuestsAsync(planId, moduleId);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));
     }
-    [HttpGet("{moduleId}/by-status")]
+
+    [HttpGet("{questId}")]
+    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<QuestToReturnDto>> GetTaskByIdAsync(string questId)
+    {
+        var result = await questService.GetQuestByIdAsync(questId);
+        return result.Map<ActionResult<QuestToReturnDto>>(
+            onSuccess: quest => Ok(quest),
+            onFailure: err => HandleFailure(err));
+    }
+
+    [HttpGet("{planId}/by-status")]
     [ProducesResponseType(typeof(IEnumerable<QuestToReturnDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksByStatusAsync(string moduleId, [FromQuery] QuestByStatusDto questByStatusDto)
+    public async Task<ActionResult<IEnumerable<QuestToReturnDto>>> GetAllTasksByStatusAsync(string planId, [FromQuery] QuestByStatusDto questByStatusDto)
     {
         var validationResult = await ExecuteValidation(questByStatusDtoValidator, questByStatusDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var result = await questService.GetAllQuestsByStatusAsync(questByStatusDto, moduleId);
+        var result = await questService.GetAllQuestsByStatusAsync(questByStatusDto, planId);
         return result.Map<ActionResult<IEnumerable<QuestToReturnDto>>>(
             onSuccess: quests => Ok(quests),
             onFailure: err => HandleFailure(err));

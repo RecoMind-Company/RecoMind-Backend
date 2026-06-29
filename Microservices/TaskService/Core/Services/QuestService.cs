@@ -9,28 +9,44 @@ namespace Core.Services;
 
 public class QuestService(IUnitOfWork unitOfWork,
                           IMapper mapper,
-                          IGrpcModuleService grpcModuleService) : IQuestService
+                          IGrpcModuleService grpcModuleService,
+                          IGrpcPlanService grpcPlanService) : IQuestService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
-    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto, string moduleId)
+    public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto)
     {
-        var isModuleExist = await grpcModuleService.GetmoduleIdsAsync(moduleId);
-        if (!isModuleExist.IsExisted)
-            return Result<QuestToReturnDto>.Failure(ModuleErrors.NotFound);
+        var isPlanExist = await grpcPlanService.GetPlanIdsAsync(questDto.PlanId!);
+        if (!isPlanExist.IsExisted)
+            return Result<QuestToReturnDto>.Failure(PlanErrors.NotFound);
+
+        if (questDto.ModuleId is not null)
+        {
+            var isModuleExist = await grpcModuleService.GetmoduleIdsAsync(questDto.ModuleId);
+            if (!isModuleExist.IsExisted)
+                return Result<QuestToReturnDto>.Failure(ModuleErrors.NotFound);
+        }
 
         var quest = mapper.Map<Quest>(questDto);
-        quest.QuestId = Guid.NewGuid().ToString();
-        quest.ModuleId = moduleId;
+
         await _questRepository.AddAsync(quest);
         await unitOfWork.SaveChangesAsync();
         var questToReturn = mapper.Map<QuestToReturnDto>(quest);
         return Result<QuestToReturnDto>.Success(questToReturn);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string moduleId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId, string? moduleId)
     {
-        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId && q.PlanId == planId, q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
+    }
+    public async Task<Result<QuestToReturnDto>> GetQuestByIdAsync(string questId)
+    {
+        var quest = await _questRepository.Find(q => q.QuestId == questId, q => q.UserAssignedQuests);
+        if (quest is null)
+            return Result<QuestToReturnDto>.Failure(QuestErrors.QuestNotFound);
+
+        var questToReturn = mapper.Map<QuestToReturnDto>(quest);
+        return Result<QuestToReturnDto>.Success(questToReturn);
     }
     public async Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId)
     {
@@ -51,13 +67,17 @@ public class QuestService(IUnitOfWork unitOfWork,
         await unitOfWork.SaveChangesAsync();
         return Result<bool>.Success(true);
     }
-    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string moduleId)
+    public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string planId)
     {
         if (questByStatusDto.Status is null)
         {
-            return await GetAllQuestsAsync(moduleId);
+            return await GetAllQuestsAsync(planId, questByStatusDto.ModuleId);
         }
-        var quests = await _questRepository.FindAll(q => q.Status == (QuestStatusEnum)questByStatusDto.Status! && q.ModuleId == moduleId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(
+            q => q.Status == (QuestStatusEnum)questByStatusDto.Status! &&
+            q.PlanId == planId &&
+            (q.ModuleId == questByStatusDto.ModuleId || questByStatusDto.ModuleId == null),
+            q => q.UserAssignedQuests);
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
@@ -89,5 +109,20 @@ public class QuestService(IUnitOfWork unitOfWork,
 
         await _questRepository.AddRangeAsync(allQuests);
         await unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsTaskExists(string taskId)
+    {
+        var task = await _questRepository.Find(q => q.QuestId == taskId);
+
+        if (task is not null)
+            return true;
+
+        return false;
+    }
+
+    public async Task DeleteTasksByPlanId(string planId)
+    {
+        await _questRepository.BulkDeleteAsync(q => q.PlanId == planId);
     }
 }
