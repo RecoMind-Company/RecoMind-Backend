@@ -4,4 +4,6 @@ option csharp_namespace = "Infrastructure.gRPC.UserQuests";
 
 service GrpcUserQuestsService {
 	rpc IsUserInAnyQuestWithinPlan(IsUserInPlanRequest) returns (IsUserInPlanResponse);
+	rpc IsUserAssignedToTask(IsUserAssignedToTaskRequest) returns (IsUserAssignedToTaskResponse);
+
 }
