@@ -104,19 +104,18 @@ public class ReportService(IGenerateReportService generateReportService,
         await unitOfWork.Save();
         return "Report deleted successfully";
     }
-    public async Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId)
+    public async Task<IEnumerable<ReportDto>> GetAllReportsByTeamId(string TeamId, int limit = 2)
     {
-        /*       Fetch all reports for the given TeamId from the repository WITH IT'S CONTENT
+        //Fetch all reports for the given TeamId from the repository WITH IT'S CONTENT
 
-
-        var reports = await reportRepository.FindAll(r => r.TeamId == TeamId);
-
+        var date = DateTime.UtcNow.AddDays(-7); // Example: Fetch reports generated in the last 7 days
+        var reports = await reportRepository.FindAllWithLimit(r => r.TeamId == TeamId && r.GeneratedDate >= date, limit);
         if (!reports.Any())
         {
             return Enumerable.Empty<ReportDto>();
         }
 
-        const int maxParallelTasks = 50;
+        const int maxParallelTasks = 5;
 
         var semaphore = new SemaphoreSlim(maxParallelTasks);
 
@@ -134,6 +133,7 @@ public class ReportService(IGenerateReportService generateReportService,
                 {
                     Id = r.Id,
                     TeamId = r.TeamId,
+                    UserId = r.UserId,
                     Periodic = r.Periodic.ToString(),
                     GeneratedDate = r.GeneratedDate,
                     Content = content
@@ -150,23 +150,22 @@ public class ReportService(IGenerateReportService generateReportService,
         var reportsDto = await Task.WhenAll(tasks);
 
         return reportsDto;
-         */
 
-        var reports = await reportRepository.FindAll(r => r.TeamId == TeamId);
+        //var reports = await reportRepository.FindAll(r => r.TeamId == TeamId);
 
-        if (!reports.Any())
-        {
-            return Enumerable.Empty<ReportDto>();
-        }
-        var reportsDto = reports.Select(r => new ReportDto
-        {
-            Id = r.Id,
-            TeamId = r.TeamId,
-            UserId = r.UserId,
-            Periodic = r.Periodic.ToString(),
-            GeneratedDate = r.GeneratedDate
-        }).ToList();
-        return reportsDto;
+        //if (!reports.Any())
+        //{
+        //    return Enumerable.Empty<ReportDto>();
+        //}
+        //var reportsDto = reports.Select(r => new ReportDto
+        //{
+        //    Id = r.Id,
+        //    TeamId = r.TeamId,
+        //    UserId = r.UserId,
+        //    Periodic = r.Periodic.ToString(),
+        //    GeneratedDate = r.GeneratedDate
+        //}).ToList();
+        //return reportsDto;
     }
 
     public async Task<string> AssignCompanyData(string companyId)

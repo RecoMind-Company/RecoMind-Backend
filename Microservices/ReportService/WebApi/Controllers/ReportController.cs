@@ -76,12 +76,12 @@ public class ReportController(IReportService reportService) : ControllerBase
     }
 
     [HttpGet("all/{teamId}")]
-    public async Task<ActionResult<IEnumerable<ReportDto>>> GetReportsByTeamId([FromRoute] string teamId)
+    public async Task<ActionResult<IEnumerable<ReportDto>>> GetReportsByTeamId([FromRoute] string teamId, [FromQuery] int limit)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
-        var result = await reportService.GetAllReportsByTeamId(teamId);
+        var result = await reportService.GetAllReportsByTeamId(teamId, limit);
         if (result == null || !result.Any())
             return NotFound("there is no reports for this team");
         return Ok(result);

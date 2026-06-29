@@ -12,4 +12,5 @@ public interface IReportRepository
     void Delete(Report report);
     Task<Report?> Find(Expression<Func<Report, bool>> predicate);
     Task<IEnumerable<Report?>> FindAll(Expression<Func<Report, bool>> predicate);
+    Task<IEnumerable<Report>> FindAllWithLimit(Expression<Func<Report, bool>> predicate, int limit);
 }

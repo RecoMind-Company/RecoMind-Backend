@@ -7,7 +7,7 @@ namespace Core.ServicesAbstractions;
 public interface IQuestService
 {
     Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto);
-    Task<Result<PersonalQuestToReturnDto>> CreatePersonalQuestAsync(QuestDto personalQuestDto);
+    Task<Result<PersonalQuestToReturnDto>> CreatePersonalQuestAsync(FullQuestDto personalQuestDto);
     Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId, string? moduleId);
     Task<Result<QuestToReturnDto>> GetQuestByIdAsync(string questId);
     Task<Result<QuestToReturnDto>> EditQuestAsync(UpdateQuestDto updateQuestDto, string questId);

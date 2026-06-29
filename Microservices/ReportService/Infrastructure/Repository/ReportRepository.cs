@@ -37,4 +37,9 @@ public class ReportRepository(ApplicationDbContext dbContext) : IReportRepositor
     {
         return await _reports.Where(predicate).ToListAsync();
     }
+
+    public async Task<IEnumerable<Report>> FindAllWithLimit(Expression<Func<Report, bool>> predicate, int limit)
+    {
+        return await _reports.Where(predicate).OrderByDescending(x => x.GeneratedDate).Take(limit).ToListAsync();
+    }
 }

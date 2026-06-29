@@ -14,7 +14,8 @@ public class QuestController(IQuestService questService,
                              IUserQuestsService userQuestsService,
                              IValidator<QuestDto> questDtoValidator,
                              IValidator<UpdateQuestDto> updateQuestDtoValidator,
-                             IValidator<QuestByStatusDto> questByStatusDtoValidator) : BaseApiController
+                             IValidator<QuestByStatusDto> questByStatusDtoValidator,
+                             IValidator<FullQuestDto> fullQuestDtoValdator) : BaseApiController
 {
     [HttpPost("add-task")]
     [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
@@ -95,10 +96,10 @@ public class QuestController(IQuestService questService,
     [ProducesResponseType(typeof(PersonalQuestToReturnDto), StatusCodes.Status200OK)]
     public async Task<ActionResult<PersonalQuestToReturnDto>> CreateTaskAndAssignUsers([FromBody] FullQuestDto fullQuestDto)
     {
-        var validationResult = await ExecuteValidation(questDtoValidator, fullQuestDto.questDto);
+        var validationResult = await ExecuteValidation(fullQuestDtoValdator, fullQuestDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
-        var createdQuest = await questService.CreatePersonalQuestAsync(fullQuestDto.questDto);
+        var createdQuest = await questService.CreatePersonalQuestAsync(fullQuestDto);
         if (!createdQuest.IsSuccess)
             return HandleFailure(createdQuest.ErrorList);
         var finalResult = await userQuestsService.AssignUsersToQuestAsync(fullQuestDto.UserIds, createdQuest.Value!.QuestId);
