@@ -5,6 +5,8 @@ using Core.ServicesAbstraction;
 using Core.ServicesAbstractions;
 using Core.Settings;
 using FluentValidation;
+using Hangfire;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Context;
 using Infrastructure.gRPC.Plan;
 using Infrastructure.gRPC.Quest;
@@ -106,13 +108,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 {
     opt.UseSqlServer(builder.Configuration.GetConnectionString("CommentDbConnectionString"));
 });
-builder.Services.AddAutoMapper(cfg => { }, typeof(CommentProfile).Assembly);
+builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("CommentDbConnectionString")));
+builder.Services.AddHangfireServer();
+builder.Services.AddAutoMapper(cfg => { }, typeof(PlanCommentProfile).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AddCommentDtoValidator).Assembly, includeInternalTypes: true);
-builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IPlanCommentService, PlanCommentService>();
 builder.Services.AddScoped<IUserQuestGrpcService, UserQuestGrpcService>();
 builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
 
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {
