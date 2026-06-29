@@ -9,11 +9,16 @@ namespace Core.Services;
 
 public class QuestService(IUnitOfWork unitOfWork,
                           IMapper mapper,
-                          IGrpcModuleService grpcModuleService) : IQuestService
+                          IGrpcModuleService grpcModuleService,
+                          IGrpcPlanService grpcPlanService) : IQuestService
 {
     private readonly IGenericRepository<Quest> _questRepository = unitOfWork.GetRepository<Quest>();
     public async Task<Result<QuestToReturnDto>> CreateQuestAsync(QuestDto questDto)
     {
+        var isPlanExist = await grpcPlanService.GetPlanIdsAsync(questDto.PlanId!);
+        if (!isPlanExist.IsExisted)
+            return Result<QuestToReturnDto>.Failure(PlanErrors.NotFound);
+
         if (questDto.ModuleId is not null)
         {
             var isModuleExist = await grpcModuleService.GetmoduleIdsAsync(questDto.ModuleId);
@@ -104,5 +109,15 @@ public class QuestService(IUnitOfWork unitOfWork,
 
         await _questRepository.AddRangeAsync(allQuests);
         await unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsTaskExists(string taskId)
+    {
+        var task = await _questRepository.Find(q => q.QuestId == taskId);
+
+        if (task is not null)
+            return true;
+
+        return false;
     }
 }

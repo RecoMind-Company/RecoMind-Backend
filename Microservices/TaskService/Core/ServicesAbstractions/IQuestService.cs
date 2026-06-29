@@ -14,4 +14,5 @@ public interface IQuestService
     Task<Result<bool>> DeleteQuestAsync(string questId);
     Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsByStatusAsync(QuestByStatusDto questByStatusDto, string planId);
     Task AddAiTasksAsync(IEnumerable<PostTasksDto> postTasksDtos);
+    Task<bool> IsTaskExists(string taskId);
 }
