@@ -118,6 +118,7 @@ builder.Services.AddScoped<IGrpcPlanService, GrpcPlanService>();
 builder.Services.AddScoped<IGrpcTeamService, GrpcTeamService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
+builder.Services.AddScoped<IQuestCommentService, QuestCommentService>();
 
 builder.Services.AddGrpcClient<GrpcUserQuestsService.GrpcUserQuestsServiceClient>(options =>
 {
