@@ -15,7 +15,7 @@ public class TaskCommentController(IQuestCommentService questCommentService,
                                 IValidator<AddTaskCommentDto> addTaskCommentDtoValidator,
                                 IValidator<UpdateTaskCommentDto> updateTaskCommentDtoValidator) : BaseApiController
 {
-    [HttpPost("{questId}/add-comment")]
+    [HttpPost("{questId}/add-task")]
     [ProducesResponseType(typeof(TaskCommentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<TaskCommentDto>> AddCommentAsync([FromRoute] string questId,
@@ -34,7 +34,7 @@ public class TaskCommentController(IQuestCommentService questCommentService,
             onFailure: err => HandleFailure(err));
     }
 
-    [HttpGet("{questId}/all")]
+    [HttpGet("{questId}/task-all")]
     [ProducesResponseType(typeof(IEnumerable<TaskCommentDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<TaskCommentDto>>> GetCommentsByTaskIdAsync([FromRoute] string questId)
@@ -45,7 +45,7 @@ public class TaskCommentController(IQuestCommentService questCommentService,
             onFailure: err => HandleFailure(err));
     }
 
-    [HttpPut("update-comment")]
+    [HttpPut("task/update")]
     [ProducesResponseType(typeof(TaskCommentDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
@@ -63,7 +63,7 @@ public class TaskCommentController(IQuestCommentService questCommentService,
             onFailure: err => HandleFailure(err));
     }
 
-    [HttpDelete("{commentId}/remove")]
+    [HttpDelete("{commentId}/task")]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<bool>> DeleteCommentAsync([FromRoute] string commentId)
