@@ -5,6 +5,7 @@ using Core.DTOs.PlanDtos.Plan;
 using Core.DTOs.PlnaTypeDtos;
 using Core.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Security.Claims;
@@ -74,6 +75,7 @@ namespace webApi.Controllers
         }
 
         [HttpPost("custom-plan/generate")]
+        [ProducesResponseType(typeof(RequestCustomPlanResponseDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GenerateCustomPlan([FromBody] UserCustomPlanDto userCustomPlanDto)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
@@ -89,6 +91,7 @@ namespace webApi.Controllers
                 return BadRequest(response.Error);
         }
         [HttpPost("custom-plan/result")]
+        [ProducesResponseType(typeof(AIGetPlanDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetCustomPlanResult([FromBody] AIGetPlanDto aIGetPlanDto)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
