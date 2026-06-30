@@ -44,7 +44,7 @@ public static class InfrastructureServicesExtension
         );
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IFileStorageService, FileStorageService>();
+        services.AddScoped<IFileStorageService, AzureFileStorage>();
         services.AddScoped<IGrpcTeamService, GrpcTeamService>();
         services.AddScoped<INotificationService, NotificationService>();
 

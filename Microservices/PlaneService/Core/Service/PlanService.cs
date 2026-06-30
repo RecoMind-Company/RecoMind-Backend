@@ -264,43 +264,34 @@ namespace Core.Service
             return planToRetyrn;
         }
 
-        public async Task<Result<AIPlanDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
+        public async Task<Result<AIPlanDto>> CreateCustomPlan(AIGetPlanDto aIGetPlanDto)
         {
+            var response = await _planGeneratorService.GetPlanResult(aIGetPlanDto.TaskId);
+            if (!response.IsSuccess)
+                return Result<AIPlanDto>.Failure(response.Error);
+
             var plan = new Plan();
 
             plan.IsApproved = false;
-            plan.Company_Id = companyId;
+            plan.Company_Id = aIGetPlanDto.CompanyId;
 
-            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
-            if (!checkTeamId.IsSuccess)
-                return Result<AIPlanDto>.Failure(checkTeamId.Error);
+            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(aIGetPlanDto.UserId);  //Check if the user is part of a team and get the team id
+            //if (!checkTeamId.IsSuccess)
+            //    return Result<AIPlanDto>.Failure(checkTeamId.Error);
 
-            plan.Team_Id = checkTeamId.Value;
+            plan.Team_Id = "a875858b-83ce-4034-9c5a-6b83359b9bb8";
 
-            //// FOR TEST
-            //plan.Team_Id = "0dc1400d-a758-424b-80fb-a8ff89078522";
 
-            plan.Owner_Id = userId;
+            plan.Owner_Id = aIGetPlanDto.UserId;
 
-            // Call AI To Generate A plan
-            var request = new AIRequestDto
-            {
-                company_id = companyId,
-                plan_text = userCustomPlanDto.Description,
-                team_id = plan.Team_Id
-            };
 
-            var result = await _planGeneratorService.GeneratePlan(request);
-            if (!result.IsSuccess)
-                return Result<AIPlanDto>.Failure(result.Error);
-
-            _mapper.Map(result.Value, plan);
+            _mapper.Map(response.Value, plan);
 
             await _unitOfWork.Entity.AddAsync(plan);
             _unitOfWork.Save();
 
             // IN BACKGROUND JOBS (Hangfire) CALL A gRPC service that will take a list of tasks and add them to DB
-            var postModuleTasksDtos = result.Value.modules.Select(x => new PostModuleTasksDto
+            var postModuleTasksDtos = response.Value.modules.Select(x => new PostModuleTasksDto
             {
                 tasksDto = x.tasks,
                 moduleId = x.module_id
@@ -313,9 +304,25 @@ namespace Core.Service
             };
             _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasks));
 
-            return Result<AIPlanDto>.Success(result.Value);
+            return Result<AIPlanDto>.Success(response.Value);
         }
 
+        public async Task<Result<RequestCustomPlanResponseDto>> RequestCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
+        {
+            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            //if (!checkTeamId.IsSuccess)
+            //    return Result<RequestCustomPlanResponseDto>.Failure(checkTeamId.Error);
+
+            var request = new AIRequestDto
+            {
+                company_id = companyId,
+                plan_text = userCustomPlanDto.Description,
+                team_id = "0dc1400d-a758-424b-80fb-a8ff89078522"
+            };
+            var result = await _planGeneratorService.GeneratePlan(request);
+            return result;
+
+        }
         public async Task<Result<PostIsApprovedDto>> IsApproved(PostIsApprovedDto approvedDto)
         {
             var plan = await _unitOfWork.Entity.Find(p => p.Id == approvedDto.PlanId);
