@@ -9,7 +9,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Policy = "TeamLeadership")]
+[Authorize]
 public class ReportController(IReportService reportService) : ControllerBase
 {
     [HttpGet("teams/user")]
@@ -110,5 +110,13 @@ public class ReportController(IReportService reportService) : ControllerBase
         if (result == null)
             return NotFound("there is no task with this id");
         return Ok(result);
+    }
+    [HttpPost("test")]
+    public async Task<ActionResult<ReportDto>> AddTestReport(TestDto testDto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        testDto.UserId = userId;
+        var response = await reportService.CreateTestReport(testDto);
+        return response;
     }
 }

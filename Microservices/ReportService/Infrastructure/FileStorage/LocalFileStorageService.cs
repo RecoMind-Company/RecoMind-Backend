@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Infrastructure.FileStorage;
 
-public class FileStorageService(IWebHostEnvironment env) : IFileStorageService
+public class LocalFileStorageService(IWebHostEnvironment env) : IFileStorageService
 {
 
     public async Task<string> SaveFileAsync(string content)

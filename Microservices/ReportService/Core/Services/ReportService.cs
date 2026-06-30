@@ -43,7 +43,7 @@ public class ReportService(IGenerateReportService generateReportService,
         // FAILURE CASE HANDELD IN GENERATE REPORT SERVICE
         // PENDING CASE HANDELD ABOVE
         // SUCCESS
-        var dynamicPath = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
+        var fileName = await fileStorageService.SaveFileAsync(generatedReportStatus.Result!);
         // create report model 
         // add to database
         // save changes
@@ -53,7 +53,7 @@ public class ReportService(IGenerateReportService generateReportService,
             Id = Guid.NewGuid().ToString(),
             TeamId = reportFromAiDto.TeamId,
             UserId = reportFromAiDto.UserId,
-            FilePath = dynamicPath,
+            FilePath = fileName,
             FileType = ".txt",
             GeneratedDate = DateTime.Now,
             Periodic = Enum.Parse<Periodic>(reportFromAiDto.Periodic)
@@ -179,4 +179,32 @@ public class ReportService(IGenerateReportService generateReportService,
         return status;
     }
 
+    public async Task<ReportDto> CreateTestReport(TestDto testDto)
+    {
+        var fileName = await fileStorageService.SaveFileAsync(testDto.content!);
+        var report = new Report
+        {
+            Id = Guid.NewGuid().ToString(),
+            TeamId = testDto.TeamId,
+            UserId = testDto.UserId,
+            FilePath = fileName,
+            FileType = ".txt",
+            GeneratedDate = DateTime.Now,
+            Periodic = Periodic.Weekly
+        };
+
+        await reportRepository.AddAsync(report);
+        await unitOfWork.Save();
+
+        var reportContent = await fileStorageService.ReadFileAsync(report.FilePath);
+        return new ReportDto
+        {
+            Content = reportContent,
+            GeneratedDate = report.GeneratedDate,
+            Id = report.Id,
+            Periodic = report.Periodic.ToString(),
+            TeamId = report.TeamId,
+            UserId = report.UserId
+        };
+    }
 }
