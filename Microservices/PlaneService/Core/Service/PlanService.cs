@@ -275,12 +275,12 @@ namespace Core.Service
             plan.IsApproved = false;
             plan.Company_Id = aIGetPlanDto.CompanyId;
 
-            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(aIGetPlanDto.UserId);  //Check if the user is part of a team and get the team id
-            //if (!checkTeamId.IsSuccess)
-            //    return Result<AIPlanDto>.Failure(checkTeamId.Error);
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(aIGetPlanDto.UserId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<AIPlanDto>.Failure(checkTeamId.Error);
 
-            plan.Team_Id = "a875858b-83ce-4034-9c5a-6b83359b9bb8";
-
+            //plan.Team_Id = "a875858b-83ce-4034-9c5a-6b83359b9bb8";
+            plan.Team_Id = checkTeamId.Value;
 
             plan.Owner_Id = aIGetPlanDto.UserId;
 
