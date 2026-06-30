@@ -19,7 +19,11 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Team_Id, opt => opt.Ignore())
                 .ReverseMap();
 
-            CreateMap<Module, GetModuleDto>();
+            CreateMap<Module, GetModuleDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src =>
+                    !string.IsNullOrEmpty(src.Id) && src.Id.Contains('_')
+                        ? src.Id.Substring(0, src.Id.LastIndexOf('_'))
+                        : src.Id));
 
             CreateMap<Plan, GetPlanDto>()
                 .ForMember(dest => dest.PlanType, opt => opt.MapFrom(src => src.PlanType))
@@ -29,7 +33,7 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Duration, opt => opt.MapFrom(src => src.Duration))
                 .ForMember(dest => dest.Modules, opt => opt.MapFrom(src => src.Modules))
                 .ReverseMap();
-                               
+
             // AI Mapping 
             // AI Plan
             CreateMap<AIPlanDto, Plan>()
@@ -49,7 +53,7 @@ namespace Core.Mapping
 
             // 2. AI Module
             CreateMap<AIModuleDto, Module>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.module_id))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.module_id + $"_{Guid.NewGuid().ToString()}"))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.module_name))
 
                 .ForMember(dest => dest.PlanId, opt => opt.Ignore())
