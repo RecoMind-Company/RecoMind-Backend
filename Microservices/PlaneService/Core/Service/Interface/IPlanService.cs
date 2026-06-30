@@ -14,8 +14,9 @@ namespace Core.Service.Interface
         Task<Result<GetPlanDto>> CreatePlan(AddPlanDto createPlanDto, string companyId, string userId);
         Task<Result<GetPlanDto>> UpdatePlan(string companyId, string userId, UpdatePlanDto dto);
         Task<bool> DeletePlan(string planId, string companyId);
-        Task<Result<AIPlanDto>> CreateCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
-        Task<Result<PostIsApprovedDto>> IsApproved (PostIsApprovedDto approvedDto);
+        Task<Result<AIPlanDto>> CreateCustomPlan(AIGetPlanDto aIGetPlanDto);
+        Task<Result<RequestCustomPlanResponseDto>> RequestCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
+        Task<Result<PostIsApprovedDto>> IsApproved(PostIsApprovedDto approvedDto);
 
     }
 }

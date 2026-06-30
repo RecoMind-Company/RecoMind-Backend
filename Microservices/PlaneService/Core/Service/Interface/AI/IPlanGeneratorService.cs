@@ -5,5 +5,6 @@ namespace Core.Service.Interface.AI;
 
 public interface IPlanGeneratorService
 {
-    Task<Result<AIPlanDto>> GeneratePlan(AIRequestDto RequestDto);
+    Task<Result<RequestCustomPlanResponseDto>> GeneratePlan(AIRequestDto RequestDto);
+    Task<Result<AIPlanDto>> GetPlanResult(string taskId);
 }
