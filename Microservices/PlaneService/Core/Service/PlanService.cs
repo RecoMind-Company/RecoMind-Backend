@@ -275,12 +275,12 @@ namespace Core.Service
             plan.IsApproved = false;
             plan.Company_Id = aIGetPlanDto.CompanyId;
 
-            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(aIGetPlanDto.UserId);  //Check if the user is part of a team and get the team id
-            //if (!checkTeamId.IsSuccess)
-            //    return Result<AIPlanDto>.Failure(checkTeamId.Error);
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(aIGetPlanDto.UserId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<AIPlanDto>.Failure(checkTeamId.Error);
 
-            plan.Team_Id = "a875858b-83ce-4034-9c5a-6b83359b9bb8";
-
+            //plan.Team_Id = "a875858b-83ce-4034-9c5a-6b83359b9bb8";
+            plan.Team_Id = checkTeamId.Value;
 
             plan.Owner_Id = aIGetPlanDto.UserId;
 
@@ -309,15 +309,15 @@ namespace Core.Service
 
         public async Task<Result<RequestCustomPlanResponseDto>> RequestCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId)
         {
-            //var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
-            //if (!checkTeamId.IsSuccess)
-            //    return Result<RequestCustomPlanResponseDto>.Failure(checkTeamId.Error);
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<RequestCustomPlanResponseDto>.Failure(checkTeamId.Error);
 
             var request = new AIRequestDto
             {
                 company_id = companyId,
                 plan_text = userCustomPlanDto.Description,
-                team_id = "0dc1400d-a758-424b-80fb-a8ff89078522"
+                team_id = checkTeamId.Value
             };
             var result = await _planGeneratorService.GeneratePlan(request);
             return result;

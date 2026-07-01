@@ -35,7 +35,10 @@ public class QuestService(IUnitOfWork unitOfWork,
     }
     public async Task<Result<IEnumerable<QuestToReturnDto>>> GetAllQuestsAsync(string planId, string? moduleId)
     {
-        var quests = await _questRepository.FindAll(q => q.ModuleId == moduleId && q.PlanId == planId, q => q.UserAssignedQuests);
+        var quests = await _questRepository.FindAll(
+            q => (moduleId == null || q.ModuleId == moduleId) && q.PlanId == planId,
+            q => q.UserAssignedQuests
+        );
         var questsToReturn = mapper.Map<IEnumerable<QuestToReturnDto>>(quests);
         return Result<IEnumerable<QuestToReturnDto>>.Success(questsToReturn);
     }
