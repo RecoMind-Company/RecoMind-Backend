@@ -3,10 +3,12 @@ using Core.DTOs.PlanDtos;
 using Core.DTOs.PlanDtos.Approve;
 using Core.DTOs.PlanDtos.Plan;
 using Core.DTOs.PlnaTypeDtos;
+using Core.Models;
 using Core.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -30,6 +32,7 @@ namespace webApi.Controllers
         }
 
         [HttpGet("GetAll")]
+        [ProducesResponseType(typeof(IEnumerable<Result<GetPlanDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllPlans()
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
@@ -43,6 +46,7 @@ namespace webApi.Controllers
         }
 
         [HttpGet("GetId/{id}")]
+        [ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPlanById(string id)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
@@ -59,6 +63,7 @@ namespace webApi.Controllers
         }
 
         [HttpGet("GetByStatus/{status}")]
+        [ProducesResponseType(typeof(IEnumerable<Result<GetPlanDto>>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPlanByStatus([FromRoute] string status)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
@@ -111,6 +116,7 @@ namespace webApi.Controllers
 
         }
         [HttpPost("IsApproved")]
+        [ProducesResponseType(typeof(PostIsApprovedDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> IsApproved([FromBody] PostIsApprovedDto approvedDto)
         {
             var response = await _planService.IsApproved(approvedDto);
@@ -120,47 +126,50 @@ namespace webApi.Controllers
                 return BadRequest(response.Error);
         }
 
-        [HttpPost("CreatePlan")]
-        public async Task<IActionResult> CreatePlan([FromBody] AddPlanDto createPlanDto)
-        {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //[HttpPost("CreatePlan")]
+        //[ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> CreatePlan([FromBody] AddPlanDto createPlanDto)
+        //{
+        //    var companyId = User.FindFirst("CompanyId")?.Value;
+        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest(" CompanyId Not Found !");
+        //    if (string.IsNullOrWhiteSpace(companyId))
+        //        return BadRequest(" CompanyId Not Found !");
 
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(" User Not Found !");
+        //    if (string.IsNullOrWhiteSpace(userId))
+        //        return BadRequest(" User Not Found !");
 
-            var createdPlan = await _planService.CreatePlan(createPlanDto, companyId, userId);
+        //    var createdPlan = await _planService.CreatePlan(createPlanDto, companyId, userId);
 
-            if (createdPlan.IsSuccess)
-                return Ok(createdPlan);
-            else
-                return BadRequest(createdPlan);
-        }
+        //    if (createdPlan.IsSuccess)
+        //        return Ok(createdPlan);
+        //    else
+        //        return BadRequest(createdPlan);
+        //}
 
-        [HttpPut("UpdatePlan")]
-        public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanDto updatePlanDto)
-        {
-            var companyId = User.FindFirst("CompanyId")?.Value;
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //[HttpPut("UpdatePlan")]
+        //[ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
+        //public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanDto updatePlanDto)
+        //{
+        //    var companyId = User.FindFirst("CompanyId")?.Value;
+        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrWhiteSpace(companyId))
-                return BadRequest(" CompanyId Not Found !");
+        //    if (string.IsNullOrWhiteSpace(companyId))
+        //        return BadRequest(" CompanyId Not Found !");
 
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(" User Not Found !");
+        //    if (string.IsNullOrWhiteSpace(userId))
+        //        return BadRequest(" User Not Found !");
 
-            var updatedPlan = await _planService.UpdatePlan(companyId, userId, updatePlanDto);
+        //    var updatedPlan = await _planService.UpdatePlan(companyId, userId, updatePlanDto);
 
-            if (updatedPlan.IsSuccess)
-                return Ok(updatedPlan);
-            else
-                return BadRequest(updatedPlan.Error);
-        }
+        //    if (updatedPlan.IsSuccess)
+        //        return Ok(updatedPlan);
+        //    else
+        //        return BadRequest(updatedPlan.Error);
+        //}
 
         [HttpDelete("Remove")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeletePlan(string planId)
         {
             var companyId = User.FindFirst("CompanyId")?.Value;
@@ -176,6 +185,7 @@ namespace webApi.Controllers
         }
 
         [HttpPost("PlanType/Add")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddPlanType(AddPlantypeDto Dto)
         {
             var result = await _planTypeService.AddPlanType(Dto);
@@ -190,6 +200,7 @@ namespace webApi.Controllers
         }
 
         [HttpGet("PlanType/GetAll")]
+        [ProducesResponseType(typeof(IEnumerable<GetPlanTypeDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllPlanTypes()
         {
             var result = await _planTypeService.GetAllPlanTypes();
@@ -205,6 +216,7 @@ namespace webApi.Controllers
         }
 
         [HttpDelete("PlanType/Remove/{PlanTypeName}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeletePlanType([FromRoute] string PlanTypeName)
         {
             var item = await _planTypeService.DeletePlanType(PlanTypeName);
@@ -217,6 +229,7 @@ namespace webApi.Controllers
 
 
         [HttpGet("Status/GetAll")]
+        [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllStatuses()
         {
             var result = await _statusService.GetAllStatuses();
@@ -224,6 +237,7 @@ namespace webApi.Controllers
         }
 
         [HttpPost("Status/Add/{Name}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> AddStatus([FromRoute] string Name)
         {
             var Check = await _statusService.AddStatus(Name);
@@ -233,6 +247,7 @@ namespace webApi.Controllers
         }
 
         [HttpDelete("Status/Remove/{Name}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteStatuse([FromRoute] string Name)
         {
             var Check = await _statusService.DeleteStatus(Name);
