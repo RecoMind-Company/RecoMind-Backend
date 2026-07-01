@@ -53,14 +53,14 @@ public class ReportController(IReportService reportService) : ControllerBase
         return Ok(result);
     }
     [HttpGet("get/{id}")]
-    public async Task<ActionResult<AiReportResponseDto>> GetReportById(string id)
+    public async Task<ActionResult<DividedReportDto>> GetReportById(string id)
     {
         var errors = ModelState.Values.SelectMany(e => e.Errors);
         if (!ModelState.IsValid)
             return BadRequest(errors);
         var result = await reportService.GetReportById(id);
-        if (!result.IsSuccess)
-            return NotFound(result.message);
+        if (result.ErrorMessage is not null)
+            return NotFound(result.ErrorMessage);
         return Ok(result);
     }
     [HttpDelete("delete/{id}")]

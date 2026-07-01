@@ -3,6 +3,7 @@ using Core.DTOs.AI;
 using Core.Interfaces;
 using Core.Models;
 using RecoMind.Contracts.Events;
+using System.Text.RegularExpressions;
 
 namespace Core.Services;
 
@@ -62,6 +63,7 @@ public class ReportService(IGenerateReportService generateReportService,
         await unitOfWork.Save();
         var aiReportResponse = new AiReportResponseDto
         {
+            Id = report.Id,
             IsSuccess = true,
             AiResponse = generatedReportStatus.Result!,
             GeneratedDate = DateTime.UtcNow
@@ -78,22 +80,38 @@ public class ReportService(IGenerateReportService generateReportService,
         return aiReportResponse;
     }
 
-    public async Task<AiReportResponseDto> GetReportById(string reportId)
+    public async Task<DividedReportDto> GetReportById(string reportId)
     {
         var report = await reportRepository.GetByIdAsync(reportId);
         if (report is null)
-            return new AiReportResponseDto { message = "there is no report with this id" };
+            return new DividedReportDto { ErrorMessage = "there is no report with this id" };
+
         var reportContent = await fileStorageService.ReadFileAsync(report.FilePath);
         if (string.IsNullOrEmpty(reportContent))
-            return new AiReportResponseDto { message = "there is no content for this report" };
-        var aiReportResponse = new AiReportResponseDto
+            return new DividedReportDto { ErrorMessage = "there is no content for this report" };
+
+        string shortTermPattern = @"(Short-Term Plan.*?)(?=Mid-Term Plan|$)";
+        string midTermPattern = @"(Mid-Term Plan.*?)(?=Long-Term Plan|$)";
+        string longTermPattern = @"(Long-Term Plan.*)";
+
+        string shortTermText = Regex.Match(reportContent, shortTermPattern, RegexOptions.Singleline).Value;
+        string midTermText = Regex.Match(reportContent, midTermPattern, RegexOptions.Singleline).Value;
+        string longTermText = Regex.Match(reportContent, longTermPattern, RegexOptions.Singleline).Value;
+
+        // 2. بناء الـ DTO النهائي واستدعاء الـ Parser الداخلي
+        var dividedReportDto = new DividedReportDto
         {
-            IsSuccess = true,
-            AiResponse = reportContent,
-            GeneratedDate = report.GeneratedDate
+            Id = report.Id,
+            GeneratedDate = report.GeneratedDate,
+            TeamId = report.TeamId,
+            ShortTerm = ParsePlanDetails(shortTermText),
+            MidTerm = ParsePlanDetails(midTermText),
+            LongTerm = ParsePlanDetails(longTermText)
         };
-        return aiReportResponse;
+
+        return dividedReportDto;
     }
+
 
     public async Task<string> DeleteReport(string reportId)
     {
@@ -207,4 +225,35 @@ public class ReportService(IGenerateReportService generateReportService,
             UserId = report.UserId
         };
     }
+    private PlanDetailsDto ParsePlanDetails(string planText)
+    {
+        var details = new PlanDetailsDto();
+        if (string.IsNullOrEmpty(planText)) return details;
+
+        string goalPattern = @"\*\*Goal:\*\*(.*?)(?=\*\*Analysis:\*\*|\*\*Recommendations / Actions:\*\*|\*\*Reasoning:\*\*|$)";
+        string analysisPattern = @"\*\*Analysis:\*\*(.*?)(?=\*\*Recommendations / Actions:\*\*|\*\*Reasoning:\*\*|$)";
+        string recsPattern = @"\*\*Recommendations / Actions:\*\*(.*?)(?=\*\*Reasoning:\*\*|$)";
+
+        string reasoningPattern = @"\*\*Reasoning:\*\*(.*?)(?=\n+#### \d+|$|$)";
+
+        string CleanText(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+
+            string trimmed = input.Trim();
+            if (trimmed.EndsWith("-"))
+            {
+                trimmed = trimmed.Substring(0, trimmed.Length - 1).Trim();
+            }
+            return trimmed;
+        }
+
+        details.Goal = CleanText(Regex.Match(planText, goalPattern, RegexOptions.Singleline).Groups[1].Value);
+        details.Analysis = CleanText(Regex.Match(planText, analysisPattern, RegexOptions.Singleline).Groups[1].Value);
+        details.Recommendations = CleanText(Regex.Match(planText, recsPattern, RegexOptions.Singleline).Groups[1].Value);
+        details.Reasoning = CleanText(Regex.Match(planText, reasoningPattern, RegexOptions.Singleline).Groups[1].Value);
+
+        return details;
+    }
+
 }
