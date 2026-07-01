@@ -2,23 +2,32 @@
 using Notification.Core.DTOs;
 using RecoMind.Contracts.Events;
 using Notification.Core.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Notification.Infrastructure.Messaging
 {
     public class NotificationConsumer : IConsumer<NotificationEventDto>
     {
         private readonly INotificationService _notificationService;
+        private readonly ILogger<NotificationConsumer> _logger;
 
-        public NotificationConsumer(INotificationService notificationService)
+        public NotificationConsumer(INotificationService notificationService, ILogger<NotificationConsumer> logger)
         {
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         public async Task Consume(ConsumeContext<NotificationEventDto> context)
         {
-            // MassTransit بيعمل Deserialize للرسالة لوحده هنا!
+            _logger.LogInformation(
+                "Received Message: {ReceiverId}",
+                context.Message.ReceiverId);
+
+            // business logic
             var msg = context.Message;
             await _notificationService.SendNotificationAsync(msg);
+
+            _logger.LogInformation("Notification created successfully");
         }
     }
 }
