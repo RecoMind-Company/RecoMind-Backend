@@ -230,10 +230,12 @@ public class ReportService(IGenerateReportService generateReportService,
         var details = new PlanDetailsDto();
         if (string.IsNullOrEmpty(planText)) return details;
 
-        string goalPattern = @"\*\*Goal:\*\*(.*?)(?=\*\*Analysis:\*\*|\*\*Recommendations / Actions:\*\*|\*\*Reasoning:\*\*|$)";
-        string analysisPattern = @"\*\*Analysis:\*\*(.*?)(?=\*\*Recommendations / Actions:\*\*|\*\*Reasoning:\*\*|$)";
-        string recsPattern = @"\*\*Recommendations / Actions:\*\*(.*?)(?=\*\*Reasoning:\*\*|$)";
-        string reasoningPattern = @"\*\*Reasoning:\*\*(.*?)(?=\n+#### \d+|$|$)";
+        // تظبيط الـ Patterns عشان تتماشى مع التنسيق الجديد والقديم سوا
+        string goalPattern = @"\*\*Goal:\*\*(.*?)(?=\*\*Analysis:\*\*|-\s*\*\*Recommendations|\*\*Recommendations|$)";
+        string analysisPattern = @"\*\*Analysis:\*\*(.*?)(?=-\s*\*\*Recommendations|\*\*Recommendations|$)";
+
+        // هنا بنقوله اقرأ الـ Recommendations لحد ما تقابل الـ Scenarios أو الـ Reasoning
+        string recsPattern = @"\*\*Recommendations / Actions:\*\*(.*?)(?=-\s*\*\*Scenarios:|\*\*Scenarios:|\*\*Reasoning:\*\*|$)";
 
         string CleanText(string input)
         {
@@ -251,19 +253,16 @@ public class ReportService(IGenerateReportService generateReportService,
             var list = new List<string>();
             if (string.IsNullOrEmpty(recsText)) return list;
 
-            // Regex matches any text written between ** right after numbers
-            // e.g., Digit + dot + space (\d+\.\s+) followed by **, then title (.*?), then **
-            string titlePattern = @"\d+\.\s+\*\*(.*?)\*\*";
+            // التعديل الجديد عشان يلقط الـ Bullet points المكتوبة بـ شرطة (- ) أو أرقام (\d+\.\s+)
+            string titlePattern = @"(?:\d+\.\s+|-)\s*\*\*(.*?)\*\*";
 
             var matches = Regex.Matches(recsText, titlePattern);
 
             int index = 1;
             foreach (Match match in matches)
             {
-                // Extract the value inside the first capture group (the title itself)
                 string title = match.Groups[1].Value.Trim();
 
-                // If the title ends with a colon ":", remove it for better formatting
                 if (title.EndsWith(":"))
                 {
                     title = title.Substring(0, title.Length - 1).Trim();
@@ -271,20 +270,23 @@ public class ReportService(IGenerateReportService generateReportService,
 
                 if (!string.IsNullOrEmpty(title))
                 {
-                    // Prepend the index number before the title to match the requested format
                     list.Add($"{index}. {title}");
                     index++;
                 }
             }
             return list;
         }
+
         details.Goal = CleanText(Regex.Match(planText, goalPattern, RegexOptions.Singleline).Groups[1].Value);
         details.Analysis = CleanText(Regex.Match(planText, analysisPattern, RegexOptions.Singleline).Groups[1].Value);
-        details.Reasoning = CleanText(Regex.Match(planText, reasoningPattern, RegexOptions.Singleline).Groups[1].Value);
 
-        // هنا بنباصي النص الكامل للـ Recommendations عشان يتقسم لـ لستة
+        // لقط وتقسيم الـ Recommendations
         string rawRecs = Regex.Match(planText, recsPattern, RegexOptions.Singleline).Groups[1].Value;
         details.Recommendations = SplitRecommendations(rawRecs);
+
+        // بما إن الـ report ده مفيهوش Reasoning، الـ variable ده هيفضل فاضي ومش هيضرب Error
+        string reasoningPattern = @"\*\*Reasoning:\*\*(.*?)(?=\n+#### \d+|$|$)";
+        details.Reasoning = CleanText(Regex.Match(planText, reasoningPattern, RegexOptions.Singleline).Groups[1].Value);
 
         return details;
     }
