@@ -302,7 +302,18 @@ namespace Core.Service
                 PlanId = plan.Id,
                 ModulesTasks = postModuleTasksDtos
             };
+
             _backgroundService.ExecuteInBackground(() => _questGrpcClient.PostTasksToQuestService(postTasks));
+            var notification = new NotificationEventDto
+            {
+                Title = " Custom Plan Created",
+                Message = "A new custom plan has been successfully created !",
+                ReceiverId = aIGetPlanDto.UserId,
+                SenderId = null,
+                PlanId = plan.Id
+            };
+            _backgroundService.ExecuteInBackground(() => _planEventPublisher.PublishNotificationAsync(notification));
+
 
             return Result<AIPlanDto>.Success(response.Value);
         }
