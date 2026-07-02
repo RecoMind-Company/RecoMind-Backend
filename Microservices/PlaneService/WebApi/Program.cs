@@ -10,6 +10,7 @@ using Hangfire;
 using Infrastructure.AI;
 using Infrastructure.BackgroundJobs;
 using Infrastructure.Data;
+using Infrastructure.FileStorage;
 using Infrastructure.GrpcClients.Quest;
 using Infrastructure.GrpcClients.Team;
 using Infrastructure.Messaging;
@@ -60,6 +61,7 @@ namespace webApi
             builder.Services.AddScoped<IQuestGrpcClient, QuestGrpcClientImplementation>();
             builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
             builder.Services.AddScoped<IModuleService, ModuleService>();
+            builder.Services.AddScoped<IFileStorageService, AzureFileStorage>();
 
             //AI plan generation Service
             var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIPlanGeneratorUrl");
