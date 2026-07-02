@@ -230,13 +230,16 @@ public class ReportService(IGenerateReportService generateReportService,
         var details = new PlanDetailsDto();
         if (string.IsNullOrEmpty(planText)) return details;
 
-        // تظبيط الـ Patterns عشان تتماشى مع التنسيق الجديد والقديم سوا
-        string goalPattern = @"\*\*Goal:\*\*(.*?)(?=\*\*Analysis:\*\*|-\s*\*\*Recommendations|\*\*Recommendations|$)";
-        string analysisPattern = @"\*\*Analysis:\*\*(.*?)(?=-\s*\*\*Recommendations|\*\*Recommendations|$)";
+        string goalPattern = @"\*\*Goal:\*\*(.*?)(?=\*\*Analysis:\*\*|-\s*\*\*Recommendations:?|\*\*Recommendations:?|$)";
+        string analysisPattern = @"\*\*Analysis:\*\*(.*?)(?=-\s*\*\*Recommendations:?|\*\*Recommendations:?|$)";
+        string recsPattern = @"\*\*Recommendations / Actions:\*\*(.*?)(?=-\s*\*\*Scenarios:?|\*\*Scenarios:?|-\s*\*\*Reasoning:?|\*\*Reasoning:?|$)";
 
-        // هنا بنقوله اقرأ الـ Recommendations لحد ما تقابل الـ Scenarios أو الـ Reasoning
-        string recsPattern = @"\*\*Recommendations / Actions:\*\*(.*?)(?=-\s*\*\*Scenarios:|\*\*Scenarios:|\*\*Reasoning:\*\*|$)";
+        // تظبيط الـ Lookahead هنا عشان يقف لو لقى سطر جديد بيبدأ بـ رقم بين نجمتين زي **2. أو #### 2.
+        string scenariosPattern = @"\*\*Scenarios:\*\*(.*?)(?=-\s*\*\*Risk Management:?|\*\*Risk Management:?|-\s*\*\*Reasoning:?|\*\*Reasoning:?|\n+(?:#### |\*\*)\d+|$|$)";
+        string riskManagementPattern = @"\*\*Risk Management:\*\*(.*?)(?=-\s*\*\*Reasoning:?|\*\*Reasoning:?|\n+(?:#### |\*\*)\d+|$|$)";
+        string reasoningPattern = @"\*\*Reasoning:\*\*(.*?)(?=\n+(?:#### |\*\*)\d+|$|$)";
 
+        // ميثود التنظيف الأساسية
         string CleanText(string input)
         {
             if (string.IsNullOrEmpty(input)) return string.Empty;
@@ -248,21 +251,35 @@ public class ReportService(IGenerateReportService generateReportService,
             return trimmed;
         }
 
+        // ميثود جديدة مخصوص لتنظيف الـ Markdown (النجوم والـ Dashes الزيادة في أول السطور)
+        string CleanMarkdown(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return null;
+
+            // 1. تنظيف النص الأساسي
+            string cleaned = CleanText(input);
+
+            // 2. نشيل النجوم تماماً من النص
+            cleaned = cleaned.Replace("**", "");
+
+            // 3. لو السطور بتبدأ بـ مسافات وشرطة (like: "   -  ") بنخليها شكلها منظم ونشيل الفراغات
+            cleaned = Regex.Replace(cleaned, @"(?<=\n|^)\s*-\s*", "- ");
+
+            return cleaned.Trim();
+        }
+
         List<string> SplitRecommendations(string recsText)
         {
             var list = new List<string>();
             if (string.IsNullOrEmpty(recsText)) return list;
 
-            // التعديل الجديد عشان يلقط الـ Bullet points المكتوبة بـ شرطة (- ) أو أرقام (\d+\.\s+)
             string titlePattern = @"(?:\d+\.\s+|-)\s*\*\*(.*?)\*\*";
-
             var matches = Regex.Matches(recsText, titlePattern);
 
             int index = 1;
             foreach (Match match in matches)
             {
                 string title = match.Groups[1].Value.Trim();
-
                 if (title.EndsWith(":"))
                 {
                     title = title.Substring(0, title.Length - 1).Trim();
@@ -280,13 +297,18 @@ public class ReportService(IGenerateReportService generateReportService,
         details.Goal = CleanText(Regex.Match(planText, goalPattern, RegexOptions.Singleline).Groups[1].Value);
         details.Analysis = CleanText(Regex.Match(planText, analysisPattern, RegexOptions.Singleline).Groups[1].Value);
 
-        // لقط وتقسيم الـ Recommendations
         string rawRecs = Regex.Match(planText, recsPattern, RegexOptions.Singleline).Groups[1].Value;
         details.Recommendations = SplitRecommendations(rawRecs);
 
-        // بما إن الـ report ده مفيهوش Reasoning، الـ variable ده هيفضل فاضي ومش هيضرب Error
-        string reasoningPattern = @"\*\*Reasoning:\*\*(.*?)(?=\n+#### \d+|$|$)";
-        details.Reasoning = CleanText(Regex.Match(planText, reasoningPattern, RegexOptions.Singleline).Groups[1].Value);
+        // بنستخدم CleanMarkdown هنا للأقسام دي عشان تطلع صافية
+        var scenariosMatch = Regex.Match(planText, scenariosPattern, RegexOptions.Singleline);
+        details.Scenarios = scenariosMatch.Success ? CleanMarkdown(scenariosMatch.Groups[1].Value) : null;
+
+        var riskMatch = Regex.Match(planText, riskManagementPattern, RegexOptions.Singleline);
+        details.RiskManagement = riskMatch.Success ? CleanMarkdown(riskMatch.Groups[1].Value) : null;
+
+        var reasoningMatch = Regex.Match(planText, reasoningPattern, RegexOptions.Singleline);
+        details.Reasoning = reasoningMatch.Success ? CleanMarkdown(reasoningMatch.Groups[1].Value) : null;
 
         return details;
     }
