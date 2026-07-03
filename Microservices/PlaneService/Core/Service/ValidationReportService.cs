@@ -63,7 +63,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
         var reportToReturn = new UserValidationReportDto
         {
             Id = report.Id,
-            Content = stringContent!,
+            Content = reportAddDto.Content!,
             CreatedAt = report.CreatedAt,
             CreatedBy = report.CreatedBy,
             Status = report.Status
