@@ -19,6 +19,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -192,26 +193,26 @@ namespace webApi
             });
 
 
-            //builder.WebHost.ConfigureKestrel(options =>
-            //{
-            //    // اقرأ من environment أولاً (أولوية أعلى)
-            //    var httpPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-            //        "8001"
-            //    );
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                // اقرأ من environment أولاً (أولوية أعلى)
+                var httpPort = int.Parse(
+                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+                    "8001"
+                );
 
-            //    var grpcPort = int.Parse(
-            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
-            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-            //        "5001"
-            //    );
+                var grpcPort = int.Parse(
+                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
+                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+                    "5001"
+                );
 
-            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            //});
+                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            });
 
             builder.Services.AddCors(options =>
             {
