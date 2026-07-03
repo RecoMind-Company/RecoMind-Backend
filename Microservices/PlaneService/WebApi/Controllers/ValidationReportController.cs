@@ -83,5 +83,15 @@ namespace WebApi.Controllers
             }
             return Ok(result.Value);
         }
+        [HttpGet("get/{ReportId}")]
+        public async Task<IActionResult> GetValidationReportById(string ReportId)
+        {
+            var result = await validationReportService.GetValidationReportById(ReportId);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
     }
 }

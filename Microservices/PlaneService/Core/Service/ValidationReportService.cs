@@ -93,8 +93,23 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
         return Result<UserValidationReportDto>.Success(response);
     }
 
-    public Task<Result<UserValidationReportDto>> GetValidationReportById(string reportId)
+    public async Task<Result<UserValidationReportDto>> GetValidationReportById(string reportId)
     {
-        throw new NotImplementedException();
+        var report = await _validationReportRepository.Find(r => r.Id == reportId);
+        if (report is null)
+            return Result<UserValidationReportDto>.Failure("There is no report with this Id");
+
+        var content = await fileStorageService.ReadFileAsync(report.FileName);
+        var serializedContent = JsonSerializer.Deserialize<ValidationReportDto>(content);
+
+        var response = new UserValidationReportDto
+        {
+            Id = report.Id,
+            Content = serializedContent,
+            CreatedAt = report.CreatedAt,
+            CreatedBy = report.CreatedBy,
+            Status = report.Status
+        };
+        return Result<UserValidationReportDto>.Success(response);
     }
 }
