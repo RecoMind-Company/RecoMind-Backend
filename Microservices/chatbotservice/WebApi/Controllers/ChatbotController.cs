@@ -75,7 +75,7 @@ namespace WebApi.Controllers
                 }
                 else if (result.Status == Status.FAILURE)
                 {
-                    return BadRequest("Failed to get response from AI service.");
+                    return BadRequest(result.Result.Error);
                 }
 
                 var res = new UserResponseDto
