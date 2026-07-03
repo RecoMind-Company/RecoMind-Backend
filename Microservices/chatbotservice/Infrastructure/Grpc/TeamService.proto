@@ -5,5 +5,9 @@ import "teamMessages.proto";
 option csharp_namespace = "Infrastructure.Grpc";
 
 service TeamGrpcService {
-  rpc GetTeamByTeamLeader (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
+  rpc GetTeamByEmployee (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
+
+  rpc UserExist(UserExistRequest) returns (UserExistResponse);
+
+  rpc GetTeamEmployees (TeamEmployeesRequest) returns (TeamEmployeesResponse);
 }
