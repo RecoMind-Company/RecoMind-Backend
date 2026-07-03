@@ -8,7 +8,6 @@ namespace Core.DTOs
 {
     public class AssignSubscriptionDto
     {
-        public string? companyId { get; set; }
         public string? subscriptionId { get; set; }
     }
 }
