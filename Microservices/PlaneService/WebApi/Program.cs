@@ -10,6 +10,7 @@ using Hangfire;
 using Infrastructure.AI;
 using Infrastructure.BackgroundJobs;
 using Infrastructure.Data;
+using Infrastructure.FileStorage;
 using Infrastructure.GrpcClients.Quest;
 using Infrastructure.GrpcClients.Team;
 using Infrastructure.Messaging;
@@ -18,7 +19,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +33,7 @@ using WebApi.GrpcServer;
 
 namespace webApi
 {
+    // --------------------------------- DON'T FORGET TO RETURN CONFIGURATION TO PRODUCTION --------------------
     public class Program
     {
         public static void Main(string[] args)
@@ -60,10 +61,13 @@ namespace webApi
             builder.Services.AddScoped<IQuestGrpcClient, QuestGrpcClientImplementation>();
             builder.Services.AddScoped<IPlanEventPublisher, PlanEventPublisher>();
             builder.Services.AddScoped<IModuleService, ModuleService>();
+            builder.Services.AddScoped<IFileStorageService, AzureFileStorage>();
+            builder.Services.AddScoped<IValidationReportGeneratorService, ValidationReportGeneratorService>();
+            builder.Services.AddScoped<IValidationReportService, ValidationReportService>();
+            var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIBaseUrl");
+            var aiApiKey = builder.Configuration.GetValue<string>("AI:ApiKey");
 
             //AI plan generation Service
-            var AiServiceUrl = builder.Configuration.GetValue<string>("AI:AIPlanGeneratorUrl");
-            var aiApiKey = builder.Configuration.GetValue<string>("AI:ApiKey");
             builder.Services.AddHttpClient<IPlanGeneratorService, PlanGeneratorService>(client =>
             {
                 client.BaseAddress = new Uri(AiServiceUrl!);
@@ -75,6 +79,19 @@ namespace webApi
                 policy.WaitAndRetryAsync(3,
                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
+
+            // AI Validation Report Service
+            builder.Services.AddHttpClient<IValidationReportGeneratorService, ValidationReportGeneratorService>(client =>
+            {
+                client.BaseAddress = new Uri(AiServiceUrl!);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.DefaultRequestHeaders.Add("X-API-Key", aiApiKey);
+                client.Timeout = TimeSpan.FromSeconds(60);
+
+            }).AddTransientHttpErrorPolicy(policy =>
+                policy.WaitAndRetryAsync(3,
+               retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+           );
 
             builder.Services.AddAutoMapper(typeof(PlanMapper));
             // Add services to the container.
@@ -175,26 +192,26 @@ namespace webApi
             });
 
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                // اقرأ من environment أولاً (أولوية أعلى)
-                var httpPort = int.Parse(
-                    Environment.GetEnvironmentVariable("HTTP_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
-                    "8001"
-                );
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    // اقرأ من environment أولاً (أولوية أعلى)
+            //    var httpPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("HTTP_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsHttp_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Http:Port"] ??
+            //        "8001"
+            //    );
 
-                var grpcPort = int.Parse(
-                    Environment.GetEnvironmentVariable("GRPC_PORT") ??
-                    Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
-                    builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
-                    "5001"
-                );
+            //    var grpcPort = int.Parse(
+            //        Environment.GetEnvironmentVariable("GRPC_PORT") ??
+            //        Environment.GetEnvironmentVariable("Kestrel_EndpointsGrpc_Port") ??
+            //        builder.Configuration["Kestrel:Endpoints:Grpc:Port"] ??
+            //        "5001"
+            //    );
 
-                options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
-                options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
-            });
+            //    options.ListenAnyIP(httpPort, o => o.Protocols = HttpProtocols.Http1);
+            //    options.ListenAnyIP(grpcPort, o => o.Protocols = HttpProtocols.Http2);
+            //});
 
             builder.Services.AddCors(options =>
             {
