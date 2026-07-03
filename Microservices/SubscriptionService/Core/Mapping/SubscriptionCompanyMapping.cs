@@ -23,6 +23,7 @@ namespace Core.Mapping
 
             CreateMap<SubscriptionCompany, GetSubscriptionCompanyDto>()
                 .ForMember(dest => dest.SubscriptionTypeName, opt => opt.MapFrom(src => src.subscriptionType.PlanName))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.subscriptionType.PlanName))
                 .ReverseMap()
                 // Explicitly handle the nested property for the reverse direction
                 .ForPath(dest => dest.subscriptionType.PlanName, opt => opt.MapFrom(src => src.SubscriptionTypeName));

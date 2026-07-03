@@ -11,6 +11,7 @@ namespace Core.DTOs
         public string Id { get; set; }
         public string BillingCycle { get; set; }
         public string SubscriptionTypeName { get; set; }
+        public string PlanName { get; set; }
         public double Price { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

@@ -46,7 +46,8 @@ namespace Core.Service
             await _unitOfWork.Entity.AddAsync(item);
             await _unitOfWork.Save();
 
-            return _mapper.Map<GetSubscriptionCompanyDto>(item);
+            var created = await _unitOfWork.Entity.GetByIdAsync(item.Id);
+            return _mapper.Map<GetSubscriptionCompanyDto>(created);
         }
 
         public async Task<DeleteSubscriptionCompanyDto> DeleteSubscription(string subscriptionId)
@@ -103,7 +104,8 @@ namespace Core.Service
             _unitOfWork.Entity.Update(item);
             await _unitOfWork.Save();
 
-            return _mapper.Map<GetSubscriptionCompanyDto>(item);
+            var updated = await _unitOfWork.Entity.GetByIdAsync(item.Id);
+            return _mapper.Map<GetSubscriptionCompanyDto>(updated);
         }
 
         public async Task<double> SetPrice(BillingCycle billingCycle, string planName)
