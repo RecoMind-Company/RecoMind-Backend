@@ -6,13 +6,16 @@ using Core.Models;
 using Core.Service.Interface;
 using Core.Service.Interface.AI;
 using Infrastructure.GrpcClients.Team;
+using System.Text.Json;
 
 namespace Core.Service;
 
 public class ValidationReportService(IValidationReportGeneratorService reportGeneratorService,
                                      IUnitOfWork<ValidationReport> unitOfWork,
-                                     ITeamGrpcClient teamGrpcClient) : IValidationReportService
+                                     ITeamGrpcClient teamGrpcClient,
+                                     IFileStorageService fileStorageService) : IValidationReportService
 {
+    private readonly IGenericRepository<ValidationReport> _validationReportRepository = unitOfWork.Entity;
     public async Task<Result<AIValidationReportResponseDto>> RequestValidationReport(UserValidationReportRequestDto requestDto)
     {
         //var TeamId = "0dc1400d-a758-424b-80fb-a8ff89078522"; // FOR TEST ------------------------------
@@ -39,5 +42,42 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
 
         var validationReport = response.Value.Result.ValidationReport;
         return Result<ValidationReportDto>.Success(validationReport);
+    }
+
+    public async Task<Result<UserValidationReportDto>> AddValidationReport(UserValidationReportAddDto reportAddDto)
+    {
+        var stringContent = JsonSerializer.Serialize(reportAddDto.Content);
+        var fileName = await fileStorageService.SaveFileAsync(stringContent!);
+        var report = new ValidationReport
+        {
+            Id = Guid.NewGuid().ToString(),
+            Status = (ValidationReportStatusEnum)reportAddDto.Status,
+            FileType = ".txt",
+            FileName = fileName,
+            CreatedBy = reportAddDto.CreatedBy!,
+            CreatedAt = DateTime.UtcNow,
+        };
+        await _validationReportRepository.AddAsync(report);
+        unitOfWork.Save();
+
+        var reportToReturn = new UserValidationReportDto
+        {
+            Id = report.Id,
+            Content = stringContent!,
+            CreatedAt = report.CreatedAt,
+            CreatedBy = report.CreatedBy,
+            Status = report.Status
+        };
+        return Result<UserValidationReportDto>.Success(reportToReturn);
+    }
+
+    public Task<Result<UserValidationReportDto>> UpdateValidationReport(int status)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result<UserValidationReportDto>> GetValidationReportById(string reportId)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -44,10 +44,10 @@ namespace webApi
 
             builder.Services.AddDbContext<PlanDbContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection_Plan"));
             });
             //Setup Hangfire with SQL Server storage
-            builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddHangfire(x => x.UseSqlServerStorage(builder.Configuration.GetConnectionString("ProductionConnection_Plan")));
             builder.Services.AddHangfireServer();
             builder.Services.AddScoped<IBackgroundService, HangfireSetUpJobs>();
             builder.Services.AddGrpc();

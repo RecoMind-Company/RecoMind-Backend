@@ -1,10 +1,11 @@
-﻿namespace Core.Models;
+﻿using Core.Models;
 
-public class ValidationReport
+namespace Core.DTOs.ValidationReport;
+
+public class UserValidationReportDto
 {
     public string Id { get; set; } = default!;
-    public string FileName { get; set; } = default!;
-    public string FileType { get; set; } = default!;
+    public string Content { get; set; }
     public string CreatedBy { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
     public ValidationReportStatusEnum Status { get; set; }
