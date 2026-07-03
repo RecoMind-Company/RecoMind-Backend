@@ -34,7 +34,10 @@ public class ValidationReportGeneratorService(HttpClient httpClient, IConfigurat
         try
         {
             response.EnsureSuccessStatusCode();
-            var stringResult = await response.Content.ReadAsStringAsync();
+
+            //for test
+            //var stringResult = await response.Content.ReadAsStringAsync();
+
             var result = await response.Content.ReadFromJsonAsync<TaskResponseDto>();
 
             if (result.Status == "PENDING")

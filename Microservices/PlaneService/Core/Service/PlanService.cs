@@ -270,6 +270,13 @@ namespace Core.Service
             if (!response.IsSuccess)
                 return Result<AIPlanDto>.Failure(response.Error);
 
+            foreach (var module in response.Value.modules)
+            {
+                foreach (var task in module.tasks)
+                {
+                    task.task_id = Guid.NewGuid().ToString();
+                }
+            }
             var plan = new Plan();
 
             plan.IsApproved = false;

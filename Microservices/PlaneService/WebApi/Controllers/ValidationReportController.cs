@@ -68,7 +68,30 @@ namespace WebApi.Controllers
             return Ok(result.Value);
         }
 
-        // [HttpPatch("update")]
-        // update validation report to rejected or Accepted
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateValidationReportStatus([FromBody] UserUpdateReportDto updateReportDto)
+        {
+            var validStatuses = new List<int> { 0, 1, 2, 3 };
+            if (validStatuses.Contains(updateReportDto.Status) == false)
+            {
+                return BadRequest("Invalid status value. Status must be either 0 (UnderReview) or 1 (Draft) or 2 (Rejected) or 3 (Accepted).");
+            }
+            var result = await validationReportService.UpdateValidationReport(updateReportDto);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
+        [HttpGet("get/{ReportId}")]
+        public async Task<IActionResult> GetValidationReportById(string ReportId)
+        {
+            var result = await validationReportService.GetValidationReportById(ReportId);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
     }
 }
