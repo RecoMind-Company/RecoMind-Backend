@@ -13,6 +13,7 @@ namespace Infrastructure.Data
         public DbSet<Status> Statuses { get; set; }
         public DbSet<PlanType> PlanTypes { get; set; }
         public DbSet<Module> Modules { get; set; }
+        public DbSet<ValidationReport> ValidationReports { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
