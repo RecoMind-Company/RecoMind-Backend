@@ -112,5 +112,13 @@ namespace WebApi.Controllers
             }
             return Ok(result.Value);
         }
+
+        [HttpGet("sent")]
+        public async Task<IActionResult> GetUserSentToValidationReports([FromQuery] int limit)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await validationReportService.GetValidationReportBySendToId(userId!, limit);
+            return Ok(result.Value);
+        }
     }
 }

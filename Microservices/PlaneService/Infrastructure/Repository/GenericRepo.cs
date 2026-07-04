@@ -65,7 +65,10 @@ namespace Infrastructure.Repository
         {
             return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
         }
-
+        public async Task<IEnumerable<T>> FindAllWithLimit(Expression<Func<T, bool>> predicate, int limit)
+        {
+            return await _dbSet.Where(predicate).Take(limit).ToListAsync();
+        }
 
     }
 }
