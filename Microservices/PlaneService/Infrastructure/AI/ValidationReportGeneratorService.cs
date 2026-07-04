@@ -41,15 +41,15 @@ public class ValidationReportGeneratorService(HttpClient httpClient, IConfigurat
             var result = await response.Content.ReadFromJsonAsync<TaskResponseDto>();
 
             if (result.Status == "PENDING")
-                return Result<TaskResponseDto>.Failure($"Plan generation is still pending.");
+                return Result<TaskResponseDto>.Failure($"validation report generation is still pending.");
 
             if (result.Status == "STARTED" || result.Status == "PROGRESS")
-                return Result<TaskResponseDto>.Failure($"Plan generation is still in progress.");
+                return Result<TaskResponseDto>.Failure($"validation report generation is still in progress.");
 
             if (result.Status == "SUCCESS")
                 return Result<TaskResponseDto>.Success(result!);
 
-            return Result<TaskResponseDto>.Failure($"Plan generation failed.");
+            return Result<TaskResponseDto>.Failure($"validation report generation failed.");
         }
         catch (Exception ex)
         {
