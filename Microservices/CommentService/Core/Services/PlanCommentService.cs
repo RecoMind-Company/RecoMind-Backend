@@ -87,7 +87,7 @@ public class PlanCommentService(IUnitOfWork unitOfWork,
 
         return Result<bool>.Success(true);
     }
-    private async Task SendNotificationAsync(PlanIdsDto plan, AddPlanCommentDto addCommentDto)
+    public async Task SendNotificationAsync(PlanIdsDto plan, AddPlanCommentDto addCommentDto)
     {
         var teamMembersIds = await grpcTeamService.GetTeamMembersAsync(plan.TeamId!);
 
