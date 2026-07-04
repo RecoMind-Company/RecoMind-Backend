@@ -27,3 +27,11 @@ message TeamEmployeesRequest {
 message TeamEmployeesResponse {
   repeated string employeeIds = 1;
 }
+
+message TeamLeaderRequest {
+  string userId = 1;
+}
+
+message TeamLeaderResponse {
+  string leaderId = 1;
+}

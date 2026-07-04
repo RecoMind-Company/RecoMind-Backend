@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using System.Xml.Linq;
 using Team.Core.DTOs;
 using Team.Core.Interfaces;
 using Team.Core.Models;
@@ -39,6 +40,15 @@ namespace Team.Core.Services
 
         public async Task<Result<UserTeamInfoDto>> GetTeamByEmployeeIdAsync(string employeeId)
             => MapToUserTeamInfo(await _repo.GetTeamByEmployeeIdAsync(employeeId));
+
+        public async Task<List<string>> GetTeamEmployees(string teamLeadId)
+        {
+            var team = await _repo.GetTeamByTeamLeadIdAsync(teamLeadId);
+            if (team == null) return new List<string>();
+
+            var employeeIds = await _repo.GetTeamMemberIdsAsync(team.Id);
+            return employeeIds ?? new List<string>();
+        }
 
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
         {
@@ -84,7 +94,6 @@ namespace Team.Core.Services
                 })
                 .ToList();
         }
-        #endregion
 
         public async Task<List<string>> GetAllTeamEmployeesAsync(string teamId)
         {
@@ -92,6 +101,10 @@ namespace Team.Core.Services
 
             return employeeIds ?? new List<string>();
         }
+
+        public async Task<string> GetTeamLeaderAsync(string UserId)
+            => (await _repo.GetTeamByEmployeeIdAsync(UserId)).TeamLeadId ?? string.Empty;
+        #endregion
 
 
         #region Write Operations
