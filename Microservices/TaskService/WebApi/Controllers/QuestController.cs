@@ -4,6 +4,7 @@ using Core.ServicesAbstractions;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebApi.Controllers;
 
@@ -102,6 +103,10 @@ public class QuestController(IQuestService questService,
         var createdQuest = await questService.CreatePersonalQuestAsync(fullQuestDto);
         if (!createdQuest.IsSuccess)
             return HandleFailure(createdQuest.ErrorList);
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        fullQuestDto.UserIds.Add(userId!);
         var finalResult = await userQuestsService.AssignUsersToQuestAsync(fullQuestDto.UserIds, createdQuest.Value!.QuestId);
 
         return finalResult.Map<ActionResult<PersonalQuestToReturnDto>>(
