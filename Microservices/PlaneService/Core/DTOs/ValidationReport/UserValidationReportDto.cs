@@ -6,6 +6,7 @@ namespace Core.DTOs.ValidationReport;
 public class UserValidationReportDto
 {
     public string Id { get; set; } = default!;
+    public string? UserQuestion { get; set; }
     public ValidationReportDto Content { get; set; }
     public string CreatedBy { get; set; } = default!;
     public DateTime CreatedAt { get; set; }
