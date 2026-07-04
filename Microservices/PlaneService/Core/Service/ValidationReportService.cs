@@ -185,6 +185,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
                 return new UserValidationReportDto
                 {
                     Id = r.Id,
+                    UserQuestion = r.UserSuggestedPlan ?? null,
                     Content = serializedContent,
                     CreatedAt = r.CreatedAt,
                     CreatedBy = r.CreatedBy,
@@ -226,6 +227,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
                 return new UserValidationReportDto
                 {
                     Id = r.Id,
+                    UserQuestion = r.UserSuggestedPlan ?? null,
                     Content = serializedContent,
                     CreatedAt = r.CreatedAt,
                     CreatedBy = r.CreatedBy,
