@@ -52,5 +52,13 @@ namespace Team.WebApi.GrpcServices
 
             return new TeamEmployeesResponse { EmployeeIds = { employeeIds } };
         }
+
+        public override async Task<TeamLeaderResponse> GetTeamLeader(
+            TeamLeaderRequest request,
+            ServerCallContext context)
+        {
+            var leaderId = await _teamService.GetTeamLeaderAsync(request.UserId);
+            return new TeamLeaderResponse { LeaderId = leaderId };
+        }
     }
 }
