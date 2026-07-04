@@ -1,4 +1,5 @@
-﻿using Core.DTOs.AI.ValidationReport;
+﻿using Core.DTOs;
+using Core.DTOs.AI.ValidationReport;
 using Core.DTOs.AI.ValidationReport.AIResult;
 using Core.DTOs.ValidationReport;
 using Core.Service.Interface;
@@ -69,6 +70,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("send")]
+        [ProducesResponseType(typeof(BaseToReturnDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> SendValidationReport([FromBody] SendValidationReportDto sendValidationDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -83,6 +85,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPatch("update")]
+        [ProducesResponseType(typeof(UserValidationReportDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateValidationReportStatus([FromBody] UserUpdateReportDto updateReportDto)
         {
             var validStatuses = new List<int> { 0, 1, 2, 3 };
@@ -98,6 +101,7 @@ namespace WebApi.Controllers
             return Ok(result.Value);
         }
         [HttpGet("get/{ReportId}")]
+        [ProducesResponseType(typeof(UserValidationReportDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetValidationReportById(string ReportId)
         {
             var result = await validationReportService.GetValidationReportById(ReportId);
@@ -109,6 +113,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("sent")]
+        [ProducesResponseType(typeof(IEnumerable<UserValidationReportDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserSentToValidationReports([FromQuery] int limit)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -116,6 +121,7 @@ namespace WebApi.Controllers
             return Ok(result.Value);
         }
         [HttpGet("created-user")]
+        [ProducesResponseType(typeof(IEnumerable<UserValidationReportDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetuserCreatedValidationReports([FromQuery] int limit)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
