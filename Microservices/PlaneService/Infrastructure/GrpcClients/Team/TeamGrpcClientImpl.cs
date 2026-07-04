@@ -1,15 +1,27 @@
 ﻿using Core.Models;
 using GrpcClients.Team;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.GrpcClients.Team
 {
     public class TeamGrpcClientImpl(TeamGrpcService.TeamGrpcServiceClient _GrpcServiceClient) : ITeamGrpcClient
     {
+        public async Task<Result<string>> GetTeamLeaderId(string userId)
+        {
+            try
+            {
+                var result = await _GrpcServiceClient.GetTeamLeaderAsync(new TeamLeaderRequest { UserId = userId });
+                if (result != null)
+                {
+                    return Result<string>.Success(result.LeaderId);
+                }
+                return Result<string>.Failure("No team leader found for the given user ID.");
+            }
+            catch (Exception)
+            {
+                return Result<string>.Failure(" Wrong ! Try Again Later ");
+            }
+        }
+
         public async Task<Result<string>> GetTeamNameById(string userId)
         {
             try
@@ -27,5 +39,6 @@ namespace Infrastructure.GrpcClients.Team
                 return Result<string>.Failure(" Wrong ! Try Again Later ");
             }
         }
+
     }
 }

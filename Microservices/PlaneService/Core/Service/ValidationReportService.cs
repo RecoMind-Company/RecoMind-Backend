@@ -120,19 +120,23 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
     public async Task<Result<BaseToReturnDto>> SendValidationReport(SendValidationReportDto sendValidationReportDto)
     {
         // here we must have a grpc that take userId and companyId then return the teamleader of the team that user belong to.
+        var teamLeaderId = await teamGrpcClient.GetTeamLeaderId(sendValidationReportDto.CreatedBy!);
+        if (!teamLeaderId.IsSuccess)
+            return Result<BaseToReturnDto>.Failure(teamLeaderId.Error);
+
         var stringContent = JsonSerializer.Serialize(sendValidationReportDto.Content);
         var fileName = await fileStorageService.SaveFileAsync(stringContent!);
         var report = new ValidationReport
         {
             Id = Guid.NewGuid().ToString(),
-            Status = (ValidationReportStatusEnum)sendValidationReportDto.Status,
+            Status = ValidationReportStatusEnum.UnderReview,
             FileType = ".txt",
             FileName = fileName,
             CreatedBy = sendValidationReportDto.CreatedBy!,
             CreatedAt = DateTime.UtcNow,
 
             // FOR NOW
-            SendTo = sendValidationReportDto.SendTo
+            SendTo = teamLeaderId.Value
         };
         await _validationReportRepository.AddAsync(report);
         unitOfWork.Save();
@@ -141,7 +145,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
         {
             Title = "validation report ",
             Message = "A new validation report is waiting for your approval!",
-            ReceiverId = sendValidationReportDto.SendTo,
+            ReceiverId = teamLeaderId.Value,
             SenderId = sendValidationReportDto.CreatedBy,
             PlanId = null
         };
@@ -159,6 +163,47 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
     public async Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportBySendToId(string sendToId, int limit = 3)
     {
         var reports = await _validationReportRepository.FindAllWithLimit(r => r.SendTo == sendToId, limit);
+        if (!reports.Any())
+            return Result<IEnumerable<UserValidationReportDto>>.Success(Enumerable.Empty<UserValidationReportDto>());
+
+        const int maxParallelTasks = 5;
+
+        var semaphore = new SemaphoreSlim(maxParallelTasks);
+        var tasks = reports.Select(async r =>
+        {
+            // wait for a slot from the semaphore
+            await semaphore.WaitAsync();
+            try
+            {
+                // Read file execution
+                var content = await fileStorageService.ReadFileAsync(r.FileName);
+                var serializedContent = JsonSerializer.Deserialize<ValidationReportDto>(content);
+
+                // Create the DTO
+                return new UserValidationReportDto
+                {
+                    Id = r.Id,
+                    Content = serializedContent,
+                    CreatedAt = r.CreatedAt,
+                    CreatedBy = r.CreatedBy,
+                    Status = r.Status
+                };
+            }
+            finally
+            {
+                // Release the slot after completion (in both cases: success or error)
+                semaphore.Release();
+            }
+        }).ToList(); // Convert to list to ensure all Select executions begin
+
+        // Wait for all tasks to complete
+        var reportsDto = await Task.WhenAll(tasks);
+        return Result<IEnumerable<UserValidationReportDto>>.Success(reportsDto);
+    }
+
+    public async Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportByCreatedById(string userId, int limit)
+    {
+        var reports = await _validationReportRepository.FindAllWithLimit(r => r.CreatedBy == userId, limit);
         if (!reports.Any())
             return Result<IEnumerable<UserValidationReportDto>>.Success(Enumerable.Empty<UserValidationReportDto>());
 

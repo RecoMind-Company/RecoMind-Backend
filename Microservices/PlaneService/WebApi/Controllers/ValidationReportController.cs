@@ -71,11 +71,6 @@ namespace WebApi.Controllers
         [HttpPost("send")]
         public async Task<IActionResult> SendValidationReport([FromBody] SendValidationReportDto sendValidationDto)
         {
-            var validStatuses = new List<int> { 0, 1, 2, 3 };
-            if (validStatuses.Contains(sendValidationDto.Status) == false)
-            {
-                return BadRequest("Invalid status value. Status must be either 0 (UnderReview) or 1 (Draft) or 2 (Rejected) or 3 (Accepted).");
-            }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             sendValidationDto.CreatedBy = userId;
 
@@ -118,6 +113,13 @@ namespace WebApi.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await validationReportService.GetValidationReportBySendToId(userId!, limit);
+            return Ok(result.Value);
+        }
+        [HttpGet("created-user")]
+        public async Task<IActionResult> GetuserCreatedValidationReports([FromQuery] int limit)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await validationReportService.GetValidationReportByCreatedById(userId!, limit);
             return Ok(result.Value);
         }
     }
