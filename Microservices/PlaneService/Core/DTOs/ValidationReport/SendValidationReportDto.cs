@@ -5,6 +5,7 @@ namespace Core.DTOs.ValidationReport;
 
 public class SendValidationReportDto
 {
+    public string UserRequest { get; set; }
     public ValidationReportDto Content { get; set; }
     [JsonIgnore]
     public string? CreatedBy { get; set; }

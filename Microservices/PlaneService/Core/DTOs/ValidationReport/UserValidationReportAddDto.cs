@@ -5,6 +5,7 @@ namespace Core.DTOs.ValidationReport;
 
 public class UserValidationReportAddDto
 {
+    public string UserRequest { get; set; }
     public ValidationReportDto Content { get; set; }
     public int Status { get; set; }
     [JsonIgnore]

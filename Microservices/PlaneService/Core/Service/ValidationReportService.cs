@@ -60,6 +60,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
             FileName = fileName,
             CreatedBy = reportAddDto.CreatedBy!,
             CreatedAt = DateTime.UtcNow,
+            UserSuggestedPlan = reportAddDto.UserRequest,
         };
         await _validationReportRepository.AddAsync(report);
         unitOfWork.Save();
@@ -134,6 +135,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
             FileName = fileName,
             CreatedBy = sendValidationReportDto.CreatedBy!,
             CreatedAt = DateTime.UtcNow,
+            UserSuggestedPlan = sendValidationReportDto.UserRequest,
 
             // FOR NOW
             SendTo = teamLeaderId.Value
