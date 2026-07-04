@@ -68,6 +68,25 @@ namespace WebApi.Controllers
             return Ok(result.Value);
         }
 
+        [HttpPost("send")]
+        public async Task<IActionResult> SendValidationReport([FromBody] SendValidationReportDto sendValidationDto)
+        {
+            var validStatuses = new List<int> { 0, 1, 2, 3 };
+            if (validStatuses.Contains(sendValidationDto.Status) == false)
+            {
+                return BadRequest("Invalid status value. Status must be either 0 (UnderReview) or 1 (Draft) or 2 (Rejected) or 3 (Accepted).");
+            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            sendValidationDto.CreatedBy = userId;
+
+            var result = await validationReportService.SendValidationReport(sendValidationDto);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
+
         [HttpPatch("update")]
         public async Task<IActionResult> UpdateValidationReportStatus([FromBody] UserUpdateReportDto updateReportDto)
         {

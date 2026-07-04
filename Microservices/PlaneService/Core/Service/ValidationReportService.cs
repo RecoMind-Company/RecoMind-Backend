@@ -1,4 +1,5 @@
-﻿using Core.DTOs.AI.ValidationReport;
+﻿using Core.DTOs;
+using Core.DTOs.AI.ValidationReport;
 using Core.DTOs.AI.ValidationReport.AIResult;
 using Core.DTOs.ValidationReport;
 using Core.Interfaces;
@@ -6,6 +7,7 @@ using Core.Models;
 using Core.Service.Interface;
 using Core.Service.Interface.AI;
 using Infrastructure.GrpcClients.Team;
+using RecoMind.Contracts.Events;
 using System.Text.Json;
 
 namespace Core.Service;
@@ -13,7 +15,9 @@ namespace Core.Service;
 public class ValidationReportService(IValidationReportGeneratorService reportGeneratorService,
                                      IUnitOfWork<ValidationReport> unitOfWork,
                                      ITeamGrpcClient teamGrpcClient,
-                                     IFileStorageService fileStorageService) : IValidationReportService
+                                     IFileStorageService fileStorageService,
+                                     IBackgroundService backgroundService,
+                                     IPlanEventPublisher eventPublisher) : IValidationReportService
 {
     private readonly IGenericRepository<ValidationReport> _validationReportRepository = unitOfWork.Entity;
     public async Task<Result<AIValidationReportResponseDto>> RequestValidationReport(UserValidationReportRequestDto requestDto)
@@ -111,5 +115,40 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
             Status = report.Status
         };
         return Result<UserValidationReportDto>.Success(response);
+    }
+
+    public async Task<Result<BaseToReturnDto>> SendValidationReport(SendValidationReportDto sendValidationReportDto)
+    {
+        var stringContent = JsonSerializer.Serialize(sendValidationReportDto.Content);
+        var fileName = await fileStorageService.SaveFileAsync(stringContent!);
+        var report = new ValidationReport
+        {
+            Id = Guid.NewGuid().ToString(),
+            Status = (ValidationReportStatusEnum)sendValidationReportDto.Status,
+            FileType = ".txt",
+            FileName = fileName,
+            CreatedBy = sendValidationReportDto.CreatedBy!,
+            CreatedAt = DateTime.UtcNow,
+        };
+        await _validationReportRepository.AddAsync(report);
+        unitOfWork.Save();
+
+        var notification = new NotificationEventDto
+        {
+            Title = "validation report ",
+            Message = "A new validation report is waiting for your approval!",
+            ReceiverId = sendValidationReportDto.SendTo,
+            SenderId = sendValidationReportDto.CreatedBy,
+            PlanId = null
+        };
+        backgroundService.ExecuteInBackground(() => eventPublisher.PublishNotificationAsync(notification));
+
+        var response = new BaseToReturnDto
+        {
+            IsSuccess = true,
+            message = "validation report send successfully!"
+        };
+        return Result<BaseToReturnDto>.Success(response);
+
     }
 }
