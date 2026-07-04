@@ -5,8 +5,6 @@ using Core.DTOs.Chatbot;
 using Core.Interfaces;
 using Core.Models;
 using Core.Services.Interface;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace Core.Services
 {
@@ -34,7 +32,7 @@ namespace Core.Services
             try
             {
                 // call team service to get team name and company id
-                var teaminfo =await _teamService.GetTeamInformation(requestDto.UserID);
+                var teaminfo = await _teamService.GetTeamInformation(requestDto.UserID);
 
                 // create AiRequestDto to send to Ai service
                 AiRequestDto aiRequestDto = new AiRequestDto
@@ -56,7 +54,7 @@ namespace Core.Services
                     status = Status.FAILURE,
                     message = ex.Message
                 };
-            }            
+            }
         }
 
         public async Task<FinalResponseDto> GetResponseFromAiService(GetMethodDto dto)
@@ -100,6 +98,7 @@ namespace Core.Services
         {
             var chatmessage = _mapper.Map<ChatMessage>(model);
             chatmessage.Id = Guid.NewGuid().ToString();
+            chatmessage.TimeStamp = DateTime.UtcNow;
             await _unitOfWork.Entity.AddAsync(chatmessage);
             await _unitOfWork.Save();
         }

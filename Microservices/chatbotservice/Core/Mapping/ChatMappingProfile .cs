@@ -113,13 +113,13 @@ namespace Core.Mapping
                     opt => opt.Ignore())
 
                 .ForMember(dest => dest.UserId,
-                    opt => opt.Ignore())
+                    opt => opt.MapFrom(src => src.UserId))
 
                 .ForMember(dest => dest.UserRole,
-                    opt => opt.Ignore())
+                    opt => opt.MapFrom(src => src.UserRole))
 
                 .ForMember(dest => dest.UserQuestion,
-                    opt => opt.Ignore())
+                    opt => opt.MapFrom(src => src.UserQuestion))
 
                 .ForMember(dest => dest.TimeStamp,
                     opt => opt.Ignore());
