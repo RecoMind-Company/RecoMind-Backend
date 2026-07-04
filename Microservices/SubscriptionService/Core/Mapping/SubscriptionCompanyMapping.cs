@@ -12,19 +12,23 @@ namespace Core.Mapping
 {
     public class SubscriptionCompanyMapping : Profile
     {
-        public SubscriptionCompanyMapping() 
+        public SubscriptionCompanyMapping()
         {
             CreateMap<CreateSubscriptionCompanyDto, SubscriptionCompany>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ReverseMap(); 
+                .ReverseMap();
 
             CreateMap<SubscriptionCompany, UpdateSubscriptionCompanyDto>()
                 .ReverseMap();
 
             CreateMap<SubscriptionCompany, GetSubscriptionCompanyDto>()
-                .ReverseMap();
+                .ForMember(dest => dest.SubscriptionTypeName, opt => opt.MapFrom(src => src.subscriptionType.PlanName))
+                .ForMember(dest => dest.PlanName, opt => opt.MapFrom(src => src.subscriptionType.PlanName))
+                .ReverseMap()
+                // Explicitly handle the nested property for the reverse direction
+                .ForPath(dest => dest.subscriptionType.PlanName, opt => opt.MapFrom(src => src.SubscriptionTypeName));
 
-            CreateMap<SubscriptionCompany,DeleteSubscriptionCompanyDto>()
+            CreateMap<SubscriptionCompany, DeleteSubscriptionCompanyDto>()
                 .ReverseMap();
         }
     }

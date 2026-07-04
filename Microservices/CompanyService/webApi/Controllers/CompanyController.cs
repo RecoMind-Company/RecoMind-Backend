@@ -192,9 +192,11 @@ namespace Company.API.Controllers
                 if (!ModelState.IsValid)
                     return ValidationProblem(ModelState);
 
-                var company = await _Repo.Entity.GetByIdAsync(Dto.companyId);
+                var companyId = User.FindFirst("CompanyId")?.Value;
+
+                var company = await _Repo.Entity.GetByIdAsync(companyId);
                 if (company == null)
-                    return NotFound($"Company {Dto.companyId} Not Found ");
+                    return NotFound($"Company {companyId} Not Found ");
 
                 var subscription = _subscriptionServiceClient.getById(new getByIdRequest { Id = Dto.subscriptionId });
 

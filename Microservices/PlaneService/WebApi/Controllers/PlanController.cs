@@ -147,26 +147,26 @@ namespace webApi.Controllers
         //        return BadRequest(createdPlan);
         //}
 
-        //[HttpPut("UpdatePlan")]
-        //[ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
-        //public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanDto updatePlanDto)
-        //{
-        //    var companyId = User.FindFirst("CompanyId")?.Value;
-        //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        [HttpPut("UpdatePlan")]
+        [ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanDto updatePlanDto)
+        {
+            var companyId = User.FindFirst("CompanyId")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        //    if (string.IsNullOrWhiteSpace(companyId))
-        //        return BadRequest(" CompanyId Not Found !");
+            if (string.IsNullOrWhiteSpace(companyId))
+                return BadRequest(" CompanyId Not Found !");
 
-        //    if (string.IsNullOrWhiteSpace(userId))
-        //        return BadRequest(" User Not Found !");
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequest(" User Not Found !");
 
-        //    var updatedPlan = await _planService.UpdatePlan(companyId, userId, updatePlanDto);
+            var updatedPlan = await _planService.UpdatePlan(companyId, userId, updatePlanDto);
 
-        //    if (updatedPlan.IsSuccess)
-        //        return Ok(updatedPlan);
-        //    else
-        //        return BadRequest(updatedPlan.Error);
-        //}
+            if (updatedPlan.IsSuccess)
+                return Ok(updatedPlan);
+            else
+                return BadRequest(updatedPlan.Error);
+        }
 
         [HttpDelete("Remove")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]

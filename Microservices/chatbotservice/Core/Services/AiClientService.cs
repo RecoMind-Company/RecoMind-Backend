@@ -45,6 +45,9 @@ namespace Core.Services
                 var response = await _http.GetAsync(endpoint);
                 response.EnsureSuccessStatusCode();
 
+                //var json = await response.Content.ReadAsStringAsync();
+                //Console.WriteLine(json);
+
                 var resultObject = await response.Content.ReadFromJsonAsync<FinalResponseDto>();
 
                 return resultObject!;

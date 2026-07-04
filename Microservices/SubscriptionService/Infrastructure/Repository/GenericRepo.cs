@@ -28,11 +28,26 @@ namespace Infrastructure.Repository
         
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-             return await Entity.ToListAsync();
+            if (typeof(T) == typeof(SubscriptionCompany))
+            {
+                var items = await _context.Set<SubscriptionCompany>()
+                    .Include(s => s.subscriptionType)
+                    .ToListAsync();
+                return items.Cast<T>();
+            }
+
+            return await Entity.ToListAsync();
         }
 
         public async Task<T?> GetByIdAsync(string id)
         {
+            if (typeof(T) == typeof(SubscriptionCompany))
+            {
+                return await _context.Set<SubscriptionCompany>()
+                    .Include(s => s.subscriptionType)
+                    .FirstOrDefaultAsync(e => e.Id == id) as T;
+            }
+
             return await Entity
                     .FirstOrDefaultAsync(e => EF.Property<string>(e, "Id") == id);
         }

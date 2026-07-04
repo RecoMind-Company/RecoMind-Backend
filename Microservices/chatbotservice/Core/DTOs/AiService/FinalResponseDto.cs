@@ -28,5 +28,7 @@ namespace Core.DTOs.AiService
         public string? Sql_Query { get; set; }
         [JsonPropertyName("answer")]
         public string? Answer { get; set; }
+        [JsonPropertyName("error")]
+        public string? Error { get; set; }
     }
 }
