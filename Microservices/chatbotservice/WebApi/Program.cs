@@ -131,7 +131,7 @@ namespace WebApi
             //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(o =>
             {
-                o.Address = new Uri("http://teamservice:5010");         //https://localhost:7192  http://localhost:5264 Team service address http://teamservice:5010
+                o.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl"));         //https://localhost:7192  http://localhost:5264 Team service address http://teamservice:5010
 
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
