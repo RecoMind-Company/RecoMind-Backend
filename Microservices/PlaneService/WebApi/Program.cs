@@ -29,6 +29,7 @@ using Microsoft.OpenApi.Models;
 using Polly;
 using System;
 using System.Text;
+using System.Text.Json.Serialization;
 using webApi.Grpc;
 using WebApi.GrpcServer;
 
@@ -97,8 +98,10 @@ namespace webApi
             builder.Services.AddAutoMapper(typeof(PlanMapper));
             // Add services to the container.
 
-            builder.Services.AddControllers();
-
+            builder.Services.AddControllers()
+                .AddJsonOptions(jo =>
+                                jo.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
+                );
             builder.Services.AddGrpcClient<TeamGrpcService.TeamGrpcServiceClient>(options =>
             {
                 options.Address = new Uri(builder.Configuration.GetValue<string>("GrpcSettings:TeamServiceUrl"));

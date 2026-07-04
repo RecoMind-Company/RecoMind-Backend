@@ -367,12 +367,13 @@ namespace Core.Service
                 {
                     plan.IsApproved = approvedDto.IsAproved;
                     plan.Feedback = approvedDto.Feedback ?? "Plan Approved Successfully!";
-
+                    plan.Status = "Approved"; // Update the status to "Approved" if the plan is approved
                 }
                 else
                 {
                     plan.IsApproved = approvedDto.IsAproved;
                     plan.Feedback = approvedDto.Feedback ?? "Plan Rejected!";
+                    plan.Status = "Rejected"; // Update the status to "Rejected" if the plan is rejected
 
                     await _questGrpcClient.DeleteTaskByPlanId(plan.Id); // Delete all tasks related to the plan if it is rejected            
                 }
@@ -382,7 +383,8 @@ namespace Core.Service
                 {
                     PlanId = plan.Id,
                     IsAproved = plan.IsApproved,
-                    Feedback = plan.Feedback
+                    Feedback = plan.Feedback,
+                    Status = plan.Status
                 });
             }
             else

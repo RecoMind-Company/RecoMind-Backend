@@ -68,6 +68,20 @@ namespace WebApi.Controllers
             return Ok(result.Value);
         }
 
+        [HttpPost("send")]
+        public async Task<IActionResult> SendValidationReport([FromBody] SendValidationReportDto sendValidationDto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            sendValidationDto.CreatedBy = userId;
+
+            var result = await validationReportService.SendValidationReport(sendValidationDto);
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Error);
+            }
+            return Ok(result.Value);
+        }
+
         [HttpPatch("update")]
         public async Task<IActionResult> UpdateValidationReportStatus([FromBody] UserUpdateReportDto updateReportDto)
         {
@@ -91,6 +105,21 @@ namespace WebApi.Controllers
             {
                 return BadRequest(result.Error);
             }
+            return Ok(result.Value);
+        }
+
+        [HttpGet("sent")]
+        public async Task<IActionResult> GetUserSentToValidationReports([FromQuery] int limit)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await validationReportService.GetValidationReportBySendToId(userId!, limit);
+            return Ok(result.Value);
+        }
+        [HttpGet("created-user")]
+        public async Task<IActionResult> GetuserCreatedValidationReports([FromQuery] int limit)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await validationReportService.GetValidationReportByCreatedById(userId!, limit);
             return Ok(result.Value);
         }
     }

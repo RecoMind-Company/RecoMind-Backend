@@ -4,6 +4,8 @@ option csharp_namespace = "GrpcClients.Team";
 
 service TeamGrpcService {
   rpc  GetTeamByEmployee (GetUserTeamInfoRequest) returns (UserTeamInfoResponse);
+  rpc GetTeamLeader (TeamLeaderRequest) returns (TeamLeaderResponse);
+
 }
 
 message GetUserTeamInfoRequest {
@@ -14,4 +16,12 @@ message UserTeamInfoResponse {
   string companyId = 1;
   string teamId = 2;
   string teamName = 3;
+}
+
+message TeamLeaderRequest {
+  string userId = 1;
+}
+
+message TeamLeaderResponse {
+  string leaderId = 1;
 }
