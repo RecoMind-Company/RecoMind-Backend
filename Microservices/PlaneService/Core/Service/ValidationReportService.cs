@@ -113,7 +113,8 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
             Content = serializedContent,
             CreatedAt = report.CreatedAt,
             CreatedBy = report.CreatedBy,
-            Status = report.Status
+            Status = report.Status,
+            UserQuestion = report.UserSuggestedPlan ?? null
         };
         return Result<UserValidationReportDto>.Success(response);
     }
