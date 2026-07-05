@@ -2,5 +2,5 @@
 
 public class ListOfPlansDto
 {
-    public List<string> PlanIds { get; set; } = [];
+    public IEnumerable<ShortPlanDto> shortPlanDtos { get; set; } = [];
 }
