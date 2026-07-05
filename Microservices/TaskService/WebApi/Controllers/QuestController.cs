@@ -67,16 +67,18 @@ public class QuestController(IQuestService questService,
             onFailure: err => HandleFailure(err));
     }
     [HttpPatch("update/{questId}")]
-    [ProducesResponseType(typeof(QuestToReturnDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PersonalQuestToReturnDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(IEnumerable<Error>), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<QuestToReturnDto>> EditTaskAsync([FromBody] UpdateQuestDto updateQuestDto, string questId)
+    public async Task<ActionResult<PersonalQuestToReturnDto>> EditTaskAsync([FromBody] UpdateQuestDto updateQuestDto, string questId)
     {
         var validationResult = await ExecuteValidation(updateQuestDtoValidator, updateQuestDto);
         if (!validationResult.IsSuccess)
             return BadRequest(validationResult.ErrorList);
         var result = await questService.EditQuestAsync(updateQuestDto, questId);
-        return result.Map<ActionResult<QuestToReturnDto>>(
+
+        var result2 = await userQuestsService.AssignUsersToQuestAsync(updateQuestDto.UserIds, questId);
+        return result.Map<ActionResult<PersonalQuestToReturnDto>>(
             onSuccess: quest => Ok(quest),
             onFailure: err => HandleFailure(err));
     }

@@ -367,7 +367,7 @@ namespace Core.Service
                 {
                     plan.IsApproved = approvedDto.IsAproved;
                     plan.Feedback = approvedDto.Feedback ?? "Plan Approved Successfully!";
-                    plan.Status = "Approved"; // Update the status to "Approved" if the plan is approved
+                    plan.Status = "Accepted"; // Update the status to "Approved" if the plan is approved
                 }
                 else
                 {
