@@ -128,6 +128,14 @@ namespace WebApi.Controllers
             var result = await validationReportService.GetValidationReportByStatus(userId!, status, limit);
             return Ok(result.Value);
         }
+        [HttpGet("created-by-status")]
+        [ProducesResponseType(typeof(IEnumerable<UserValidationReportDto>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCreatedByValidationReportByStatus([FromQuery] int limit, [FromQuery] int status)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await validationReportService.GetCreatedByValidationReportByStatus(createdBy: userId!, status, limit);
+            return Ok(result.Value);
+        }
         [HttpGet("created-user")]
         [ProducesResponseType(typeof(IEnumerable<UserValidationReportDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetuserCreatedValidationReports([FromQuery] int limit)
