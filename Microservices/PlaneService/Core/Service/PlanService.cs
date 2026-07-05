@@ -406,7 +406,8 @@ namespace Core.Service
                 shortPlanDtos = plans.Select(p => new ShortPlanDto
                 {
                     PlanId = p.Id,
-                    PlanName = p.Goal
+                    PlanName = p.Goal,
+                    Status = p.Status,
                 })
             };
             return Result<ListOfPlansDto>.Success(response);
