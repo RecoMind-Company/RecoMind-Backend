@@ -8,7 +8,7 @@ namespace Core.Interfaces
         public Task<T?> GetByIdNoTrackingAsync(string id);
         public Task<T> Find(Expression<Func<T, bool>> predicate);
         public Task<T?> Find(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
-        Task<IEnumerable<T>> FindAllWithLimit(Expression<Func<T, bool>> predicate, int limit);
+        Task<IEnumerable<T>> FindAllWithLimit<TKey>(Expression<Func<T, bool>> predicate, Expression<Func<T, TKey>> orderBy, int limit);
         public Task<T?> GetByIdAsync(string id);
         Task<T> AddAsync(T entity);
         Task<T> UpdateAsync(T entity);
