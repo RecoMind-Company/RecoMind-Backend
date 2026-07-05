@@ -164,7 +164,7 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
 
     public async Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportBySendToId(string sendToId, int limit = 3)
     {
-        var reports = await _validationReportRepository.FindAllWithLimit(r => r.SendTo == sendToId, limit);
+        var reports = await _validationReportRepository.FindAllWithLimit(r => r.SendTo == sendToId, x => x.CreatedAt, limit);
         if (!reports.Any())
             return Result<IEnumerable<UserValidationReportDto>>.Success(Enumerable.Empty<UserValidationReportDto>());
 
@@ -204,9 +204,54 @@ public class ValidationReportService(IValidationReportGeneratorService reportGen
         return Result<IEnumerable<UserValidationReportDto>>.Success(reportsDto);
     }
 
+    public async Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportByStatus(string sendToId, int status, int limit = 3)
+    {
+        var reports = await _validationReportRepository.FindAllWithLimit(r =>
+        r.SendTo == sendToId &&
+        r.Status == (ValidationReportStatusEnum)status,
+        x => x.CreatedAt, limit);
+
+        if (!reports.Any())
+            return Result<IEnumerable<UserValidationReportDto>>.Success(Enumerable.Empty<UserValidationReportDto>());
+
+        const int maxParallelTasks = 5;
+
+        var semaphore = new SemaphoreSlim(maxParallelTasks);
+        var tasks = reports.Select(async r =>
+        {
+            // wait for a slot from the semaphore
+            await semaphore.WaitAsync();
+            try
+            {
+                // Read file execution
+                var content = await fileStorageService.ReadFileAsync(r.FileName);
+                var serializedContent = JsonSerializer.Deserialize<ValidationReportDto>(content);
+
+                // Create the DTO
+                return new UserValidationReportDto
+                {
+                    Id = r.Id,
+                    UserQuestion = r.UserSuggestedPlan ?? null,
+                    Content = serializedContent,
+                    CreatedAt = r.CreatedAt,
+                    CreatedBy = r.CreatedBy,
+                    Status = r.Status
+                };
+            }
+            finally
+            {
+                // Release the slot after completion (in both cases: success or error)
+                semaphore.Release();
+            }
+        }).ToList(); // Convert to list to ensure all Select executions begin
+
+        // Wait for all tasks to complete
+        var reportsDto = await Task.WhenAll(tasks);
+        return Result<IEnumerable<UserValidationReportDto>>.Success(reportsDto);
+    }
     public async Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportByCreatedById(string userId, int limit)
     {
-        var reports = await _validationReportRepository.FindAllWithLimit(r => r.CreatedBy == userId, limit);
+        var reports = await _validationReportRepository.FindAllWithLimit(r => r.CreatedBy == userId, x => x.CreatedAt, limit);
         if (!reports.Any())
             return Result<IEnumerable<UserValidationReportDto>>.Success(Enumerable.Empty<UserValidationReportDto>());
 

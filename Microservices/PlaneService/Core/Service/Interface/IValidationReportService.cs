@@ -16,4 +16,5 @@ public interface IValidationReportService
     Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportBySendToId(string sendToId, int limit = 3);
     Task<Result<BaseToReturnDto>> SendValidationReport(SendValidationReportDto sendValidationReportDto);
     Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportByCreatedById(string userId, int limit);
+    Task<Result<IEnumerable<UserValidationReportDto>>> GetValidationReportByStatus(string sendToId, int status, int limit = 3);
 }
