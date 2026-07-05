@@ -7,5 +7,4 @@ public class UpdateQuestDto
     public int? Status { get; set; }
     public DateTime? StartDate { get; set; }
     public DateTime? DeadLine { get; set; }
-    public List<string> UserIds { get; set; } = [];
 }
