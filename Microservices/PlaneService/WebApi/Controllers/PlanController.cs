@@ -126,6 +126,19 @@ namespace webApi.Controllers
                 return BadRequest(response.Error);
         }
 
+        [HttpGet("by-teamId")]
+        public async Task<IActionResult> GetPlansByTeamId()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+                return BadRequest("User Not Found!");
+            var plans = await _planService.GetPlansByTeamId(userId);
+            if (plans.IsSuccess)
+                return Ok(plans.Value);
+            else
+                return BadRequest(plans.Error);
+        }
+
         //[HttpPost("CreatePlan")]
         //[ProducesResponseType(typeof(Result<GetPlanDto>), StatusCodes.Status200OK)]
         //public async Task<IActionResult> CreatePlan([FromBody] AddPlanDto createPlanDto)

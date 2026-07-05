@@ -17,6 +17,7 @@ namespace Core.Service.Interface
         Task<Result<AIPlanDto>> CreateCustomPlan(AIGetPlanDto aIGetPlanDto);
         Task<Result<RequestCustomPlanResponseDto>> RequestCustomPlan(UserCustomPlanDto userCustomPlanDto, string companyId, string userId);
         Task<Result<PostIsApprovedDto>> IsApproved(PostIsApprovedDto approvedDto);
+        Task<Result<ListOfPlansDto>> GetPlansByTeamId(string userId);
 
     }
 }

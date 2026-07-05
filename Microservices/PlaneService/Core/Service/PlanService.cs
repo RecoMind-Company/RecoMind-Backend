@@ -392,5 +392,20 @@ namespace Core.Service
                 return Result<PostIsApprovedDto>.Failure("Invalid Plan Approval Status!");
             }
         }
+
+        public async Task<Result<ListOfPlansDto>> GetPlansByTeamId(string userId)
+        {
+            var checkTeamId = await _teamGrpcClient.GetTeamNameById(userId);  //Check if the user is part of a team and get the team id
+            if (!checkTeamId.IsSuccess)
+                return Result<ListOfPlansDto>.Failure(checkTeamId.Error);
+
+            var plans = await _unitOfWork.Entity.FindAll(p => p.Team_Id == checkTeamId.Value);
+
+            var response = new ListOfPlansDto
+            {
+                PlanIds = plans.Select(p => p.Id).ToList()
+            };
+            return Result<ListOfPlansDto>.Success(response);
+        }
     }
 }
