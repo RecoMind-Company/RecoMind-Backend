@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
@@ -57,6 +58,21 @@ namespace Team.WebApi.Controllers
         public async Task<IActionResult> GetById(string teamId)
         {
             var result = await _service.GetByIdAsync(teamId);
+
+            return result.Map(
+                team => Ok(team),
+                error => (IActionResult)NotFound()
+            );
+        }
+
+        [HttpGet("by-leader")]
+        [Authorize(Policy = "AllEmployees")]
+        public async Task<IActionResult> GetByLeaderId()
+        {
+            var result = await _service.GetTeamByEmployeeIdAsync(_userId);
+
+            if (!result.IsSuccess)
+                result = await _service.GetTeamByTeamLeadIdAsync(_userId);
 
             return result.Map(
                 team => Ok(team),
