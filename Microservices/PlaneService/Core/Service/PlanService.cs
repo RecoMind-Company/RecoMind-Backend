@@ -403,7 +403,11 @@ namespace Core.Service
 
             var response = new ListOfPlansDto
             {
-                PlanIds = plans.Select(p => p.Id).ToList()
+                shortPlanDtos = plans.Select(p => new ShortPlanDto
+                {
+                    PlanId = p.Id,
+                    PlanName = p.Goal
+                })
             };
             return Result<ListOfPlansDto>.Success(response);
         }
