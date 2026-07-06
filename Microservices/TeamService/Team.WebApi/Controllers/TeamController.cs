@@ -141,6 +141,17 @@ namespace Team.WebApi.Controllers
             return Ok(employees);
         }
 
+        [HttpGet("team-members")]
+        [Authorize(Policy = "AllEmployees")]
+        public async Task<IActionResult> GetTeamMebers()
+        {
+            var employees = await _service.GetTeamMembers(_userId);
+            if (employees == null || employees.EmployeesId == null || employees.EmployeesId.Count == 0)
+                return NotFound("No employees found for this team.");
+
+            return Ok(employees);
+        }
+
 
         [HttpPost("{teamId}/employees")]
         [Authorize(Policy = "AllEmployees")]
