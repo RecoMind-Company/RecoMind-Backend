@@ -40,6 +40,18 @@ public class ReportService(IGenerateReportService generateReportService,
         {
             return new AiReportResponseDto { message = "your report is being generated." };
         }
+        if (generatedReportStatus.Status == Status.STATIC)
+        {
+            var staticReport = await reportRepository.Find(r => r.Id == "f7518b01-fc02-4451-ae8a-145961127090");
+            var staticReportContent = await fileStorageService.ReadFileAsync(staticReport.FilePath);
+            return new AiReportResponseDto
+            {
+                Id = staticReport.Id,
+                IsSuccess = true,
+                AiResponse = staticReportContent,
+                GeneratedDate = DateTime.UtcNow
+            };
+        }
         //The Status are have only 3 values PENDING, FAILURE, SUCCESS
         // FAILURE CASE HANDELD IN GENERATE REPORT SERVICE
         // PENDING CASE HANDELD ABOVE

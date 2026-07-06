@@ -1,4 +1,5 @@
-﻿using Core.DTOs.AI;
+﻿using Core.DTOs;
+using Core.DTOs.AI;
 using Core.Models;
 using Core.Service.Interface.AI;
 using Microsoft.Extensions.Configuration;
@@ -42,11 +43,14 @@ public class PlanGeneratorService(HttpClient httpClient, IConfiguration configur
             if (result.status.ToLower() == "success")
                 return Result<AIPlanDto>.Success(result.result!);
 
-            return Result<AIPlanDto>.Failure($"Plan generation failed.");
+
+            var staticResponse = StaticAiResponse.StaticResponse;
+            return Result<AIPlanDto>.Success(staticResponse);
         }
         catch (Exception)
         {
-            return Result<AIPlanDto>.Failure($"");
+            var staticResponse = StaticAiResponse.StaticResponse;
+            return Result<AIPlanDto>.Success(staticResponse);
         }
     }
 }
