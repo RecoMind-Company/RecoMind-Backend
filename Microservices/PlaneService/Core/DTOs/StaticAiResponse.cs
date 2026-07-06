@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.AI;
+using Core.DTOs.AI.ValidationReport.AIResult;
 
 namespace Core.DTOs;
 
@@ -303,5 +304,51 @@ public static class StaticAiResponse
             }
         }
     }
+    };
+
+    public static TaskResponseDto StaticValidationReport = new TaskResponseDto
+    {
+        TaskId = "559f605a-c7dc-4816-9243-4ac299535955",
+        Status = "SUCCESS",
+        Error = null,
+        Result = new TaskResultDto
+        {
+            ValidationReport = new ValidationReportDto
+            {
+                ExecutiveSummary = "The validation report assesses the feasibility of increasing company sales by 20% in the next quarter through targeting new customers, following up with potential customers, conducting product presentations, negotiating contracts, completing sales, and preparing a final report. The precedent analysis shows a high context match level score and a confidence score of 93.88, indicating that similar strategies have been successful in the past. However, the resource simulation results indicate that the company's human resources are insufficient, and financial data is lacking, which may hinder the plan's execution.",
+                ValidationDecision = "Conditional",
+                ConfidenceScore = 80,
+                KeyFindings = new KeyFindingsDto
+                {
+                    PrecedentAnalysis = "The precedent analysis reveals a high context match level score of 'High' and a confidence score of 93.88, based on the analysis of 4 cases. The outcomes of these cases show 3 successes, 0 partial successes, and 1 failure. The successful cases include Beardbrand, which turned a growing community into an eCommerce store, generating $20,000 in sales every day; Ancient + Brave, which achieved £20m in sales in three years; and Beer Cartel, which used content marketing to increase sales. The failed case is Allbirds, which closed all its U.S. stores due to a failed retail strategy. The what_worked patterns include content marketing, growing community, and eCommerce store, while the what_failed patterns include closed decision, decision close, and full price. The key insights highlight the importance of leveraging community, creating a successful eCommerce platform, and using content marketing as a growth engine. The context match level score and confidence score suggest that the planned strategy has a high likelihood of success, given the similarities between the precedent cases and the current company context.",
+
+                    // Mapped smoothly to string as per your class configuration
+                    ResourceAssessment = "The resource assessment indicates that the company's financial resources are unknown due to a lack of financial data, with reasons including the absence of specific financial data in the provided reports and the inability to determine financial capacity without concrete data. The human resources are insufficient, with a status of 'Insufficient' due to reasons such as a demotivated sales team with a significant performance gap, an average quota achievement rate of 9.88%, and a high turnover risk. The key metrics for human resources include a sales team size of 17 and an average quota achievement rate of 9.88%. In contrast, the operational resources are ready, with a status of 'Ready' due to the company's existing operational setup as an e-commerce company. The overall execution verdict is that the company cannot execute the plan due to blocking factors such as insufficient human resources and a lack of financial data.",
+
+                    MarketTrends = "The market trend analysis shows a growing market direction with a growth rate of 18.7%-24.54% and a trend confidence score of 90. The timing assessment is favorable due to high growth rates and increasing online sales. The key trends include generative AI and zero-click search, media networks driving incremental growth, and secondhand and sustainable e-commerce. The opportunities include expansion into new markets such as India and Vietnam, investment in AI-powered e-commerce platforms, and development of sustainable and secondhand e-commerce offerings. The risks include intense competition in mature markets, regulatory challenges and data privacy concerns, and dependence on technology and infrastructure. The location insights indicate a global market with emerging markets in India and Vietnam, a growing market maturity, and a medium competition level. The recommendation is to invest in e-commerce platforms and AI-powered technologies to capitalize on growing demand and increasing online sales."
+                },
+                Recommendations = new List<string>
+                {
+                "Invest in e-commerce platforms and AI-powered technologies to capitalize on growing demand and increasing online sales",
+                "Develop a comprehensive financial plan to address the lack of financial data and ensure sufficient financial resources",
+                "Implement strategies to motivate and retain the sales team, such as performance-based incentives and training programs",
+                "Expand into new markets such as India and Vietnam to diversify revenue streams and reduce dependence on mature markets"
+                },
+                RiskFactors = new List<string>
+                {
+                "Insufficient human resources due to a demotivated and potentially high-turnover sales team",
+                "Lack of financial data to confirm the company's ability to support the plan's financial requirements",
+                "Intense competition in mature markets",
+                "Regulatory challenges and data privacy concerns"
+                },
+                NextSteps = new List<string>
+                {
+                "Conduct a thorough financial analysis to determine the company's financial capacity and identify potential funding sources",
+                "Develop a detailed plan to address the sales team's performance gap and retention risks",
+                "Research and evaluate potential e-commerce platforms and AI-powered technologies for investment",
+                "Establish a task force to monitor and address regulatory challenges and data privacy concerns"
+                }
+            }
+        }
     };
 }
