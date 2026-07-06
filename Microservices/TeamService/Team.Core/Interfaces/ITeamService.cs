@@ -20,6 +20,8 @@ namespace Team.Core.Interfaces
         Task<List<string>> GetAllTeamEmployeesAsync(string teamId);
         Task<string> GetTeamLeaderAsync(string UserId);
         Task<List<string>> GetTeamEmployees(string teamLeadId);
+        Task<TeamMemberDto> GetTeamMembers(string UserId);
+
 
 
         Task<Result<TeamResponseDto>> CreateTeamAsync(string companyId, CreateTeamDto dto);

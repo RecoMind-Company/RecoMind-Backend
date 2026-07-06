@@ -44,15 +44,25 @@ namespace Team.Core.Services
 
         public async Task<List<string>> GetTeamEmployees(string UserId)
         {
-            var team = await _repo.GetTeamByEmployeeIdAsync(UserId);
-
-            if (team == null)
-                team = await _repo.GetTeamByTeamLeadIdAsync(UserId);
-
+            var team = await _repo.GetTeamByTeamLeadIdAsync(UserId);
             if (team == null) return new List<string>();
 
             var employeeIds = await _repo.GetTeamMemberIdsAsync(team.Id);
             return employeeIds ?? new List<string>();
+        }
+
+        public async Task<TeamMemberDto> GetTeamMembers(string UserId)
+        {
+            var team = await _repo.GetTeamByEmployeeIdAsync(UserId);
+
+            if (team == null) return new TeamMemberDto();
+
+            var employeeIds = await _repo.GetTeamMemberIdsAsync(team.Id);
+            return new TeamMemberDto
+            {
+                TeamId = team.Id,
+                EmployeesId = employeeIds ?? new List<string>()
+            };
         }
 
         public async Task<List<TeamResponseForAiDto>> GetForAiAsync(string companyId)
