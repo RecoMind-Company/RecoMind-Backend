@@ -32,20 +32,36 @@ public class GenerateReportService(HttpClient httpClient, ILogger<GenerateReport
     public async Task<TaskStatusResponseDto> GetStatus(string taskId)
     {
         var response = await httpClient.GetAsync($"get_status/{taskId}");
-        if (response.StatusCode == HttpStatusCode.UnprocessableEntity)
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            var status = await response.Content.ReadFromJsonAsync<TaskStatusResponseDto>();
+            if (status!.Status == Status.FAILURE)
+            {
+                logger.LogError("Task with ID {0} failed during processing.", taskId);
+                var staticResponse = new TaskStatusResponseDto
+                {
+                    Result = null,
+                    Status = Status.STATIC,
+                    TaskId = taskId
+                };
+                return staticResponse;
+            }
+            return status!;
+        }
+        catch (Exception)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
             var errors = JsonSerializer.Deserialize<ReportValidationError>(responseContent);
             logger.LogWarning("Failed to get status for Task with ID {0}.", taskId);
-            throw new UnprocessableEntityException("validation errors occurred", errors!);
+
+            var staticResponse = new TaskStatusResponseDto
+            {
+                Result = null,
+                Status = Status.STATIC,
+                TaskId = taskId
+            };
+            return staticResponse;
         }
-        response.EnsureSuccessStatusCode();
-        var status = await response.Content.ReadFromJsonAsync<TaskStatusResponseDto>();
-        if (status!.Status == Status.FAILURE)
-        {
-            logger.LogError("Task with ID {0} failed during processing.", taskId);
-            throw new Exception($"Task with ID {taskId} failed during processing, {status.Result}");
-        }
-        return status!;
     }
 }
