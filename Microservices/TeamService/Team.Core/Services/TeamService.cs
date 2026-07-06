@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using System.Xml.Linq;
 using Team.Core.DTOs;
 using Team.Core.Interfaces;
@@ -41,9 +42,13 @@ namespace Team.Core.Services
         public async Task<Result<UserTeamInfoDto>> GetTeamByEmployeeIdAsync(string employeeId)
             => MapToUserTeamInfo(await _repo.GetTeamByEmployeeIdAsync(employeeId));
 
-        public async Task<List<string>> GetTeamEmployees(string teamLeadId)
+        public async Task<List<string>> GetTeamEmployees(string UserId)
         {
-            var team = await _repo.GetTeamByTeamLeadIdAsync(teamLeadId);
+            var team = await _repo.GetTeamByEmployeeIdAsync(UserId);
+
+            if (team == null)
+                team = await _repo.GetTeamByTeamLeadIdAsync(UserId);
+
             if (team == null) return new List<string>();
 
             var employeeIds = await _repo.GetTeamMemberIdsAsync(team.Id);
