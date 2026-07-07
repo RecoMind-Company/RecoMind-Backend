@@ -8,7 +8,7 @@ public static class StaticAiResponse
     public static AIPlanDto StaticResponse = new AIPlanDto
     {
         plan_id = "plan_202606270312_aaca77",
-        plan_title = "Quarterly Sales Growth Initiative (20% Increase)",
+        plan_title = "Quarterly Sales Growth Initiative ((20% Increase))",
         status = "draft",
         start_date = new DateTime(2026, 6, 27),
         deadline_date = new DateTime(2026, 11, 4),
@@ -315,7 +315,7 @@ public static class StaticAiResponse
         {
             ValidationReport = new ValidationReportDto
             {
-                ExecutiveSummary = "The validation report assesses the feasibility of increasing company sales by 20% in the next quarter through targeting new customers, following up with potential customers, conducting product presentations, negotiating contracts, completing sales, and preparing a final report. The precedent analysis shows a high context match level score and a confidence score of 93.88, indicating that similar strategies have been successful in the past. However, the resource simulation results indicate that the company's human resources are insufficient, and financial data is lacking, which may hinder the plan's execution.",
+                ExecutiveSummary = "The (validation report) assesses the feasibility of increasing company sales by 20% in the next quarter through targeting new customers, following up with potential customers, conducting product presentations, negotiating contracts, completing sales, and preparing a final report. The precedent analysis shows a high context match level score and a confidence score of 93.88, indicating that similar strategies have been successful in the past. However, the resource simulation results indicate that the company's human resources are insufficient, and financial data is lacking, which may hinder the plan's execution.",
                 ValidationDecision = "Conditional",
                 ConfidenceScore = 80,
                 KeyFindings = new KeyFindingsDto
