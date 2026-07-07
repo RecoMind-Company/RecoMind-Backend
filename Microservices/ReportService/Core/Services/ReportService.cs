@@ -42,7 +42,7 @@ public class ReportService(IGenerateReportService generateReportService,
         }
         if (generatedReportStatus.Status == Status.STATIC)
         {
-            var staticReport = await reportRepository.Find(r => r.Id == "f7518b01-fc02-4451-ae8a-145961127090");
+            var staticReport = await reportRepository.Find(r => r.Id == "d3616f58-b734-4031-a575-ee340a82d68f");
             var staticReportContent = await fileStorageService.ReadFileAsync(staticReport.FilePath);
             return new AiReportResponseDto
             {
